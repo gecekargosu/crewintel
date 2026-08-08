@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: crewintel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crewintel
+      POSTGRES_USER: crewintel
+      POSTGRES_PASSWORD: crewintel_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - crewintel_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crewintel -d crewintel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  crewintel_postgres_data:
