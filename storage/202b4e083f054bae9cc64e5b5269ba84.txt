@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Rıza Yıldırım
+Belge Tipi: PASSPORT
+Belge No: TR-793666
+Geçerlilik Tarihi: 2029-08-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

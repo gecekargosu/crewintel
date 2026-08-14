@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Emine Kurt
+Belge Tipi: STCW
+Belge No: TR-253780
+Geçerlilik Tarihi: 2029-07-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

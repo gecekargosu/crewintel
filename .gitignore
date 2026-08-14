@@ -11,6 +11,9 @@ env/
 # Environment
 .env
 .env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 # IDE
 .vscode/
@@ -22,6 +25,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test cache
+.pytest_cache/
 
 # Node
 node_modules/
