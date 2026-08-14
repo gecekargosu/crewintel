@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Zeynep Şahin
+Belge Tipi: SEAMAN_BOOK
+Belge No: TR-870016
+Geçerlilik Tarihi: 2026-06-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

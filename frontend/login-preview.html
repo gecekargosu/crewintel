@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CREWINTEL — Dynamic Maritime Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0a0f1a; min-height: 100vh; overflow: hidden; }
+    
+    /* === SCENE === */
+    .scene { position: fixed; inset: 0; overflow: hidden; }
+    
+    /* Sky with day/night cycle */
+    .sky { position: absolute; top: 0; left: 0; right: 0; height: 55%; animation: skyCycle 120s ease-in-out infinite; }
+    @keyframes skyCycle {
+      0%, 100% { background: linear-gradient(180deg, #050a15 0%, #0a1628 30%, #1a2744 60%, #0a1525 100%); }
+      15% { background: linear-gradient(180deg, #0a1020 0%, #1a2744 30%, #2a4060 60%, #1a2744 100%); }
+      25% { background: linear-gradient(180deg, #1a3050 0%, #3a5a80 30%, #5a8ab0 60%, #3a5a80 100%); }
+      35% { background: linear-gradient(180deg, #2a4a70 0%, #4a7aa0 30%, #6aa0c0 60%, #4a7aa0 100%); }
+      50% { background: linear-gradient(180deg, #1a3050 0%, #3a5a80 30%, #5a8ab0 60%, #3a5a80 100%); }
+      65% { background: linear-gradient(180deg, #0a1020 0%, #1a2744 30%, #2a4060 60%, #1a2744 100%); }
+      75% { background: linear-gradient(180deg, #050a15 0%, #0a1628 30%, #1a2744 60%, #0a1525 100%); }
+    }
+    
+    /* === CELESTIAL BODY (Sun/Moon) === */
+    .celestial {
+      position: absolute;
+      top: 8%;
+      right: 15%;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      animation: celestialType 120s ease-in-out infinite, celestialMove 120s ease-in-out infinite;
+    }
+    @keyframes celestialType {
+      0%, 100% { background: radial-gradient(circle at 35% 35%, #fff 0%, #e8e8ed 35%, #d1d1d6 70%, #aeaeb2 100%); box-shadow: 0 0 50px rgba(255,255,255,0.25), 0 0 100px rgba(255,255,255,0.1); }
+      25% { background: radial-gradient(circle at 35% 35%, #FFE066 0%, #FFA500 35%, #FF8C00 70%, #FF6600 100%); box-shadow: 0 0 60px rgba(255,165,0,0.6), 0 0 120px rgba(255,165,0,0.3); }
+      50% { background: radial-gradient(circle at 35% 35%, #FFE066 0%, #FFA500 35%, #FF8C00 70%, #FF6600 100%); box-shadow: 0 0 80px rgba(255,165,0,0.8), 0 0 160px rgba(255,165,0,0.4); }
+      75% { background: radial-gradient(circle at 35% 35%, #fff 0%, #e8e8ed 35%, #d1d1d6 70%, #aeaeb2 100%); box-shadow: 0 0 50px rgba(255,255,255,0.25), 0 0 100px rgba(255,255,255,0.1); }
+    }
+    @keyframes celestialMove {
+      0% { top: 8%; right: 15%; }
+      25% { top: 5%; right: 25%; }
+      50% { top: 3%; right: 35%; }
+      75% { top: 5%; right: 25%; }
+      100% { top: 8%; right: 15%; }
+    }
+    
+    /* === STARS === */
+    .stars { position: absolute; inset: 0; animation: starsFade 120s ease-in-out infinite; }
+    @keyframes starsFade { 0%, 100% { opacity: 1; } 25% { opacity: 0.3; } 50% { opacity: 0; } 75% { opacity: 0.3; } }
+    .star { position: absolute; background: #fff; border-radius: 50%; }
+    .star.s { width: 2px; height: 2px; }
+    .star.m { width: 3px; height: 3px; }
+    .star.l { width: 4px; height: 4px; box-shadow: 0 0 6px rgba(255,255,255,0.6); }
+    /* Twinkle + pulse for each star */
+    .star:nth-child(1) { top: 4%; left: 8%; animation: twinkle 3s ease-in-out infinite 0s, starPulse 8s ease-in-out infinite 0s; }
+    .star:nth-child(2) { top: 7%; left: 18%; animation: twinkle 4s ease-in-out infinite 0.5s, starGrow 12s ease-in-out infinite 1s; }
+    .star:nth-child(3) { top: 3%; left: 30%; animation: twinkle 3.5s ease-in-out infinite 1s, starPulse 10s ease-in-out infinite 2s; }
+    .star:nth-child(4) { top: 10%; left: 42%; animation: twinkle 5s ease-in-out infinite 1.5s; }
+    .star:nth-child(5) { top: 5%; left: 55%; animation: twinkle 3s ease-in-out infinite 0.3s, starGrow 9s ease-in-out infinite 3s; }
+    .star:nth-child(6) { top: 12%; left: 68%; animation: twinkle 4.5s ease-in-out infinite 2s, starPulse 11s ease-in-out infinite 4s; }
+    .star:nth-child(7) { top: 6%; left: 80%; animation: twinkle 3.8s ease-in-out infinite 0.8s, starGrow 13s ease-in-out infinite 2s; }
+    .star:nth-child(8) { top: 14%; left: 12%; animation: twinkle 4.2s ease-in-out infinite 1.2s, starPulse 7s ease-in-out infinite 1s; }
+    .star:nth-child(9) { top: 8%; left: 35%; animation: twinkle 3.3s ease-in-out infinite 0.6s; }
+    .star:nth-child(10) { top: 16%; left: 48%; animation: twinkle 5.2s ease-in-out infinite 1.8s, starGrow 10s ease-in-out infinite 5s; }
+    .star:nth-child(11) { top: 4%; left: 72%; animation: twinkle 3.7s ease-in-out infinite 0.4s, starPulse 14s ease-in-out infinite 6s; }
+    .star:nth-child(12) { top: 18%; left: 25%; animation: twinkle 4.8s ease-in-out infinite 2.5s; }
+    .star:nth-child(13) { top: 11%; left: 90%; animation: twinkle 3.4s ease-in-out infinite 1.1s, starGrow 11s ease-in-out infinite 3s; }
+    .star:nth-child(14) { top: 2%; left: 50%; animation: twinkle 4.1s ease-in-out infinite 0.9s; }
+    .star:nth-child(15) { top: 15%; left: 8%; animation: twinkle 3.6s ease-in-out infinite 1.4s; }
+    .star:nth-child(16) { top: 9%; left: 62%; animation: twinkle 5.5s ease-in-out infinite 0.2s, starPulse 12s ease-in-out infinite 5s; }
+    .star:nth-child(17) { top: 20%; left: 40%; animation: twinkle 4.3s ease-in-out infinite 0.7s, starGrow 15s ease-in-out infinite 7s; }
+    .star:nth-child(18) { top: 25%; left: 75%; animation: twinkle 3.9s ease-in-out infinite 1.3s; }
+    @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    @keyframes starPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(2); } }
+    @keyframes starGrow { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(3); opacity: 1; box-shadow: 0 0 10px rgba(255,255,255,0.8); } }
+    
+    /* === CLOUDS === */
+    .cloud { position: absolute; background: rgba(255,255,255,0.04); border-radius: 50%; filter: blur(25px); animation: cloudForm 120s ease-in-out infinite; }
+    @keyframes cloudForm { 0%, 100% { opacity: 0; transform: scale(0.8); } 20% { opacity: 0.6; transform: scale(1); } 40% { opacity: 0.8; transform: scale(1.1); } 60% { opacity: 0.4; transform: scale(0.9); } 80% { opacity: 0; transform: scale(0.7); } }
+    .cloud-1 { top: 8%; left: -15%; width: 300px; height: 60px; animation-delay: 0s; }
+    .cloud-2 { top: 15%; left: -20%; width: 250px; height: 50px; animation-delay: 20s; }
+    .cloud-3 { top: 5%; left: -10%; width: 350px; height: 70px; animation-delay: 40s; }
+    .cloud-4 { top: 12%; left: -25%; width: 200px; height: 45px; animation-delay: 60s; }
+    .cloud-5 { top: 18%; left: -18%; width: 280px; height: 55px; animation-delay: 80s; }
+    
+    /* === BIRDS === */
+    .birds-container { position: absolute; top: 10%; left: 0; right: 0; height: 200px; opacity: 0; animation: birdsAppear 120s ease-in-out infinite; }
+    @keyframes birdsAppear { 0%, 100% { opacity: 0; } 30% { opacity: 0.4; } 50% { opacity: 0.7; } 70% { opacity: 0.3; } }
+    .flock { position: absolute; animation: flockFly 20s linear infinite; }
+    @keyframes flockFly { 0% { transform: translateX(-200px); } 100% { transform: translateX(calc(100vw + 200px)); } }
+    .flock-1 { top: 15%; animation-duration: 18s; animation-delay: 0s; }
+    .flock-2 { top: 25%; animation-duration: 22s; animation-delay: 8s; }
+    .flock-3 { top: 10%; animation-duration: 25s; animation-delay: 15s; }
+    .bird { position: absolute; color: rgba(255,255,255,0.5); animation: birdFlap 0.6s ease-in-out infinite; }
+    .bird:nth-child(1) { left: 0; top: 0; font-size: 10px; }
+    .bird:nth-child(2) { left: 15px; top: -8px; font-size: 12px; animation-delay: 0.1s; }
+    .bird:nth-child(3) { left: 30px; top: 5px; font-size: 9px; animation-delay: 0.2s; }
+    .bird:nth-child(4) { left: 10px; top: 12px; font-size: 11px; animation-delay: 0.15s; }
+    .bird:nth-child(5) { left: 25px; top: -3px; font-size: 10px; animation-delay: 0.05s; }
+    @keyframes birdFlap { 0%, 100% { transform: scaleY(1) rotate(0deg); } 50% { transform: scaleY(0.5) rotate(5deg); } }
+    
+    /* === RAIN === */
+    .rain { position: absolute; inset: 0; opacity: 0; animation: rainAppear 120s ease-in-out infinite; pointer-events: none; z-index: 2; }
+    @keyframes rainAppear { 0%, 100% { opacity: 0; } 35% { opacity: 0; } 40% { opacity: 0.3; } 50% { opacity: 0.5; } 60% { opacity: 0.3; } 65% { opacity: 0; } }
+    .raindrop { position: absolute; width: 1px; height: 15px; background: linear-gradient(180deg, transparent 0%, rgba(174,194,224,0.5) 100%); animation: rainFall linear infinite; }
+    @keyframes rainFall { 0% { transform: translateY(-20px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
+    
+    /* === HORIZON === */
+    .horizon { position: absolute; top: 52%; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.1) 80%, transparent 100%); z-index: 3; }
+    
+    /* === LAND === */
+    .land { position: absolute; top: 50%; left: 0; right: 0; height: 80px; z-index: 3; }
+    .land-sil { position: absolute; bottom: 0; background: #0a1020; border-radius: 50% 60% 0 0 / 100% 100% 0 0; }
+    .land-1 { left: -5%; width: 30%; height: 40px; opacity: 0.5; }
+    .land-2 { left: 20%; width: 20%; height: 30px; opacity: 0.3; }
+    .land-3 { right: -5%; width: 35%; height: 45px; opacity: 0.4; }
+    .land-4 { right: 18%; width: 18%; height: 25px; opacity: 0.25; }
+    
+    /* === LIGHTHOUSE === */
+    .lighthouse { position: absolute; top: 40%; right: 15%; z-index: 5; }
+    .lighthouse-tower { width: 10px; height: 50px; background: linear-gradient(180deg, #3a4a6c 0%, #2a3a5c 50%, #1a2a4c 100%); margin: 0 auto; position: relative; }
+    .lighthouse-tower::before { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 18px; height: 12px; background: #4a5a7c; border-radius: 3px 3px 0 0; }
+    .lighthouse-beam { position: absolute; top: -15px; left: 50%; transform-origin: 0 0; width: 200px; height: 3px; background: linear-gradient(90deg, rgba(255,224,102,0.9) 0%, rgba(255,224,102,0.3) 40%, transparent 100%); animation: beamRotate 6s linear infinite; filter: blur(1px); }
+    @keyframes beamRotate { 0% { transform: rotate(-30deg); } 100% { transform: rotate(30deg); } }
+    .lighthouse-glow { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; background: #FFE066; border-radius: 50%; box-shadow: 0 0 20px rgba(255,224,102,0.8), 0 0 40px rgba(255,224,102,0.4); animation: glowPulse 3s ease-in-out infinite; }
+    @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 20px rgba(255,224,102,0.6), 0 0 40px rgba(255,224,102,0.3); } 50% { box-shadow: 0 0 30px rgba(255,224,102,1), 0 0 60px rgba(255,224,102,0.5), 0 0 100px rgba(255,224,102,0.2); } }
+    
+    /* === SHIPS === */
+    .ship { position: absolute; z-index: 10; }
+    /* Ship 1: Large Container */
+    .ship-container { top: 47%; animation: shipCross 40s linear infinite; }
+    @keyframes shipCross { 0% { left: -300px; } 100% { left: calc(100% + 300px); } }
+    .ship-container .hull { width: 250px; height: 50px; background: linear-gradient(180deg, #2a3a5c 0%, #1a2a4c 100%); border-radius: 0 0 8px 8px; position: relative; }
+    .ship-container .hull::before { content: ''; position: absolute; top: -30px; left: 20px; right: 20px; height: 30px; background: linear-gradient(180deg, #3a4a6c 0%, #2a3a5c 100%); border-radius: 4px 4px 0 0; }
+    .ship-container .bridge { position: absolute; bottom: 50px; right: 25px; width: 45px; height: 35px; background: linear-gradient(180deg, #4a5a7c 0%, #3a4a6c 100%); border-radius: 3px 3px 0 0; }
+    .ship-container .bridge::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 28px; height: 14px; background: #5a6a8c; border-radius: 2px 2px 0 0; }
+    .ship-container .windows { position: absolute; bottom: 60px; right: 30px; display: flex; gap: 4px; }
+    .ship-container .windows span { width: 5px; height: 5px; background: #FFE066; border-radius: 1px; box-shadow: 0 0 6px rgba(255,224,102,0.6); animation: winFlicker 4s ease-in-out infinite; }
+    .ship-container .windows span:nth-child(2) { animation-delay: 0.7s; }
+    .ship-container .windows span:nth-child(3) { animation-delay: 1.4s; }
+    .ship-container .windows span:nth-child(4) { animation-delay: 0.3s; }
+    @keyframes winFlicker { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .ship-container .nav-light { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: #FF3B30; border-radius: 50%; box-shadow: 0 0 12px rgba(255,59,48,0.8), 0 0 24px rgba(255,59,48,0.4); animation: navBlink 2s ease-in-out infinite; }
+    @keyframes navBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .ship-container .containers { position: absolute; top: -20px; left: 40px; display: flex; gap: 3px; }
+    .ship-container .containers span { width: 18px; height: 14px; border-radius: 2px; }
+    .ship-container .containers span:nth-child(1) { background: #3b82f6; }
+    .ship-container .containers span:nth-child(2) { background: #ef4444; }
+    .ship-container .containers span:nth-child(3) { background: #22c55e; }
+    .ship-container .containers span:nth-child(4) { background: #f59e0b; }
+    .ship-container .containers span:nth-child(5) { background: #3b82f6; }
+    .ship-container .containers span:nth-child(6) { background: #ef4444; }
+    
+    /* Ship 2: Tanker */
+    .ship-tanker { top: 52%; animation: shipCross2 50s linear infinite 12s; }
+    @keyframes shipCross2 { 0% { left: calc(100% + 250px); } 100% { left: -300px; } }
+    .ship-tanker .hull { width: 200px; height: 35px; background: linear-gradient(180deg, #1a2a4c 0%, #0f1a30 100%); border-radius: 0 0 6px 6px; position: relative; }
+    .ship-tanker .hull::before { content: ''; position: absolute; top: -8px; left: 10px; right: 10px; height: 8px; background: #2a3a5c; border-radius: 3px 3px 0 0; }
+    .ship-tanker .bridge { position: absolute; bottom: 35px; left: 15px; width: 35px; height: 25px; background: #3a4a6c; border-radius: 2px 2px 0 0; }
+    .ship-tanker .pipes { position: absolute; bottom: 35px; left: 60px; display: flex; gap: 8px; }
+    .ship-tanker .pipes span { width: 3px; height: 20px; background: #4a5a7c; border-radius: 1px; }
+    .ship-tanker .nav-light { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px rgba(34,197,94,0.8); animation: navBlink 2.5s ease-in-out infinite 0.5s; }
+    
+    /* Ship 3: Passenger/Ferry */
+    .ship-passenger { top: 49%; animation: shipCross3 35s linear infinite 25s; }
+    @keyframes shipCross3 { 0% { left: -200px; } 100% { left: calc(100% + 200px); } }
+    .ship-passenger .hull { width: 160px; height: 40px; background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 0 0 6px 6px; position: relative; }
+    .ship-passenger .deck { position: absolute; top: -20px; left: 10px; right: 10px; height: 20px; background: #f1f5f9; border-radius: 3px 3px 0 0; }
+    .ship-passenger .windows { position: absolute; top: -15px; left: 15px; display: flex; gap: 6px; }
+    .ship-passenger .windows span { width: 8px; height: 8px; background: #93c5fd; border-radius: 2px; box-shadow: 0 0 4px rgba(147,197,253,0.5); animation: winFlicker 5s ease-in-out infinite; }
+    .ship-passenger .windows span:nth-child(2) { animation-delay: 1s; }
+    .ship-passenger .windows span:nth-child(3) { animation-delay: 2s; }
+    .ship-passenger .windows span:nth-child(4) { animation-delay: 0.5s; }
+    .ship-passenger .windows span:nth-child(5) { animation-delay: 1.5s; }
+    .ship-passenger .nav-light { position: absolute; top: -25px; right: 20px; width: 4px; height: 4px; background: #FF3B30; border-radius: 50%; box-shadow: 0 0 8px rgba(255,59,48,0.7); animation: navBlink 1.8s ease-in-out infinite; }
+    
+    /* Ship 4: Small sailboat */
+    .ship-sail { top: 56%; animation: shipCross4 28s linear infinite 35s; }
+    @keyframes shipCross4 { 0% { left: calc(100% + 100px); } 100% { left: -120px; } }
+    .ship-sail .hull { width: 60px; height: 15px; background: #8B4513; border-radius: 0 0 4px 4px; position: relative; }
+    .ship-sail .mast { position: absolute; bottom: 15px; left: 50%; width: 2px; height: 35px; background: #654321; }
+    .ship-sail .sail { position: absolute; bottom: 20px; left: calc(50% + 2px); width: 0; height: 0; border-left: 15px solid rgba(255,255,255,0.8); border-top: 12px solid transparent; border-bottom: 12px solid transparent; animation: sailFlutter 3s ease-in-out infinite; }
+    @keyframes sailFlutter { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.9); } }
+    
+    /* === WATER === */
+    .water { position: absolute; bottom: 0; left: 0; right: 0; height: 48%; background: linear-gradient(180deg, #0a1828 0%, #0d1f35 30%, #0a1525 60%, #080e1a 100%); overflow: hidden; }
+    .water-wave { position: absolute; width: 200%; left: -50%; height: 100%; background: repeat-x; }
+    .ww1 { top: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%230d1f35' fill-opacity='0.5' d='M0,40L48,45C96,50,192,60,288,65C384,70,480,70,576,65C672,60,768,50,864,45C960,40,1056,40,1152,45C1248,50,1344,60,1392,65L1440,70L1440,120L0,120Z'/%3E%3C/svg%3E") top/1440px 120px repeat-x; animation: wv 10s linear infinite; }
+    .ww2 { top: 15px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%230a1525' fill-opacity='0.4' d='M0,80L48,75C96,70,192,60,288,55C384,50,480,50,576,55C672,60,768,70,864,75C960,80,1056,80,1152,75C1248,70,1344,60,1392,55L1440,50L1440,120L0,120Z'/%3E%3C/svg%3E") top/1440px 120px repeat-x; animation: wv 14s linear infinite reverse; }
+    .ww3 { top: 30px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23080e1a' fill-opacity='0.3' d='M0,60L48,55C96,50,192,40,288,35C384,30,480,30,576,35C672,40,768,50,864,55C960,60,1056,60,1152,55C1248,50,1344,40,1392,35L1440,30L1440,120L0,120Z'/%3E%3C/svg%3E") top/1440px 120px repeat-x; animation: wv 18s linear infinite; }
+    @keyframes wv { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
+    .reflection { position: absolute; top: 5px; right: 15%; width: 50px; height: 100px; background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, transparent 100%); filter: blur(10px); animation: refShimmer 5s ease-in-out infinite; }
+    @keyframes refShimmer { 0%, 100% { opacity: 0.5; transform: scaleX(1); } 50% { opacity: 0.8; transform: scaleX(1.3); } }
+    .sparkle { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.5); border-radius: 50%; animation: sparkle 4s ease-in-out infinite; }
+    .sp1 { top: 15%; left: 25%; } .sp2 { top: 30%; left: 45%; animation-delay: 1.2s; } .sp3 { top: 20%; left: 65%; animation-delay: 2.4s; }
+    .sp4 { top: 35%; left: 15%; animation-delay: 0.6s; } .sp5 { top: 25%; left: 75%; animation-delay: 1.8s; } .sp6 { top: 40%; left: 55%; animation-delay: 3s; }
+    @keyframes sparkle { 0%, 100% { opacity: 0; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
+    
+    /* === LOGIN CARD === */
+    .login-wrapper { position: relative; z-index: 100; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+    .login-card { width: 420px; max-width: 92%; padding: 40px; border-radius: 16px; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: cardIn 0.8s ease-out; }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .login-header { text-align: center; margin-bottom: 28px; }
+    .login-logo { width: 56px; height: 56px; background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(234,88,12,0.3); }
+    .login-title { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 6px 0; letter-spacing: 1px; }
+    .login-subtitle { margin: 0; color: #64748b; font-size: 14px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 800; color: #1e293b; font-size: 13px; margin-bottom: 6px; }
+    .form-input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: #fff; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus { outline: none; border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,0.15); }
+    .form-input::placeholder { color: #94a3b8; }
+    .login-btn { width: 100%; padding: 14px; background: #ea580c; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; margin-top: 8px; }
+    .login-btn:hover { background: #c2410c; box-shadow: 0 4px 12px rgba(234,88,12,0.3); transform: translateY(-1px); }
+    .login-footer { text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="sky">
+      <!-- Stars (18 adet - küçük/orta/büyük, farklı parıltılar) -->
+      <div class="stars">
+        <div class="star s"></div><div class="star m"></div><div class="star l"></div>
+        <div class="star s"></div><div class="star l"></div><div class="star m"></div>
+        <div class="star s"></div><div class="star m"></div><div class="star l"></div>
+        <div class="star s"></div><div class="star m"></div><div class="star l"></div>
+        <div class="star s"></div><div class="star m"></div><div class="star s"></div>
+        <div class="star l"></div><div class="star m"></div><div class="star s"></div>
+      </div>
+      <!-- Sun/Moon -->
+      <div class="celestial"></div>
+      <!-- Clouds (5 adet - farklı boyutlar) -->
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+      <div class="cloud cloud-4"></div>
+      <div class="cloud cloud-5"></div>
+    </div>
+    
+    <!-- Birds (3 sürü) -->
+    <div class="birds-container">
+      <div class="flock flock-1">
+        <div class="bird">🐦</div><div class="bird">🐦</div><div class="bird">🐦</div>
+        <div class="bird">🐦</div><div class="bird">🐦</div>
+      </div>
+      <div class="flock flock-2">
+        <div class="bird">🐦</div><div class="bird">🐦</div><div class="bird">🐦</div>
+        <div class="bird">🐦</div>
+      </div>
+      <div class="flock flock-3">
+        <div class="bird">🐦</div><div class="bird">🐦</div><div class="bird">🐦</div>
+        <div class="bird">🐦</div><div class="bird">🐦</div><div class="bird">🐦</div>
+      </div>
+    </div>
+    
+    <!-- Rain -->
+    <div class="rain" id="rain"></div>
+    
+    <!-- Horizon -->
+    <div class="horizon"></div>
+    
+    <!-- Land -->
+    <div class="land">
+      <div class="land-sil land-1"></div>
+      <div class="land-sil land-2"></div>
+      <div class="land-sil land-3"></div>
+      <div class="land-sil land-4"></div>
+    </div>
+    
+    <!-- Lighthouse -->
+    <div class="lighthouse">
+      <div class="lighthouse-glow"></div>
+      <div class="lighthouse-beam"></div>
+      <div class="lighthouse-tower"></div>
+    </div>
+    
+    <!-- Ships -->
+    <div class="ship ship-container">
+      <div class="nav-light"></div>
+      <div class="bridge"></div>
+      <div class="windows"><span></span><span></span><span></span><span></span></div>
+      <div class="containers"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="hull"></div>
+    </div>
+    <div class="ship ship-tanker">
+      <div class="nav-light"></div>
+      <div class="bridge"></div>
+      <div class="pipes"><span></span><span></span><span></span></div>
+      <div class="hull"></div>
+    </div>
+    <div class="ship ship-passenger">
+      <div class="nav-light"></div>
+      <div class="windows"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="deck"></div>
+      <div class="hull"></div>
+    </div>
+    <div class="ship ship-sail">
+      <div class="sail"></div>
+      <div class="mast"></div>
+      <div class="hull"></div>
+    </div>
+    
+    <!-- Water -->
+    <div class="water">
+      <div class="water-wave ww1"></div>
+      <div class="water-wave ww2"></div>
+      <div class="water-wave ww3"></div>
+      <div class="reflection"></div>
+      <div class="sparkle sp1"></div><div class="sparkle sp2"></div><div class="sparkle sp3"></div>
+      <div class="sparkle sp4"></div><div class="sparkle sp5"></div><div class="sparkle sp6"></div>
+    </div>
+  </div>
+  
+  <!-- Login -->
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">⚓</div>
+        <h1 class="login-title">UMAY</h1>
+        <p class="login-subtitle">Gemi Personeli ve İnsan Kaynakları Yönetim Sistemi</p>
+      </div>
+      <form onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="ornek@sirket.com" autofocus/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Şifre</label>
+          <input class="form-input" type="password" placeholder="••••••••"/>
+        </div>
+        <button class="login-btn" type="submit">Giriş Yap</button>
+      </form>
+      <div class="login-footer">CREWINTEL v1.0 • Manning & Crew Management</div>
+    </div>
+  </div>
+  
+  <script>
+    // Generate rain drops
+    const rain = document.getElementById('rain');
+    for (let i = 0; i < 100; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'raindrop';
+      drop.style.left = Math.random() * 100 + '%';
+      drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+      drop.style.animationDelay = Math.random() * 3 + 's';
+      drop.style.height = (10 + Math.random() * 15) + 'px';
+      rain.appendChild(drop);
+    }
+  </script>
+</body>
+</html>

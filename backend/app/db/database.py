@@ -1,16 +1,14 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
+from app.core.config import get_settings
 
-DATABASE_URL = (
-    "postgresql+psycopg://"
-    "crewintel:crewintel_dev_password"
-    "@127.0.0.1:5433/crewintel"
-)
+
+settings = get_settings()
 
 
 engine = create_engine(
-    DATABASE_URL,
+    settings.database_url,
     pool_pre_ping=True,
 )
 

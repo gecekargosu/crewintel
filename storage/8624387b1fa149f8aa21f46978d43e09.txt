@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Rıza Kaya
+Belge Tipi: STCW
+Belge No: TR-318211
+Geçerlilik Tarihi: 2026-01-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

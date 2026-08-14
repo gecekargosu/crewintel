@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Pelin Şimşek
+Belge Tipi: MEDICAL_CERTIFICATE
+Belge No: TR-465925
+Geçerlilik Tarihi: 2029-05-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

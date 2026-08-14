@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Elif Çetin
+Belge Tipi: MEDICAL_CERTIFICATE
+Belge No: TR-928710
+Geçerlilik Tarihi: 2029-02-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

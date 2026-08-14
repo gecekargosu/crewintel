@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Zeynep Özdemir
+Belge Tipi: SEAMAN_BOOK
+Belge No: TR-310013
+Geçerlilik Tarihi: 2026-07-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

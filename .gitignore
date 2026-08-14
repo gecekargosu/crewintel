@@ -8,9 +8,12 @@ __pycache__/
 venv/
 env/
 
-# Environment
+# Environment / secrets
 .env
 .env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 # IDE
 .vscode/
@@ -19,19 +22,80 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+e ps
 
 # Logs
 *.log
+
+# Test cache
+.pytest_cache/
 
 # Node
 node_modules/
 dist/
 build/
 
-# Frontend
+# Frontend build artifacts
 frontend/.next/
 frontend/.vite/
+frontend/dist/
 
 # Temporary
 *.tmp
 *.temp
+
+# CREWINTEL runtime data (uploaded documents)
+storage/
+
+# Databases (runtime)
+*.db
+*.sqlite
+*.sqlite3
+
+# Sessions
+*.session
+*.session-journal
+
+# Archives / large binaries
+*.zip
+
+# Backups
+backups/
+
+# Recovery/handoff snapshots and stale backups
+CREWINTEL_HANDOFF_*/
+_RECOVERY_*/
+.freebuff/
+
+# Generated output / audit artifacts
+CREWINTEL_*.txt
+backend/audit_results.txt
+backend/e2e_results.txt
+*.txt-e
+
+# Stale file variants
+backend/app/services/document_processing.py.*
+backend/app/services/document_processing.HEAD.py
+backend/reprocess_documents.py
+frontend/src/App *.jsx
+frontend/src/App *.css
+
+# Local scratch files
+duplicate_test*.txt
+
+# Playwright artifacts
+playwright-audit/
+playwright-tests/
+
+# Uploads
+uploads/
+
+# Database runtime dir
+database/
+
+# Mobile (large, track separately if needed)
+mobile/
+
+# Misc
+package-lock.json

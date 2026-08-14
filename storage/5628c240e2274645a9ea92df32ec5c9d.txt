@@ -1,0 +1,8 @@
+PERSONEL BİLGİLERİ
+------------------
+Adı Soyadı: Mehmet Öztürk
+Belge Tipi: CONTRACT
+Belge No: TR-272476
+Geçerlilik Tarihi: 2029-04-15
+
+* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.
