@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Furkan Aydın
-Belge Tipi: SEAMAN_BOOK
-Belge No: TR-961599
-Geçerlilik Tarihi: 2026-04-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Gizem Şahin
-Belge Tipi: SEAMAN_BOOK
-Belge No: TR-584355
-Geçerlilik Tarihi: 2028-01-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

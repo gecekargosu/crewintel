@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Gizem Kaya
-Belge Tipi: MEDICAL_CERTIFICATE
-Belge No: TR-363388
-Geçerlilik Tarihi: 2028-05-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

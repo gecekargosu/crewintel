@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Rıza Çelik
-Belge Tipi: STCW
-Belge No: TR-253601
-Geçerlilik Tarihi: 2026-01-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

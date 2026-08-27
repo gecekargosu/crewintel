@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Deniz Arslan
-Belge Tipi: SEAMAN_BOOK
-Belge No: TR-716990
-Geçerlilik Tarihi: 2029-03-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

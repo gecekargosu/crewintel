@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Rıza Arslan
-Belge Tipi: PASSPORT
-Belge No: TR-162332
-Geçerlilik Tarihi: 2029-03-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

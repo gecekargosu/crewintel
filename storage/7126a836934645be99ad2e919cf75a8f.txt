@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Hatice Kılıç
-Belge Tipi: MEDICAL_CERTIFICATE
-Belge No: TR-179453
-Geçerlilik Tarihi: 2026-09-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

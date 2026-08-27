@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Irmak Şimşek
-Belge Tipi: SEAMAN_BOOK
-Belge No: TR-530088
-Geçerlilik Tarihi: 2027-07-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

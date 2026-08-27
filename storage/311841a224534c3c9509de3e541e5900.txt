@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Pelin Çelik
-Belge Tipi: PASSPORT
-Belge No: TR-372516
-Geçerlilik Tarihi: 2026-08-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Irmak Aslan
-Belge Tipi: STCW
-Belge No: TR-119311
-Geçerlilik Tarihi: 2027-01-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

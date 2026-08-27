@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Ahmet Kılıç
-Belge Tipi: CONTRACT
-Belge No: TR-495274
-Geçerlilik Tarihi: 2027-07-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.
