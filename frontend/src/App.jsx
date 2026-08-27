@@ -3450,7 +3450,7 @@ function App() {
     );
   }
 
-  function renderPortal() {
+  function RenderPortal() {
     const [portalData, setPortalData] = useState(null);
     const [portalMsg, setPortalMsg] = useState(null);
     const [contactForm, setContactForm] = useState({ phone: "", email: "" });
@@ -3946,7 +3946,7 @@ function App() {
   }
 
   function renderPage() {
-    if (auth?.user?.role === "crew") return renderPortal();
+    if (auth?.user?.role === "crew") return <RenderPortal />;
     if (activePage === "crew") return renderCrewList();
     if (activePage === "ships") return renderShips();
     if (activePage === "assignments") return renderAssignments();

@@ -16,10 +16,6 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
-# AI modüllerini import et
-import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-
 from ai.llm_client import LLMClient, LLMConfig
 from ai.document_analyzer import DocumentAnalyzer, ExtractedInfo
 from ai.crew_matcher import CrewMatcher, JobRequirement, MatchResult
