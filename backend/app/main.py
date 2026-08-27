@@ -23,6 +23,7 @@ from app.api.routes.jobs import (
 )
 from app.api.routes.settings import router as settings_router
 from app.api.routes.ships import router as ship_router
+from app.api.routes.ai import router as ai_router
 from app.core.config import get_settings
 from app.db.database import engine
 
@@ -60,6 +61,7 @@ app.include_router(jobs_router)
 app.include_router(templates_router)
 app.include_router(whatsapp_router)
 app.include_router(webhook_router)
+app.include_router(ai_router)
 
 
 @app.get("/")
