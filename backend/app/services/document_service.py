@@ -96,6 +96,7 @@ def _new_batch() -> dict:
         "unmatched": 0,
         "failed": 0,
         "duplicate": 0,
+        "duplicate_files": [],
         "failed_details": [],
         "documents": [],
     }
@@ -428,6 +429,7 @@ class DocumentService:
                         user_email=self.actor_email,
                     )
                     batch["duplicate"] += 1
+                    batch.setdefault("duplicate_files", []).append(original_filename)
                     continue
 
                 text = extract_text(original_filename, content)

@@ -5,7 +5,7 @@
 
 **Son güncelleme:** 2026-08-28
 **Tamamlanan faz:** FASE 3 (Auth & Authorization)
-**Test durumu:** 235 passed, 0 failed
+**Test durumu:** 282 passed, 0 failed, 2 skipped
 
 ---
 
@@ -681,3 +681,9 @@ Do not start yet:
 | 2026-08-28 | JWT_SECRET_KEY güçlü secret ile değiştirildi | FASE 1 |
 | 2026-08-28 | DB migration bütünlüğü doğrulandı | FASE 2 |
 | 2026-08-28 | DEVELOPMENT_LOG.md baştan yazıldı | FASE 2 |
+| 2026-08-28 | Match engine kritik 3 hata düzeltildi (passport conflict, TR isim, ID mismatch) | FASE 3 |
+| 2026-08-28 | Duplicate uyarıda dosya adı gösterme eklendi | FASE 3 |
+| 2026-08-28 | Maritime relevance filtresi eklendi (metadata.maritime_relevance) | FASE 3 |
+| 2026-08-28 | Kişisel bilgiler tablosu 3x Uyruk hatası düzeltildi | FASE 3 |
+| 2026-08-28 | Bireysel WhatsApp butonu eklendi (personel detayı) | FASE 3 |
+| 2026-08-28 | E-posta gönderme test edildi — SMTP aktif, çalışıyor | FASE 3 |

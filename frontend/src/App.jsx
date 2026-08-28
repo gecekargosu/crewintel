@@ -1053,6 +1053,7 @@ function App() {
               conflict: data.conflict,
               unmatched: data.unmatched,
               duplicate: data.duplicate,
+              duplicateFiles: data.duplicate_files || [],
               error: data.failed,
             });
             setStagedFiles([]);
@@ -1583,6 +1584,20 @@ function App() {
                   >
                     <Mail size={18} /> {t('email.send')}
                   </button>
+                  {selectedCrew.phone && (
+                    <button 
+                      className="secondary-button" 
+                      onClick={() => {
+                        const phone = selectedCrew.phone.replace(/[^0-9]/g, '');
+                        const msg = encodeURIComponent(`Merhaba ${selectedCrew.first_name}, CREWINTEL'den bilgilendirme mesajı.`);
+                        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+                      }}
+                      title="WhatsApp ile mesaj gönder"
+                      style={{ background: '#25d366', color: '#fff', border: 'none' }}
+                    >
+                      💬 WhatsApp
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -1677,7 +1692,7 @@ function App() {
             <p className="section-label">Kişisel Bilgiler</p>
             <table className="detail-table" style={{ width: "100%", borderCollapse: "collapse", marginBottom: "22px", border: "1px solid #e2e8f0", borderRadius: "10px", overflow: "hidden" }}>
               <tbody>
-                {[[t('crew.nationality'), selectedCrew.birth_place || "—"], [t('crew.nationality'), selectedCrew.hometown || "—"], [t('crew.nationality'), selectedCrew.marital_status || "—"], [t('crew.experience'), selectedCrew.experience_years != null ? selectedCrew.experience_years : "—"], [t('crew.seaService'), selectedCrew.sea_service_months != null ? selectedCrew.sea_service_months : "—"], [t('crew.language'), selectedCrew.languages || "—"]].map(([k, v]) => (
+                {[[t('crew.birthPlace'), selectedCrew.birth_place || "—"], [t('crew.hometown'), selectedCrew.hometown || "—"], [t('crew.maritalStatus'), selectedCrew.marital_status || "—"], [t('crew.experience'), selectedCrew.experience_years != null ? selectedCrew.experience_years : "—"], [t('crew.seaService'), selectedCrew.sea_service_months != null ? selectedCrew.sea_service_months : "—"], [t('crew.language'), selectedCrew.languages || "—"]].map(([k, v]) => (
                   <tr key={k} style={{ borderBottom: "1px solid #eef2f7" }}>
                     <td style={{ padding: "10px 14px", width: "220px", fontWeight: "600", color: "#475569", background: "#f8fafc", fontSize: "13px", borderRight: "1px solid #eef2f7" }}>{k}</td>
                     <td style={{ padding: "10px 14px", color: "#0f172a", fontSize: "14px", fontWeight: "500" }}>{v}</td>
@@ -2029,6 +2044,11 @@ function App() {
             <div className="upload-stat duplicate">
               <strong>{lastBatchSummary.duplicate}</strong><span>{t('documents.duplicate')}</span>
             </div>
+            {lastBatchSummary.duplicateFiles && lastBatchSummary.duplicateFiles.length > 0 && (
+              <div style={{ gridColumn: '1 / -1', marginTop: '6px', fontSize: '12px', color: '#7c3aed', lineHeight: '1.5' }}>
+                ⚠️ Aynı içerik nedeniyle eklenmedi: {lastBatchSummary.duplicateFiles.join(', ')}
+              </div>
+            )}
             <div className="upload-stat error">
               <strong>{lastBatchSummary.error}</strong><span>{t('common.error')}</span>
             </div>

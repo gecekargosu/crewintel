@@ -274,6 +274,28 @@ def extract_metadata(filename: str, text: str) -> dict:
         "other",
     )
 
+    # Maritime relevance: belge içeriğinde gemcilik anahtar kelimesi var mı?
+    maritime_keywords = [
+        "maritime", "vessel", "ship", "crew", "officer", "captain",
+        "engineer", "sailor", "port", "voyage", "seaman", "stcw",
+        "gemi", "deniz", "denizcilik", "personel", "mürettebat",
+        "sefer", "liman", "kaptan", "başmühendis", "gemici",
+        "çarkçı", "tanamatör", "kokpit", "makine", "ustabaşı",
+        "naval", "merchant", "tonnage", "hull", "bridge",
+    ]
+    text_lower = f"{filename} {text}".lower()
+    maritime_hits = sum(1 for kw in maritime_keywords if kw in text_lower)
+    # CV, passport, STCW, seaman_book, medical, contract = otomatik yüksek
+    high_relevance_types = {"cv", "passport", "seaman_book", "stcw", "goc", "medical", "contract"}
+    if document_type in high_relevance_types:
+        maritime_relevance = "high"
+    elif maritime_hits >= 2:
+        maritime_relevance = "high"
+    elif maritime_hits == 1:
+        maritime_relevance = "medium"
+    else:
+        maritime_relevance = "low"
+
     return {
         "email": email.group(0).lower() if email else None,
         "passport_number": passport,
@@ -283,6 +305,7 @@ def extract_metadata(filename: str, text: str) -> dict:
         "expiry_date": expiry_date,
         "document_type": document_type,
         "filename": filename,
+        "maritime_relevance": maritime_relevance,
     }
 
 
@@ -291,6 +314,23 @@ def extract_name(
     text: str,
 ) -> tuple[str | None, str | None]:
     combined = f"{filename}\n{text}"
+
+    # 0) Türkçe formatlar:
+    #    a) "Adı Soyadı: Ahmet Yılmaz" (birleşik etiket, tek satır)
+    #    b) "Adı: Ayşe\nSoyadı: Çelik" (farklı satırlarda)
+    tr_label = re.search(r"\b\w*ad[ıi](?:\s+soyad[ıi])?\s*[:#-]", combined, re.IGNORECASE)
+    if tr_label:
+        after = combined[tr_label.end():].strip()
+        name_re = re.match(r"([A-Za-zÇĞİÖŞÜçğıöşü]{2,})\s+([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", after)
+        if name_re:
+            first_candidate = name_re.group(1)
+            if first_candidate.lower() not in ("soyadı", "soyadi"):
+                return (name_re.group(1).title(), name_re.group(2).title())
+    # b) Farklı satırlarda: Adı: X / Soyadı: Y
+    tr_ad2 = re.search(r"ad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
+    tr_soy2 = re.search(r"soyad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
+    if tr_ad2 and tr_soy2:
+        return (tr_ad2.group(1).title(), tr_soy2.group(1).title())
 
     # 1) Rus pasaportu: "Surname: X" + "Given Names: Y" — en öncelikli
     surname_m = re.search(r"Surname:\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)", combined, re.IGNORECASE)

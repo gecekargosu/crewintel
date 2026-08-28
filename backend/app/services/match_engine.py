@@ -329,8 +329,26 @@ class MatchScorer:
                 if crew_value and normalize_identifier(doc_value) == normalize_identifier(crew_value):
                     score += WEIGHTS[signal]
                     signals.append(signal)
+                    # Passport eşleşiyor ama isim uyuşmuyorsa → CONFLICT
+                    if first_name and last_name:
+                        nf_check = normalize(first_name)
+                        nl_check = normalize(last_name)
+                        cf_check = normalize(crew.first_name)
+                        cl_check = normalize(crew.last_name)
+                        if nf_check != cf_check or nl_check != cl_check:
+                            conflicts.append(
+                                f"{label} eşleşiyor ama isim uyuşmazlığı "
+                                f"(belge: {first_name} {last_name}, "
+                                f"kayıt: {crew.first_name} {crew.last_name})"
+                            )
                 elif crew_value:
                     conflicts.append(f"{label} uyuşmazlığı (belge: {doc_value}, kayıt: {crew_value})")
+                else:
+                    # Belge güçlü ID içeriyor ama crew'de yok → doğrulanamaz eşleşme
+                    conflicts.append(
+                        f"{label} belgede var ({doc_value}) ama kayıtta yok — "
+                        f"eşleşme doğrulanamaz"
+                    )
 
         # E-posta.
         doc_email = (entities.get("email") or "").lower()

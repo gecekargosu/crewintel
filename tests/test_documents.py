@@ -118,6 +118,8 @@ def test_download_serves_extension_based_media_type(client):
 def test_strong_identifier_beats_filename_name(client):
     # Pasaport numarası belgede başkasının adıyla gelse bile güçlü tanımlayıcı
     # (pasaport) isim eşleşmesinden üstün olmalı.
+    # GÜNCEL: Passport + isim uyuşmazlığı artık CONFLICT/REVIEW_REQUIRED
+    # çünkü yanlış kişiye eşleştirme riski var.
     crew_a = create_crew(client, first_name="Ali", last_name="Veli", passport_number="PA7777")
     create_crew(client, first_name="Ahmet", last_name="Yilmaz", passport_number="PB8888")
 
@@ -128,8 +130,8 @@ def test_strong_identifier_beats_filename_name(client):
     )
     assert r.status_code == 201
     doc = r.json()[0]
-    assert doc["crew_member_id"] == crew_a["id"]
-    assert doc["match_status"] == "matched"
+    # Passport eşleşiyor ama isim farklı → review_required (güvenlik)
+    assert doc["match_status"] == "review_required"
 
 
 def test_seaman_book_document_is_classified_and_matches(client):
