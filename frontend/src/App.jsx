@@ -305,9 +305,9 @@ function App() {
   const [appSettings, setAppSettings] = useState(() => {
     try {
       const saved = localStorage.getItem("crewintel_settings");
-      return saved ? JSON.parse(saved) : { companyName: "CREWINTEL", logoUrl: "" };
+      return saved ? JSON.parse(saved) : { companyName: "CREWINTEL", logoUrl: "/umay-logo.jpeg" };
     } catch (e) {
-      return { companyName: "CREWINTEL", logoUrl: "" };
+      return { companyName: "CREWINTEL", logoUrl: "/umay-logo.jpeg" };
     }
   });
 
@@ -4044,7 +4044,7 @@ function App() {
         }}>
           <div>
             <h2 style={{fontSize: "28px", color: "white", margin: "0 0 10px 0"}}>{t('dashboard.welcome', { name: auth?.full_name || '' })}</h2>
-            <p style={{fontSize: "16px", color: "#ffedd5", margin: 0}}>{t('dashboard.welcome', { name: '' })}</p>
+            <p style={{fontSize: "16px", color: "#ffedd5", margin: 0}}>{auth?.role === 'admin' ? 'Yönetim Paneli' : auth?.role === 'hr' ? 'İK Paneli' : 'Kontrol Paneli'}</p>
           </div>
         </div>
         
@@ -4470,8 +4470,8 @@ function App() {
         {/* Login Formu */}
         <div className="panel" style={{ width: "420px", maxWidth: "92%", padding: "40px", borderRadius: "16px", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", zIndex: 10 }}>
           <div style={{ textAlign: "center", marginBottom: "28px" }}>
-            <div style={{ width: 56, height: 56, background: "linear-gradient(135deg, #ea580c 0%, #c2410c 100%)", borderRadius: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 14, boxShadow: "0 4px 15px rgba(234,88,12,0.3)" }}>
-              <span style={{ fontSize: 28 }}>⚓</span>
+            <div style={{ width: 64, height: 64, borderRadius: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 14, boxShadow: "0 4px 15px rgba(234,88,12,0.3)", overflow: 'hidden' }}>
+              <img src="/umay-logo.jpeg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h1 style={{ fontSize: "24px", fontWeight: "900", margin: "0 0 6px 0", color: "#0f172a", letterSpacing: "1px" }}>
               {appSettings.companyName}
@@ -5000,11 +5000,7 @@ function App() {
       {/* ========================================================================= */}
       <aside className={`sidebar ${menuOpen ? "open" : "closed"}`}>
         <div className="logo" style={{ padding: menuOpen ? "20px" : "16px 8px", display: "flex", alignItems: "center", justifyContent: menuOpen ? "flex-start" : "center", gap: "12px", borderBottom: "1px solid #1e293b", marginBottom: "10px" }}>
-          {appSettings.logoUrl ? (
-            <img src={appSettings.logoUrl} alt="Logo" style={{height: "36px", width: "auto", borderRadius: "4px", flexShrink: 0}} />
-          ) : (
-            <Ship size={32} color="#ea580c" style={{ flexShrink: 0 }} />
-          )}
+          <img src={appSettings.logoUrl || "/umay-logo.jpeg"} alt="Logo" style={{height: "40px", width: "40px", borderRadius: "8px", objectFit: 'cover', flexShrink: 0}} />
           {menuOpen && (
             <span style={{fontWeight: "900", fontSize: "20px", letterSpacing: "1.5px", color: "#fff"}}>
               {appSettings.companyName}
