@@ -4,8 +4,8 @@
 > Bu dosya, projeyi devralan herhangi bir AI agent'ın mevcut durumu sıfırdan taramadan anlayabilmesi için tasarlanmıştır.
 
 **Son güncelleme:** 2026-08-28
-**Tamamlanan faz:** FASE 2 (DB + Migrations)
-**Test durumu:** 45 passed, 0 failed
+**Tamamlanan faz:** FASE 3 (Auth & Authorization)
+**Test durumu:** 235 passed, 0 failed
 
 ---
 
@@ -442,12 +442,28 @@ C:\CREWINTEL\
 | `tests/test_audit.py` | 14 | CRUD audit logları + date_from/date_to filtre |
 | `tests/test_documents.py` | 5 | Upload/match/create/dedup + match_status filtresi |
 | `tests/test_expiration.py` | 12 | Expiration service tüm kategoriler + boundary testleri |
-| `tests/test_auth.py` | 4 | Auth testleri (yeni) |
+| `tests/test_auth.py` | 26 | Auth testleri (login, JWT, role, brute-force, audit) |
+| `tests/test_ai.py` | 17 | AI endpoint testleri (health, analyze, match, summarize, RBAC) |
+| `tests/test_crew_filtering.py` | 17 | Crew filtreleme (rank, languages, experience, contract) |
+| `tests/test_match_engine.py` | 21 | Matching engine (exact, fuzzy, conflict, review, dry-run) |
+| `tests/test_mobile_api.py` | 18 | Mobile API (register, portal, messages, devices) |
+| `tests/test_phase4b_features.py` | 25 | Phase 4B (eligibility, staffing, notifications, CSV, portal, jobs, WhatsApp) |
+| `tests/test_audit_fixes.py` | 6 | Audit fixes (crew isolation, admin delete, rate limit) |
+| `tests/test_date_identifier.py` | 33 | Date parsing + passport extraction (unit) |
+| `tests/test_document_processing.py` | 4 | Name extraction (unit) |
+| `tests/test_match_crew.py` | 7 | Crew matching (unit) |
+| `tests/test_normalize.py` | 2 | Text normalization (unit) |
 
 ### Frontend Lint
 ```
 0 errors (29 warnings — kritik değil)
 ```
+
+### AI Endpoint Testleri (yeni)
+- `tests/test_ai.py` — 17 test
+- Health endpoint: her zaman çalışır, GROQ_API_KEY olsa da olmasa da
+- Analyze/Match/Summarize/Anomalies/Recommend: GROQ_API_KEY yokken 503, mock ile test edildi
+- **BULGU:** AI endpoint'lerinde RBAC yok — viewer bile erişebiliyor (503 alıyor ama 403 olmalı)
 
 ### Frontend Build
 ```
@@ -485,15 +501,16 @@ C:\CREWINTEL\
 
 | Borç | Durum | Öncelik |
 |------|-------|---------|
-| `document_processing.HEAD.py` stale backup | ⚠️ Silinmeli | Düşük |
-| `backend;C` boş dizin | ⚠️ Silinmeli | Düşük |
-| `e ps` stale dosya | ⚠️ Silinmeli | Düşük |
-| `CREWINTEL_AUDIT.txt` ve benzeri stale dosyalar | ⚠️ Silinmeli | Düşük |
-| `duplicate_test.txt` / `duplicate_test_2.txt` | ⚠️ Silinmeli | Düşük |
-| `project-tree.txt` | ⚠️ Silinmeli | Düşük |
+| ~~`document_processing.HEAD.py` stale backup~~ | ✅ Silindi | — |
+| ~~`backend;C` boş dizin~~ | ✅ Silindi | — |
+| ~~`e ps` stale dosya~~ | ✅ Silindi | — |
+| ~~`CREWINTEL_AUDIT.txt` ve benzeri stale dosyalar~~ | ✅ Silindi | — |
+| ~~`duplicate_test.txt` / `duplicate_test_2.txt`~~ | ✅ Silindi | — |
+| ~~`project-tree.txt`~~ | ✅ Silindi | — |
 | `CREWINTEL_REVIEW_PACKAGE.txt` | ⚠️ Git'ten çıkarılmalı | Düşük |
 | App.jsx monolitik (5066 satır) | ⚠️ Bölünecek | Yüksek |
 | Frontend AI bağlantısı yok | ⚠️ Planlanmalı | Orta |
+| AI endpoint'lerinde RBAC yok | ⚠️ Düzeltilecek | Yüksek |
 | 2 migration'da boş downgrade (0003, 0004) | ⚠️ Düzeltilebilir | Düşük |
 | `job_postings.start_date` DB'de model'de yok | ⚠️ Temizlenmeli | Düşük |
 | Rate limiting memory'de | ⚠️ Redis'e taşınmalı | Orta |
@@ -536,24 +553,25 @@ C:\CREWINTEL\
 ## 13. CURRENT VERIFIED STATE
 
 ```
-Last completed step : FASE 2 (2026-08-28)
+Last completed step : FASE 3 (2026-08-28)
 
-Tests               : 45 passed, 0 failed
+Tests               : 235 passed, 0 failed
 Backend             : Stabil, 100+ endpoint, 17 router
 Frontend            : 5066 satır monolitik App.jsx, 0 lint error, build OK
 Database            : 20 tablo, 10 migration, head: 20260818_0010
-Security            : JWT + RBAC + brute-force koruması aktif
+Security            : JWT + RBAC + brute-force koruması aktif (AI hariç)
 AI                  : Groq entegrasyonu sağlıklı (llm_available: true)
 Docker              : 3 servis ayakta (frontend, backend, postgres)
+Docs                : Development log, system-tree, human test checklist güncel
 
 Known issues:
 - App.jsx monolitik (5066 satır)
 - Frontend'de AI bağlantısı yok
-- Stale dosyalar var (backup, test, dizin)
+- AI endpoint'lerinde RBAC yok (viewer erişebiliyor)
 - 2 migration'da boş downgrade
 - Rate limiting memory'de
 
-Next recommended step : FASE 3 — Auth & Authorization testleri
+Next recommended step : FASE 4 — Document Pipeline testleri
 
 Do not start yet:
 - App.jsx refactor (tek seferde değil, incremental)
