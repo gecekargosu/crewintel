@@ -34,6 +34,18 @@
         <activity android:name=".screens.ShipListActivity" android:exported="false" />
         <activity android:name=".screens.SettingsActivity" android:exported="false" />
         <activity android:name=".screens.AIAnalysisActivity" android:exported="false" />
+        <activity android:name=".screens.SocialDownloaderActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
 
     </application>
 </manifest>

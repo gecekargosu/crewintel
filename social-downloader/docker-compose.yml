@@ -1,0 +1,13 @@
+services:
+  downloader-api:
+    build: ./backend
+    ports:
+      - "8001:8001"
+    volumes:
+      - downloads:/tmp/social-downloads
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Istanbul
+
+volumes:
+  downloads:

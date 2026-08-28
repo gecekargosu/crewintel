@@ -96,6 +96,7 @@ database/
 
 # Mobile (large, track separately if needed)
 mobile/
+!mobile-app/
 
 # Misc
 package-lock.json
