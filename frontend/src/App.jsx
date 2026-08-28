@@ -1626,7 +1626,7 @@ function App() {
 
               if (missing.length > 0 || problems.length > 0) {
                   return (
-                    <div className="pulse-soft" style={{ background: "#fef2f2", borderLeft: "6px solid #ef4444", padding: "20px", marginBottom: "24px", borderRadius: "0 12px 12px 0" }}>
+                    <div className="alert-critical" style={{ background: "#fef2f2", padding: "20px", marginBottom: "24px", borderRadius: "0 12px 12px 0" }}>
                         <h4 style={{ margin: "0 0 12px 0", color: "#b91c1c", display: "flex", alignItems: "center", gap: "8px", fontSize: "16px", textTransform: "uppercase" }}>
                           <AlertCircle size={22}/> Eksik Veya Sorunlu Evraklar Var!
                         </h4>
@@ -4084,7 +4084,7 @@ function App() {
           <>
             <p className="section-label" style={{marginTop: "30px"}}>{t('documents.expiryFilter')}</p>
             <div className="cards">
-              <div className="card" style={{cursor: "pointer", border: "1px solid #fecaca"}} onClick={() => openDocCategoryModal("expired")}>
+              <div className="card alert-critical" style={{cursor: "pointer", border: "1px solid #fecaca"}} onClick={() => openDocCategoryModal("expired")}>
                 <div className="card-icon danger pulse-soft"><FileText size={28} /></div>
                 <div><span style={{color:"#dc2626", fontWeight:"bold"}}>{t('documents.expired')}</span><strong style={{color:"#b91c1c", fontSize:"26px"}}>{expirySummary.expired}</strong></div>
               </div>
@@ -4136,12 +4136,12 @@ function App() {
                   <div><span>{t('crew.available')}</span><strong style={{ color: "#0f172a" }}>{opsSummary.availability.available}</strong><span style={{ color: "#0284c7", fontWeight: "700", fontSize: "12px" }}>{t('common.view')} →</span></div>
                 </div>
                 {/* Yeni: Süresi Dolmuş Belgeler */}
-                <div className="card" style={{ cursor: "pointer", border: "1px solid #fecaca" }} onClick={() => openDocCategoryModal("expired")} title={t('documents.expired')}>
+                <div className="card alert-critical" style={{ cursor: "pointer", border: "1px solid #fecaca" }} onClick={() => openDocCategoryModal("expired")} title={t('documents.expired')}>
                   <div className="card-icon danger pulse-soft"><FileText size={28} /></div>
                   <div><span>{t('documents.expired')}</span><strong style={{ color: opsSummary.documents.expired > 0 ? '#b91c1c' : '#15803d' }}>{opsSummary.documents.expired}</strong><span style={{ color: '#0284c7', fontWeight: '700', fontSize: '12px' }}>{t('common.view')} →</span></div>
                 </div>
                 {/* Yeni: Acil Belgeler (≤30) */}
-                <div className="card" style={{ cursor: "pointer", border: "1px solid #fed7aa" }} onClick={() => openDocCategoryModal("urgent")} title={t('documents.urgent')}>
+                <div className="card alert-critical" style={{ cursor: "pointer", border: "1px solid #fed7aa" }} onClick={() => openDocCategoryModal("urgent")} title={t('documents.urgent')}>
                   <div className="card-icon warning pulse-soft"><Clock size={28} /></div>
                   <div><span>{t('documents.urgent')} (≤30)</span><strong style={{ color: opsSummary.documents.urgent > 0 ? '#c2410c' : '#15803d' }}>{opsSummary.documents.urgent}</strong><span style={{ color: '#0284c7', fontWeight: '700', fontSize: '12px' }}>{t('common.view')} →</span></div>
                 </div>
@@ -4594,6 +4594,23 @@ function App() {
           0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
           70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
           100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        /* KRİTİK UYARI — kırmızı nabız + çerçeve parlaması */
+        .alert-critical {
+          animation: alertCritical 1.8s ease-in-out infinite;
+          border-left-width: 6px;
+          border-left-style: solid;
+          border-left-color: #ef4444;
+        }
+        @keyframes alertCritical {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            border-left-color: #ef4444;
+          }
+          50% {
+            box-shadow: 0 0 20px 4px rgba(239, 68, 68, 0.25);
+            border-left-color: #dc2626;
+          }
         }
 
         /* ── ANİMASYONLU GEMİ SAHNESİ ──────────────────────────────── */
