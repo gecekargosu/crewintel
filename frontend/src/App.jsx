@@ -1420,7 +1420,18 @@ function App() {
 
         {showImport && (
           <div style={{ padding: "18px", border: "1px solid #e2e8f0", borderRadius: "12px", background: "#f8fafc", marginBottom: "18px" }}>
-            <p className="section-label">CSV İçe Aktar (sütunlar: first_name,last_name,position,rank,nationality,email,phone,date_of_birth,experience_years)</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <p className="section-label" style={{ margin: 0 }}>CSV İçe Aktar (sütunlar: first_name,last_name,position,rank,nationality,email,phone,date_of_birth,experience_years)</p>
+              <button type="button" className="secondary-button" style={{ fontSize: "12px", padding: "4px 10px" }} onClick={() => {
+                const header = "first_name,last_name,position,rank,nationality,email,phone,date_of_birth,experience_years";
+                const example = "Ahmet,Yılmaz,Kaptan,Kaptan,Türk,ahmet@example.com,+905551112233,1990-01-15,10";
+                const blob = new Blob([header + "\n" + example + "\n"], { type: "text/csv;charset=utf-8;" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = "crew_import_sablonu.csv";
+                document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove();
+              }}><Download size={14} /> Şablon İndir</button>
+            </div>
             <textarea className="form-input" rows="5" style={{ width: "100%", padding: "10px", boxSizing: "border-box", fontFamily: "monospace", fontSize: "12px" }}
               placeholder={"first_name,last_name,position,rank,nationality\nAhmet,Yılmaz,Kaptan,Kaptan,Türk"}
               value={importCsvText} onChange={(e) => setImportCsvText(e.target.value)} />
@@ -2564,10 +2575,24 @@ function App() {
         : { ...payload, crew_ids: emailModal.crewIds };
       const response = await axios.post(`${API_URL}${endpoint}`, body);
       const data = response.data;
-      if (data.smtp_configured) {
-        setEmailMsg({ type: "success", text: `Gönderildi: ${data.sent ?? data.status} kişi.` });
+      // Single email endpoint
+      if (data.recipient) {
+        if (data.smtp_configured) {
+          setEmailMsg({ type: "success", text: `${data.recipient} adresine e-posta gönderildi.` });
+        } else {
+          setEmailMsg({ type: "info", text: `${data.recipient} adresi için e-posta kuyruğa alındı (SMTP henüz tanımlı değil).` });
+        }
+      // Bulk email endpoint
+      } else if (data.recipients !== undefined) {
+        const parts = [];
+        if (data.sent > 0) parts.push(`${data.sent} kişiye gönderildi`);
+        if (data.pending > 0) parts.push(`${data.pending} kişi kuyrukta`);
+        if (data.skipped_no_email > 0) parts.push(`${data.skipped_no_email} kişinin e-posta adresi kayıtlı değil`);
+        if (parts.length === 0) parts.push('Hiçbir e-posta addressi bulunamadı');
+        const msgType = data.sent > 0 ? 'success' : 'info';
+        setEmailMsg({ type: msgType, text: parts.join(' • ') });
       } else {
-        setEmailMsg({ type: "success", text: `Kuyrukta: ${data.recipients ?? 1} kişi için bekliyor (SMTP henüz tanımlı değil).` });
+        setEmailMsg({ type: 'success', text: 'İşlem tamamlandı.' });
       }
       setEmailModal((m) => ({ ...m, subject: "", body: "" }));
     } catch (err) {
@@ -3925,8 +3950,28 @@ function App() {
     }
   }
 
-  function exportCsv() {
-    window.open(`${API_URL}/api/crew/export`, "_blank");
+  async function exportCsv() {
+    try {
+      const saved = localStorage.getItem("crewintel_auth");
+      const token = saved ? JSON.parse(saved).token : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${API_URL}/api/crew/export`, { headers });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${response.status}`);
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `crew_export_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      alert(`CSV dışa aktarma hatası: ${err.message}`);
+    }
   }
 
   async function approveDocument(doc) {
@@ -4910,7 +4955,7 @@ function App() {
                 : `${emailModal.crewIds.length} personele e-posta gönderilecek.`}
             </p>
             {emailMsg && (
-              <p style={{ margin: "0 0 12px 0", padding: "10px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", background: emailMsg.type === "success" ? "#f0fdf4" : "#fef2f2", color: emailMsg.type === "success" ? "#15803d" : "#b91c1c" }}>{emailMsg.text}</p>
+              <p style={{ margin: "0 0 12px 0", padding: "10px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", background: emailMsg.type === "success" ? "#f0fdf4" : emailMsg.type === "info" ? "#eff6ff" : "#fef2f2", color: emailMsg.type === "success" ? "#15803d" : emailMsg.type === "info" ? "#1d4ed8" : "#b91c1c" }}>{emailMsg.text}</p>
             )}
             <form onSubmit={sendEmail}>
               <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold", color: "#0f172a", fontSize: "13px" }}>Konu</label>

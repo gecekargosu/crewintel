@@ -582,6 +582,8 @@ nav {
   font: inherit;
   font-size: 14px;
   background: white;
+  color: #0f172a;
+  color-scheme: light;
   transition: border-color 0.15s;
 }
 
