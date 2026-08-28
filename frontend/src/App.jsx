@@ -4921,7 +4921,9 @@ function App() {
                               );
                             }} style={{ cursor: 'pointer' }} />
                           </td>
-                          <td style={{ padding: '8px', fontWeight: '600', color: '#0f172a' }}>
+                          <td style={{ padding: '8px', fontWeight: '600', color: member ? '#2563eb' : '#0f172a', cursor: member ? 'pointer' : 'default' }}
+                            onClick={() => { if (member) { setDocCategoryModal({ isOpen: false, status: '', title: '', docs: [], loading: false }); navigate('crew'); setTimeout(() => selectCrewDetail(member.id), 100); } }}
+                          >
                             {member ? `${member.first_name} ${member.last_name}` : '—'}
                           </td>
                           <td style={{ padding: '8px' }}>{doc.document_type}</td>

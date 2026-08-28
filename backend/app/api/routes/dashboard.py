@@ -47,12 +47,22 @@ def dashboard_summary(
     contracts_ending_7 = (
         db.query(Contract, CrewMember)
         .join(CrewMember, Contract.crew_member_id == CrewMember.id)
-        .filter(Contract.end_date.isnot(None), Contract.end_date <= today + timedelta(days=7), Contract.status == "active")
+        .filter(
+            Contract.end_date.isnot(None),
+            Contract.end_date >= today,
+            Contract.end_date <= today + timedelta(days=7),
+            Contract.status == "active",
+        )
         .all()
     )
     contracts_ending_30 = (
         db.query(Contract)
-        .filter(Contract.end_date.isnot(None), Contract.end_date <= today + timedelta(days=30), Contract.status == "active")
+        .filter(
+            Contract.end_date.isnot(None),
+            Contract.end_date >= today,
+            Contract.end_date <= today + timedelta(days=30),
+            Contract.status == "active",
+        )
         .count()
     )
 
