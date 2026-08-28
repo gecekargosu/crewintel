@@ -554,9 +554,9 @@ C:\CREWINTEL\
 ## 13. CURRENT VERIFIED STATE
 
 ```
-Last completed step : FASE 3 + P0 RBAC Fix (2026-08-28)
+Last completed step : FASE 4 — Document Pipeline (2026-08-28)
 
-Tests               : 247 passed, 0 failed
+Tests               : 282 passed, 2 skipped, 0 failed
 Backend             : Stabil, 100+ endpoint, 17 router
 Frontend            : 5066 satır monolitik App.jsx, 0 lint error, build OK
 Database            : 20 tablo, 10 migration, head: 20260818_0010
