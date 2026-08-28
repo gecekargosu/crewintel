@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Crewintel" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">#1e3a5f</item>
+        <item name="colorPrimaryVariant">#2d5a8e</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorSecondary">#ea580c</item>
+        <item name="colorSecondaryVariant">#f97316</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="android:statusBarColor">#1e3a5f</item>
+        <item name="android:windowBackground">#f5f7fa</item>
+    </style>
+
+    <style name="Theme.Crewintel.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#1e3a5f</item>
+        <item name="android:windowBackground">#1e3a5f</item>
+    </style>
+
+    <style name="CardStyle" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <style name="PrimaryButton" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">#ea580c</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="SecondaryButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">#1e3a5f</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textColor">#1e3a5f</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="InputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+    </style>
+</resources>

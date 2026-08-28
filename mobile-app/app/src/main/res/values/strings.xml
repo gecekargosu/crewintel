@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CREWINTEL</string>
+    <string name="login">Giriş Yap</string>
+    <string name="email">E-posta</string>
+    <string name="password">Şifre</string>
+    <string name="server_url">Sunucu Adresi</string>
+    <string name="dashboard">Kontrol Paneli</string>
+    <string name="crew">Personel</string>
+    <string name="documents">Belgeler</string>
+    <string name="ships">Gemiler</string>
+    <string name="settings">Ayarlar</string>
+    <string name="logout">Çıkış Yap</string>
+    <string name="refresh">Yenile</string>
+    <string name="loading">Yükleniyor…</string>
+    <string name="error_occurred">Bir hata oluştu</string>
+    <string name="no_connection">Sunucuya bağlanılamıyor</string>
+    <string name="ai_analysis">AI Analiz</string>
+    <string name="send_email">E-posta Gönder</string>
+</resources>
