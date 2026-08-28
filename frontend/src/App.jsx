@@ -583,8 +583,9 @@ function App() {
       setCrewForm(emptyCrewForm);
       setIsFormOpen(false);
       await loadData();
-    } catch {
-      setFormError(t('crew.saveError'));
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setFormError(typeof detail === 'string' ? detail : t('crew.saveError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -603,8 +604,9 @@ function App() {
       setShipForm(emptyShipForm);
       setIsShipFormOpen(false);
       await loadData();
-    } catch {
-      alert(t('vessels.saveError'));
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('vessels.saveError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -634,8 +636,9 @@ function App() {
       setContractForm(emptyContractForm);
       setIsContractFormOpen(false);
       await loadData();
-    } catch {
-      alert(t('contracts.saveError'));
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('contracts.saveError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -648,8 +651,9 @@ function App() {
       await axios.delete(`${API_URL}/api/contracts/${contractId}`);
       if (selectedContractId === contractId) setSelectedContractId(null);
       await loadData();
-    } catch {
-      alert(t('contracts.deleteError'));
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('contracts.deleteError'));
     }
   }
 
@@ -790,7 +794,8 @@ function App() {
       await axios.delete(`${API_URL}/api/crew/${id}`);
       await loadData();
     } catch (err) {
-      alert(t('crew.deleteError'));
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('crew.deleteError'));
     }
   }
 
@@ -802,7 +807,8 @@ function App() {
       await loadDocuments();
       await loadData();
     } catch (err) {
-      alert(t('documents.deleteError'));
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('documents.deleteError'));
     }
   }
 
@@ -862,7 +868,8 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      alert(t('errors.generic'));
+      const detail = err.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : t('errors.generic'));
     }
   }
 
