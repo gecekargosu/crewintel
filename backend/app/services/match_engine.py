@@ -207,11 +207,21 @@ class DocumentClassifier:
     ]
 
     def classify(self, filename: str, text: str, metadata: dict) -> str:
-        upper = normalize(f"{filename}\n{text}")
+        # 1) Önce dosya adını ve belge başlığını (ilk 3 satır) kontrol et —
+        #    bu更 high confidence sinyal verir.
+        header = "\n".join(text.split("\n")[:3])
+        header_upper = normalize(f"{filename}\n{header}")
         for kind, words in self.RULES:
             if not words:
                 continue
-            if any(normalize(word) in upper for word in words):
+            if any(normalize(word) in header_upper for word in words):
+                return kind
+        # 2) Başlıkta bulunamazsa tüm metne bak.
+        full_upper = normalize(f"{filename}\n{text}")
+        for kind, words in self.RULES:
+            if not words:
+                continue
+            if any(normalize(word) in full_upper for word in words):
                 return kind
         return metadata.get("document_type") or "other"
 
@@ -252,11 +262,15 @@ class CrewCandidateFinder:
             )
 
         if entities.get("national_id"):
-            _add(
-                db.query(CrewMember)
-                .filter(CrewMember.profile_data["national_id"].astext == entities["national_id"])
-                .first()
-            )
+            try:
+                _add(
+                    db.query(CrewMember)
+                    .filter(CrewMember.profile_data["national_id"].astext == entities["national_id"])
+                    .first()
+                )
+            except (AttributeError, TypeError):
+                # profile_data NULL veya JSON alanı mevcut değil
+                pass
 
         if entities.get("crew_id"):
             numeric = re.sub(r"[^0-9]", "", str(entities["crew_id"]))

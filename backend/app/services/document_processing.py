@@ -265,7 +265,10 @@ def extract_name(
 ) -> tuple[str | None, str | None]:
     combined = f"{filename}\n{text}"
 
+    # "Name:" ile başla, ama "Company Name:" gibi prefix'leri hariç tut.
+    # Negative lookbehind: "Name:"'den önce "Company" olmamalı.
     match = re.search(
+        r"(?<!\bCompany )"
         r"(?:name|adı soyadı|adi soyadi|ad soyad|full name)"
         r"\s*[:#-]?\s*"
         r"([A-Za-zÇĞİÖŞÜçğıöşü]+)"
