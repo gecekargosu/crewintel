@@ -1610,9 +1610,9 @@ function App() {
               const problems = crewDetailDocuments.filter(d => d.expiry_status === "expired" || d.expiry_status === "urgent");
               
               let contractText = t('contracts.noContracts');
-              const contractDoc = crewDetailDocuments.find(d => d.document_type === "contract" && d.expiry_date);
+              const contractDoc = crewDetailDocuments.find(d => d.document_type === "contract");
               
-              if (contractDoc) {
+              if (contractDoc && contractDoc.expiry_date) {
                   const diffTime = new Date(contractDoc.expiry_date) - new Date();
                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                   if (diffDays > 0) {
@@ -1620,6 +1620,8 @@ function App() {
                   } else {
                       contractText = `Sözleşme süresi ${contractDoc.expiry_date} tarihinde dolmuş!`;
                   }
+              } else if (contractDoc) {
+                  contractText = `Sözleşme belgesi mevcut (tarih belirtilmemiş).`;
               }
 
               if (missing.length > 0 || problems.length > 0) {
