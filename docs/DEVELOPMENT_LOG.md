@@ -528,6 +528,7 @@ C:\CREWINTEL\
 | `job_postings.start_date` DB'de model'de yok | ⚠️ Temizlenmeli | Düşük |
 | Rate limiting memory'de | ⚠️ Redis'e taşınmalı | Orta |
 | CI/CD pipeline yok | ⚠️ Kurulmalı | Orta |
+| Passport regex: `Document No: PAS-XXXXXX` formatını yakalayamıyor | ⚠️ Metadata extraction gap | Düşük |
 
 ---
 
@@ -566,7 +567,7 @@ C:\CREWINTEL\
 ## 13. CURRENT VERIFIED STATE
 
 ```
-Last completed step : FASE 4 — Document Pipeline (2026-08-28)
+Last completed step : FASE 4 — Document Pipeline + Match Engine Audit (2026-08-28)
 
 Tests               : 282 passed, 2 skipped, 0 failed
 Backend             : Stabil, 100+ endpoint, 17 router
@@ -588,8 +589,25 @@ Known issues:
 - Frontend'de AI bağlantısı yok
 - 2 migration'da boş downgrade
 - Rate limiting memory'de
+- Passport regex: Document No: formatını yakalayamıyor (metadata extraction gap)
 
-Next recommended step : FASE 4 — Document Pipeline testleri
+Match Engine Audit (2026-08-28):
+- 758 belgeden 715'i eşleşmiş (%94 başarı)
+- 43 unmatched: tamamı DB'de olmayan test kişisi belgeleri
+- İngilizce format ("Name: X") extract_name ile doğru parse ediliyor
+- Türkçe format ("Adı Soyadı: X") sorunsuz çalışıyor
+- Pozitif test: DB'ye geçici "Ahmet Yilmaz" eklenip AUTO_MATCH doğrulandı
+- Passport regex: "Document No: PAS-XXXXXX" formatını yakalayamıyor (technical debt)
+
+Frontend düzeltmeleri (2026-08-28):
+- CSV Export: JWT token ile fetch (401 fix)
+- Email feedback: "Gönderildi 0 kişi" yanıltıcılığı düzeltildi
+- form-input dark mode: color-scheme: light eklendi
+- CSV Import: indirilebilir şablon eklendi
+- Badge CSS: conflict, review_required, failed, rejected eklendi
+- Form validasyon: backend detail mesajları frontend'e yansıyor
+
+Next recommended step : FASE 5 — Matching Engine derin tur veya J responsive test
 
 Do not start yet:
 - App.jsx refactor (tek seferde değil, incremental)
