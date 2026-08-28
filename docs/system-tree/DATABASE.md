@@ -1,6 +1,6 @@
 # DATABASE AĞACI
 
-PostgreSQL + Alembic. **Head: `20260818_0009`** (18 Ağustos 2026).
+PostgreSQL + Alembic. **Head: `20260818_0010`** (28 Ağustos 2026).
 
 ## Migration Geçmişi
 
@@ -10,6 +10,7 @@ PostgreSQL + Alembic. **Head: `20260818_0009`** (18 Ağustos 2026).
 | 0007 | app_settings (SMTP + WhatsApp alanları, masked) |
 | 0008 | job_postings, job_applications |
 | 0009 | job_templates, job_publications, whatsapp_messages, job_images, job_posting yeni alanlar, crew_members.job_seeking |
+| 0010 | M1 Mobile: crew_members iş tercihleri, user_devices, conversations, messages, job_applications.match_score/applied_from |
 
 ## Tablolar ve İlişkiler
 
@@ -57,5 +58,5 @@ app_settings (key/value)
 
 ## Baseline (Phase 8 öncesi doğrulanmış)
 
-59 personel · 715 belge · 10 gemi · 20 atama · 20 kontrat · 6 kullanıcı ·
+59 personel · 758 belge · 10 gemi · 20 atama · 20 kontrat · 6 kullanıcı ·
 100 ship position · ~791 storage dosyası

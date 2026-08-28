@@ -88,3 +88,33 @@ WhatsAppProvider
 
 Kritik davranış: **token yoksa sahte başarı ÜRETİLMEZ** — mesaj `pending` kalır,
 publication `queued` + açıklayıcı hata yazılır.
+
+## AI Module (backend/ai/ + routes/ai.py)
+
+```text
+/api/ai
+├── GET  /health                    → ai.py             → llm_available durumu
+├── POST /analyze                    → ai.py + llm_client → belge analizi (Groq LLM)
+├── POST /analyze/upload             → ai.py + llm_client → PDF upload + analiz
+├── POST /match                      → ai.py + crew_matcher → personel-belge eşleştirme
+├── POST /anomalies                  → ai.py + anomaly_detector → anomali tespiti
+├── POST /recommend                  → ai.py + recommendation → öneri motoru
+└── POST /summarize                  → ai.py + summarizer → belge özetleme
+```
+
+### AI Services (backend/ai/)
+
+```text
+llm_client.py        → Groq API client (httpx, GROQ_API_KEY required)
+document_analyzer.py → PDF → structured analysis (belge tipi, alan çıkarma)
+crew_matcher.py      → Belge-personel eşleştirme (scoring)
+anomaly_detector.py  → Belge tutarsızlık tespiti
+recommendation.py    → Öneri motoru
+summarizer.py        → Belge özetleme
+```
+
+Gereksinimler: `GROQ_API_KEY` env variable (docker-compose.yml'de tanımlı).
+Model: `llama-3.3-70b-versatile` (Groq).
+
+Kritik düzeltme (2026-08-28): `ai/` repo kökünden `backend/ai/`'ye taşındı,
+sys.path hack kaldırıldı. Docker build context artık doğru kopyalıyor.
