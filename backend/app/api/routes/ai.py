@@ -13,9 +13,11 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
+from app.api.deps import require_roles
+from app.models.user import User
 from ai.llm_client import LLMClient, LLMConfig
 from ai.document_analyzer import DocumentAnalyzer, ExtractedInfo
 from ai.crew_matcher import CrewMatcher, JobRequirement, MatchResult
@@ -106,7 +108,7 @@ def ai_health():
 
 
 @router.post("/analyze")
-def analyze_document(req: AnalyzeTextRequest):
+def analyze_document(req: AnalyzeTextRequest, _user: User = Depends(require_roles("admin", "hr"))):
     """Belge metnini analiz et."""
     try:
         llm = _get_llm()
@@ -137,7 +139,7 @@ def analyze_document(req: AnalyzeTextRequest):
 
 
 @router.post("/analyze/upload")
-async def analyze_upload(file: UploadFile = File(...)):
+async def analyze_upload(file: UploadFile = File(...), _user: User = Depends(require_roles("admin", "hr"))):
     """Dosya yükle ve analiz et."""
     try:
         content = await file.read()
@@ -165,7 +167,7 @@ async def analyze_upload(file: UploadFile = File(...)):
 
 
 @router.post("/match")
-def match_crew(req: MatchRequest):
+def match_crew(req: MatchRequest, _user: User = Depends(require_roles("admin", "hr"))):
     """Personel-iş eşleştirme."""
     try:
         llm = _get_llm()
@@ -208,7 +210,7 @@ def match_crew(req: MatchRequest):
 
 
 @router.post("/anomalies")
-def detect_anomalies(req: AnalyzeTextRequest):
+def detect_anomalies(req: AnalyzeTextRequest, _user: User = Depends(require_roles("admin", "hr"))):
     """Anomali tespiti."""
     try:
         llm = _get_llm()
@@ -242,7 +244,7 @@ def detect_anomalies(req: AnalyzeTextRequest):
 
 
 @router.post("/recommend")
-def get_recommendations(req: RecommendRequest):
+def get_recommendations(req: RecommendRequest, _user: User = Depends(require_roles("admin", "hr"))):
     """Akıllı öneriler üret."""
     try:
         llm = _get_llm()
@@ -273,7 +275,7 @@ def get_recommendations(req: RecommendRequest):
 
 
 @router.post("/summarize")
-def summarize_text(req: SummarizeRequest):
+def summarize_text(req: SummarizeRequest, _user: User = Depends(require_roles("admin", "hr"))):
     """Metni özetle."""
     try:
         llm = _get_llm()

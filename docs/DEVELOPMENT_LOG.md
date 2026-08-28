@@ -463,7 +463,8 @@ C:\CREWINTEL\
 - `tests/test_ai.py` — 17 test
 - Health endpoint: her zaman çalışır, GROQ_API_KEY olsa da olmasa da
 - Analyze/Match/Summarize/Anomalies/Recommend: GROQ_API_KEY yokken 503, mock ile test edildi
-- **BULGU:** AI endpoint'lerinde RBAC yok — viewer bile erişebiliyor (503 alıyor ama 403 olmalı)
+- AI endpoint'lerine `require_roles("admin", "hr")` eklendi (2026-08-28, P0 RBAC fix)
+- Viewer/crew → 403, unauthenticated → 401, LLM auth layer'da engelleniyor
 
 ### Frontend Build
 ```
@@ -510,7 +511,7 @@ C:\CREWINTEL\
 | `CREWINTEL_REVIEW_PACKAGE.txt` | ⚠️ Git'ten çıkarılmalı | Düşük |
 | App.jsx monolitik (5066 satır) | ⚠️ Bölünecek | Yüksek |
 | Frontend AI bağlantısı yok | ⚠️ Planlanmalı | Orta |
-| AI endpoint'lerinde RBAC yok | ⚠️ Düzeltilecek | Yüksek |
+| ~~AI endpoint'lerinde RBAC yok~~ | ✅ Düzeltildi (P0 fix) | — |
 | 2 migration'da boş downgrade (0003, 0004) | ⚠️ Düzeltilebilir | Düşük |
 | `job_postings.start_date` DB'de model'de yok | ⚠️ Temizlenmeli | Düşük |
 | Rate limiting memory'de | ⚠️ Redis'e taşınmalı | Orta |
@@ -553,21 +554,26 @@ C:\CREWINTEL\
 ## 13. CURRENT VERIFIED STATE
 
 ```
-Last completed step : FASE 3 (2026-08-28)
+Last completed step : FASE 3 + P0 RBAC Fix (2026-08-28)
 
-Tests               : 235 passed, 0 failed
+Tests               : 247 passed, 0 failed
 Backend             : Stabil, 100+ endpoint, 17 router
 Frontend            : 5066 satır monolitik App.jsx, 0 lint error, build OK
 Database            : 20 tablo, 10 migration, head: 20260818_0010
-Security            : JWT + RBAC + brute-force koruması aktif (AI hariç)
-AI                  : Groq entegrasyonu sağlıklı (llm_available: true)
+Security            : JWT + RBAC + brute-force koruması aktif (AI dahil)
+AI                  : Groq entegrasyonu sağlıklı + RBAC korumalı
 Docker              : 3 servis ayakta (frontend, backend, postgres)
 Docs                : Development log, system-tree, human test checklist güncel
+
+P0 RBAC Fix (2026-08-28):
+- AI endpoint'lerine require_roles("admin", "hr") eklendi
+- Viewer/crew → 403, unauthenticated → 401
+- LLM client auth layer'da engelleniyor (çağrılmıyor)
+- Integration smoke test: Docker'da doğrulandı
 
 Known issues:
 - App.jsx monolitik (5066 satır)
 - Frontend'de AI bağlantısı yok
-- AI endpoint'lerinde RBAC yok (viewer erişebiliyor)
 - 2 migration'da boş downgrade
 - Rate limiting memory'de
 
