@@ -3,7 +3,7 @@
 > AI-readable project memory & engineering handoff document.
 > Bu dosya, projeyi devralan herhangi bir AI agent'ın mevcut durumu sıfırdan taramadan anlayabilmesi için tasarlanmıştır.
 
-**Son güncelleme:** 2026-08-28
+**Son güncelleme:** 2026-08-28 (v2 — regression analizi sonrası)
 **Tamamlanan faz:** FASE 3 (Auth & Authorization)
 **Test durumu:** 282 passed, 0 failed, 2 skipped
 

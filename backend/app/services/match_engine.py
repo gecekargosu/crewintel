@@ -343,12 +343,8 @@ class MatchScorer:
                             )
                 elif crew_value:
                     conflicts.append(f"{label} uyuşmazlığı (belge: {doc_value}, kayıt: {crew_value})")
-                else:
-                    # Belge güçlü ID içeriyor ama crew'de yok → doğrulanamaz eşleşme
-                    conflicts.append(
-                        f"{label} belgede var ({doc_value}) ama kayıtta yok — "
-                        f"eşleşme doğrulanamaz"
-                    )
+                # Belge ID var crew'de yok: conflict DEĞİL, sadece doğrulanamaz
+            # (doc_value None ise hiçbir şey yapma — crew'de ID olsa bile sorun yok)
 
         # E-posta.
         doc_email = (entities.get("email") or "").lower()

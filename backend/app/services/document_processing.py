@@ -318,17 +318,16 @@ def extract_name(
     # 0) Türkçe formatlar:
     #    a) "Adı Soyadı: Ahmet Yılmaz" (birleşik etiket, tek satır)
     #    b) "Adı: Ayşe\nSoyadı: Çelik" (farklı satırlarda)
-    tr_label = re.search(r"\b\w*ad[ıi](?:\s+soyad[ıi])?\s*[:#-]", combined, re.IGNORECASE)
-    if tr_label:
-        after = combined[tr_label.end():].strip()
-        name_re = re.match(r"([A-Za-zÇĞİÖŞÜçğıöşü]{2,})\s+([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", after)
-        if name_re:
-            first_candidate = name_re.group(1)
-            if first_candidate.lower() not in ("soyadı", "soyadi"):
-                return (name_re.group(1).title(), name_re.group(2).title())
+    tr_combined = re.search(
+        r"\bad[ıi]\s+soyad[ıi]\s*[:#-]\s*"
+        r"([A-Za-zÇĞİÖŞÜçğıöşü]{2,})\s+([A-Za-zÇĞİÖŞÜçğıöşü]{2,})",
+        combined, re.IGNORECASE,
+    )
+    if tr_combined:
+        return (tr_combined.group(1).title(), tr_combined.group(2).title())
     # b) Farklı satırlarda: Adı: X / Soyadı: Y
-    tr_ad2 = re.search(r"ad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
-    tr_soy2 = re.search(r"soyad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
+    tr_ad2 = re.search(r"\bad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
+    tr_soy2 = re.search(r"\bsoyad[ıi]\s*[:#-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]{2,})", combined, re.IGNORECASE)
     if tr_ad2 and tr_soy2:
         return (tr_ad2.group(1).title(), tr_soy2.group(1).title())
 
