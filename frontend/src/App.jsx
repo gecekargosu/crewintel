@@ -242,6 +242,7 @@ function App() {
   const [importMsg, setImportMsg] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showTasks, setShowTasks] = useState(true);
+  const [showShipStaff, setShowShipStaff] = useState(false);
 
   // Toplu e-posta + bildirim ayarları (Phase 6)
   const [selectedCrewIds, setSelectedCrewIds] = useState([]);
@@ -4196,9 +4197,14 @@ function App() {
               )}
 
               {opsSummary.ship_status.filter((s) => s.positions.length > 0).length > 0 && (
-                <div>
-                  <p className="section-label">{t('vesselStaff.title')}</p>
-                  <div className="table-wrapper">
+                <div style={{ marginTop: "16px" }}>
+                  <button onClick={() => setShowShipStaff(!showShipStaff)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, width: "100%", textAlign: "left" }}>
+                    <p className="section-label" style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                      {showShipStaff ? '▼' : '▶'} {t('vesselStaff.title')} ({opsSummary.ships.open_positions_total} açık pozisyon)
+                    </p>
+                  </button>
+                  {showShipStaff && (
+                  <div className="table-wrapper" style={{ marginTop: "10px" }}>
                     <table className="data-table" style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr style={{ textAlign: "left", color: "#64748b" }}>
@@ -4218,6 +4224,7 @@ function App() {
                       </tbody>
                     </table>
                   </div>
+                  )}
                 </div>
               )}
             </div>
