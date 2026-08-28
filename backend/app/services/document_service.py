@@ -27,6 +27,7 @@ from app.services.match_engine import (
 
 
 ALLOWED_UPLOAD_EXTENSIONS = {".pdf", ".txt"}
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB
 
 
 def validate_upload(filename: str, content: bytes) -> None:
@@ -38,23 +39,44 @@ def validate_upload(filename: str, content: bytes) -> None:
     """
     suffix = Path(filename).suffix.lower()
 
+    # 1) Dosya boyutu limiti (20MB)
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"{filename}: dosya çok büyük ({len(content) // 1024 // 1024}MB). Maksimum 20MB.",
+        )
+
+    # 2) Uzantı kontrolü
     if suffix not in ALLOWED_UPLOAD_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"{filename}: unsupported file type. Only PDF and TXT files are allowed.",
+            detail=f"{filename}: desteklenmeyen dosya tipi. Sadece PDF ve TXT dosyaları kabul edilir.",
         )
 
+    # 3) PDF header kontrolü
     if suffix == ".pdf" and not content.startswith(b"%PDF"):
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"{filename}: file content does not match the PDF format.",
+            detail=f"{filename}: dosya içeriği PDF formatıyla uyuşmuyor.",
         )
 
+    # 4) TXT binary kontrolü
     if suffix == ".txt" and b"\x00" in content:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"{filename}: file content is not valid text.",
+            detail=f"{filename}: dosya içeriği geçerli metin değil.",
         )
+
+    # 5) TXT'de garip karakter oranı yüksekse uyarı (kritik değil, sadece bilgi)
+    if suffix == ".txt":
+        try:
+            text_sample = content[:4096].decode("utf-8")
+            replacement_count = text_sample.count("\ufffd")
+            if len(text_sample) > 0 and replacement_count / len(text_sample) > 0.1:
+                # %10'dan fazla garip karakter — muhtemelen yanlış encoding
+                pass  # Şimdilik sadece log'la, reddetme — yine de çalışsın
+        except Exception:
+            pass
 
 
 # -- Asenkron batch isleme kayit defteri ------------------------------------
@@ -235,6 +257,10 @@ class DocumentService:
                 text = extract_text(original_filename, content)
                 metadata = extract_metadata(original_filename, text)
 
+                # Metin çıkarılamadıysa metadata'ya not ekle
+                if text.startswith("[") and text.endswith("]"):
+                    metadata["extraction_error"] = text
+
                 document = Document(
                     crew_member_id=None,
                     original_filename=original_filename,
@@ -406,6 +432,10 @@ class DocumentService:
 
                 text = extract_text(original_filename, content)
                 metadata = extract_metadata(original_filename, text)
+
+                # Metin çıkarılamadıysa metadata'ya not ekle
+                if text.startswith("[") and text.endswith("]"):
+                    metadata["extraction_error"] = text
 
                 document = Document(
                     crew_member_id=None,

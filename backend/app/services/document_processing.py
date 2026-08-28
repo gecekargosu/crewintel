@@ -28,6 +28,11 @@ def normalize(value: str | None) -> str:
 
 
 def extract_text(filename: str, content: bytes) -> str:
+    """Dosya içinden metin çıkarır.
+
+    Bozuk/şifreli/taramalı PDF durumunda boş string dönmez —
+    çağrının bu durumu ele alması gerekir.
+    """
     if filename.lower().endswith(".txt"):
         return content.decode("utf-8", errors="replace")
 
@@ -36,12 +41,30 @@ def extract_text(filename: str, content: bytes) -> str:
 
         try:
             reader = PdfReader(io.BytesIO(content))
-            return "\n".join(
-                page.extract_text() or ""
-                for page in reader.pages
-            )
+
+            # Şifreli PDF kontrolü
+            if reader.is_encrypted:
+                try:
+                    reader.decrypt("")  # boş şifre ile dene
+                except Exception:
+                    return "[şifreli PDF — metin çıkarılamadı]"
+
+            pages_text = []
+            for page in reader.pages:
+                t = page.extract_text()
+                if t:
+                    pages_text.append(t)
+
+            full_text = "\n".join(pages_text)
+
+            # Taramalı PDF (metin yok, sadece resim)
+            if not full_text.strip():
+                return "[taramalı PDF — metin katmanı yok, OCR gerekli]"
+
+            return full_text
+
         except Exception:
-            return ""
+            return "[PDF okunamadı — bozuk veya desteklenmeyen format]"
 
     return ""
 
