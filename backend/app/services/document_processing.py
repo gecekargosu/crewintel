@@ -168,7 +168,11 @@ def extract_metadata(filename: str, text: str) -> dict:
                 return value
         return None
 
+    # Passport: hem "Passport No:" hem "Document No:" formatlarını yakala.
+    # "Document No:" yalnızca belge tipi passport/pasaport ise kullanılır.
     passport = _extract_identifier(r"(?:passport|pasaport)")
+    if not passport and re.search(r"passport|pasaport", combined, re.IGNORECASE):
+        passport = _extract_identifier(r"document")
     seaman = _extract_identifier(
         r"(?:seaman(?:'s)?\s*book|gemiadamı|gemiadami)"
     )

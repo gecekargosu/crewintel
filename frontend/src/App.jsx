@@ -1505,7 +1505,7 @@ function App() {
                       {member.first_name} {member.last_name}
                     </strong>
                     <span style={{ display: "block", color: "#475569", marginTop: "4px" }}>
-                      {translatePosition(member.position)} {member.rank ? ` · ${member.rank}` : ''} · {member.status}
+                      {translatePosition(member.position)}{member.rank && member.rank !== member.position ? ` · ${member.rank}` : ''} · {member.status}
                     </span>
                   </div>
                   
