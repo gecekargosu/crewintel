@@ -695,6 +695,23 @@ function App() {
     loadShipStaffing(shipId);
   }
 
+  // Belge dosyasını auth token ile yeni sekmede aç
+  async function openDocumentFile(docId) {
+    try {
+      const saved = localStorage.getItem("crewintel_auth");
+      const token = saved ? JSON.parse(saved).token : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${API_URL}/api/documents/${docId}/file`, { headers });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      alert(`Belge açılamadı: ${err.message}`);
+    }
+  }
+
   function openDocumentsPage() {
     navigate("documents");
     loadDocuments();
@@ -965,9 +982,8 @@ function App() {
       
       const document = response.data[0];
       
-      const DUPLICATE_THRESHOLD_MS = 3000;
-      const createdAtMs = new Date(`${document.created_at}Z`).getTime();
-      const isDuplicate = !Number.isNaN(createdAtMs) && (requestSentAt - createdAtMs) > DUPLICATE_THRESHOLD_MS;
+      // Backend duplicate flag'ini kullan (checksum bazlı, güvenilir)
+      const isDuplicate = document.duplicate === true;
       const finalStatus = isDuplicate ? "duplicate" : "success";
       
       setUploadStatus((prev) => ({ ...prev, [key]: finalStatus }));
@@ -1752,7 +1768,7 @@ function App() {
                     <div 
                       key={doc.id} 
                       className={`doc-card ${cardPulse ? "pulse-soft" : ""}`}
-                      onClick={() => window.open(`${API_URL}/api/documents/${doc.id}/file`, '_blank')}
+                      onClick={() => openDocumentFile(doc.id)}
                       style={{ 
                         border: "1px solid #e2e8f0", 
                         borderRadius: "16px", 
@@ -2085,10 +2101,9 @@ function App() {
                       </td>
                       <td>
                         <a 
-                          href={`${API_URL}/api/documents/${doc.id}/file`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          style={{ color: "#2563eb", textDecoration: "none", fontWeight: "600" }}
+                          href="#" 
+                          onClick={(e) => { e.preventDefault(); openDocumentFile(doc.id); }}
+                          style={{ color: "#2563eb", textDecoration: "none", fontWeight: "600", cursor: "pointer" }}
                         >
                           {doc.original_filename}
                         </a>

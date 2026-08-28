@@ -43,6 +43,13 @@ def create_assignment(
     try:
         db.add(assignment)
         db.flush()
+
+        # Atama yapınca personelin müsaitliğini güncelle
+        from app.models.crew_member import CrewMember
+        crew = db.get(CrewMember, assignment_data.crew_member_id)
+        if crew and crew.availability == "available":
+            crew.availability = "on_board"
+
         log_event(db, "assignment_created", "ship_crew_assignment", assignment.id,
                   f"Assignment created: crew {assignment.crew_member_id} → ship {assignment.ship_id}",
                   user_email=actor.email)
@@ -109,6 +116,19 @@ def delete_assignment(
     crew_id = assignment.crew_member_id
     ship_id = assignment.ship_id
     db.delete(assignment)
+
+    # Atama silinince personelin müsaitliğini geri yükle
+    from app.models.crew_member import CrewMember
+    crew = db.get(CrewMember, crew_id)
+    if crew and crew.availability == "on_board":
+        # Başka aktif ataması varsa 'on_board' kalsın
+        other_assignments = db.query(ShipCrewAssignment).filter(
+            ShipCrewAssignment.crew_member_id == crew_id,
+            ShipCrewAssignment.id != assignment_id_val,
+        ).count()
+        if other_assignments == 0:
+            crew.availability = "available"
+
     log_event(db, "assignment_deleted", "ship_crew_assignment", assignment_id_val,
               f"Assignment deleted: crew {crew_id} → ship {ship_id}",
               user_email=actor.email)
