@@ -26,6 +26,7 @@ class JobPosting(Base):
     salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
     salary_period: Mapped[str | None] = mapped_column(String(30), default="monthly", server_default="monthly")
     contract_duration: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     join_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     application_deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

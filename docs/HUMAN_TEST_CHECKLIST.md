@@ -128,6 +128,8 @@
 | K3 | Viewer ile belge yükle | Başarısız (403) | ⬜ |
 | K4 | Viewer ile Audit Log sayfasına git | Erişim engellendi (403) | ⬜ |
 | K5 | Admin ile her şeyi yapabiliyor mu? | CRUD, silme, ekleme tamamen çalışmalı | ⬜ |
+| K6 | Viewer ile `curl -X POST http://localhost:8000/api/ai/analyze -H "Authorization: Bearer VIEWER_TOKEN" -d '{"text":"test"}'` | 403 Forbidden | ⬜ |
+| K7 | Token olmadan AI endpoint çağır | 401 Unauthorized | ⬜ |
 
 ---
 
@@ -156,19 +158,21 @@
 | H. Ayarlar | 3 | | | |
 | İ. Çeviri | 3 | | | |
 | J. Responsive | 3 | | | |
-| K. RBAC | 5 | | | |
+| K. RBAC | 7 | | | |
 | L. Docker | 4 | | | |
-| **TOPLAM** | **52** | | | |
+| **TOPLAM** | **54** | | | |
 
 ---
 
 ## ⚠️ BİLİNEN SINIRLILIKLAR
 
-1. **AI endpoint'lerinde RBAC yok** — Viewer bile /analyze'i çağırabiliyor (503 dönüyor ama 403 olmalı)
+1. ~~**AI endpoint'lerinde RBAC yok**~~ ✅ Düzeltildi (2026-08-28, P0 fix) — Viewer/crew → 403, unauth → 401
 2. **App.jsx monolitik** — 5066 satır tek dosya, refactor edilmeli
 3. **Frontend'de AI paneli yok** — Backend hazır ama arayüzde bağlantı yok
 4. **Rate limiting memory'de** — Backend restart sonrası sıfırlanıyor
 5. **WebSocket/real-time yok** — Bildirimler için sayfa yenileme gerekiyor
+6. **2 migration'da boş downgrade** (0003, 0004) — geri alınamaz
+7. **CI/CD yok** — testler otomatik tetiklenmiyor
 
 ---
 

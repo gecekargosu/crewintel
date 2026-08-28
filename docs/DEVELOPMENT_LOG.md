@@ -433,15 +433,27 @@ C:\CREWINTEL\
 ## 9. TEST STATUS
 
 ```
-45 passed, 0 failed (son doğrulama: 2026-08-28)
+282 passed, 2 skipped, 0 failed (son doğrulama: 2026-08-28)
 ```
 
 | Dosya | Test Sayısı | Kapsam |
 |-------|------------|--------|
 | `tests/test_api.py` | 10 | Crew, Ship, Assignment, Contract CRUD; health; validation; FK |
 | `tests/test_audit.py` | 14 | CRUD audit logları + date_from/date_to filtre |
-| `tests/test_documents.py` | 5 | Upload/match/create/dedup + match_status filtresi |
+| `tests/test_audit_fixes.py` | 6 | Crew izolasyonu, admin silme, rate limit |
+| `tests/test_auth.py` | 26 | Login, JWT, roller, brute-force, user management |
+| `tests/test_crew_filtering.py` | 17 | Rank, languages, experience, contract, document filtreleri |
+| `tests/test_documents.py` | 14 | Upload, match, dedup, download, strong identifier, classification |
+| `tests/test_document_pipeline.py` | 35 | Batch, candidates, matches, delete, type, expiry, pagination, RBAC, lifecycle |
 | `tests/test_expiration.py` | 12 | Expiration service tüm kategoriler + boundary testleri |
+| `tests/test_match_engine.py` | 21 | Exact, fuzzy, conflict, review, dry-run, bulk |
+| `tests/test_mobile_api.py` | 18 | Register, portal, messages, devices, deactivate |
+| `tests/test_phase4b_features.py` | 25 | Eligibility, staffing, notifications, CSV, settings, portal, jobs, WhatsApp |
+| `tests/test_ai.py` | 29 | AI endpoint RBAC, health, mocked LLM, validation |
+| `tests/test_date_identifier.py` | 33 | Tarih parse + pasaport çıkarma (unit) |
+| `tests/test_document_processing.py` | 4 | İsim çıkarma (unit) |
+| `tests/test_match_crew.py` | 7 | Personel eşleştirme (unit) |
+| `tests/test_normalize.py` | 2 | Metin normalizasyonu (unit) |
 | `tests/test_auth.py` | 26 | Auth testleri (login, JWT, role, brute-force, audit) |
 | `tests/test_ai.py` | 17 | AI endpoint testleri (health, analyze, match, summarize, RBAC) |
 | `tests/test_crew_filtering.py` | 17 | Crew filtreleme (rank, languages, experience, contract) |
