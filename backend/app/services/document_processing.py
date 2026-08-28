@@ -204,11 +204,15 @@ def extract_metadata(filename: str, text: str) -> dict:
             "expiry date",
             "expiration date",
             "date of expiry",
+            "date of expiry",
             "valid until",
             "valid to",
             "validity date",
             "validity",
             "expiry",
+            "expires",
+            "bitiş",
+            "bitis",
             "son geçerlilik tarihi",
             "son gecerlilik tarihi",
             "son geçerlilik",
@@ -265,11 +269,16 @@ def extract_name(
 ) -> tuple[str | None, str | None]:
     combined = f"{filename}\n{text}"
 
-    # "Name:" ile başla, ama "Company Name:" gibi prefix'leri hariç tut.
-    # Negative lookbehind: "Name:"'den önce "Company" olmamalı.
+    # 1) Rus pasaportu: "Surname: X" + "Given Names: Y" — en öncelikli
+    surname_m = re.search(r"Surname:\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)", combined, re.IGNORECASE)
+    given_m = re.search(r"Given\s+Names?:\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)", combined, re.IGNORECASE)
+    if surname_m and given_m:
+        return (given_m.group(1).title(), surname_m.group(1).title())
+
+    # 2) Genel Name/Holder/And pattern
     match = re.search(
         r"(?<!\bCompany )"
-        r"(?:name|adı soyadı|adi soyadi|ad soyad|full name)"
+        r"(?:name|adı soyadı|adi soyadi|ad soyad|full name|holder|certificate holder|and)"
         r"\s*[:#-]?\s*"
         r"([A-Za-zÇĞİÖŞÜçğıöşü]+)"
         r"\s+"
@@ -279,18 +288,21 @@ def extract_name(
     )
 
     if match:
-        return (
-            match.group(1).title(),
-            match.group(2).title(),
-        )
+        first = match.group(1).title()
+        last = match.group(2).title()
+        skip = {"and", "the", "holder", "certificate", "employee", "employer"}
+        if first.lower() in skip:
+            after = combined[match.end():].strip()
+            next_m = re.match(r"([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)", after)
+            if next_m:
+                return (next_m.group(1).title(), next_m.group(2).title())
+        else:
+            return (first, last)
 
     ignored = {
-        "passport",
-        "pasaport",
-        "stcw",
-        "goc",
-        "eng1",
-        "cv",
+        "passport", "pasaport", "stcw", "goc", "eng1", "cv",
+        "crew", "medical", "contract", "seaman", "certificate",
+        "fitness", "agreement", "resume",
     }
 
     parts = [
