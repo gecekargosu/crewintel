@@ -241,6 +241,7 @@ function App() {
   const [importCsvText, setImportCsvText] = useState("");
   const [importMsg, setImportMsg] = useState(null);
   const [showImport, setShowImport] = useState(false);
+  const [showTasks, setShowTasks] = useState(true);
 
   // Toplu e-posta + bildirim ayarları (Phase 6)
   const [selectedCrewIds, setSelectedCrewIds] = useState([]);
@@ -1589,9 +1590,19 @@ function App() {
             {auth?.user?.role !== "crew" && (
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "18px" }}>
                 {crewEligibility ? (
-                  <span style={{ padding: "8px 16px", borderRadius: "999px", fontWeight: "700", fontSize: "14px", background: crewEligibility.score >= 90 ? "#f0fdf4" : crewEligibility.score >= 70 ? "#fffbeb" : "#fef2f2", color: crewEligibility.score >= 90 ? "#15803d" : crewEligibility.score >= 70 ? "#b45309" : "#b91c1c", border: `1px solid ${crewEligibility.score >= 90 ? "#bbf7d0" : crewEligibility.score >= 70 ? "#fde68a" : "#fecaca"}` }}>
-                    🎯 Uygunluk: %{crewEligibility.score} {crewEligibility.availability === "available" ? "· 🟢 Müsait" : ""}
-                  </span>
+                  <div>
+                    <span style={{ padding: "8px 16px", borderRadius: "999px", fontWeight: "700", fontSize: "14px", background: crewEligibility.score >= 90 ? "#f0fdf4" : crewEligibility.score >= 70 ? "#fffbeb" : "#fef2f2", color: crewEligibility.score >= 90 ? "#15803d" : crewEligibility.score >= 70 ? "#b45309" : "#b91c1c", border: `1px solid ${crewEligibility.score >= 90 ? "#bbf7d0" : crewEligibility.score >= 70 ? "#fde68a" : "#fecaca"}` }}>
+                      🎯 Uygunluk: %{crewEligibility.score} {crewEligibility.availability === "available" ? "· 🟢 Müsait" : crewEligibility.availability === "on_board" ? "· 🔵 Denizde" : ""}
+                    </span>
+                    {crewEligibility.breakdown && (
+                      <div style={{ marginTop: "6px", fontSize: "12px", color: "#64748b", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                        <span>Belge: {crewEligibility.breakdown.documents}/40</span>
+                        <span>Süre: {crewEligibility.breakdown.expiry}/20</span>
+                        <span>Müsaitlik: {crewEligibility.breakdown.availability}/20</span>
+                        <span>Pozisyon: {crewEligibility.breakdown.position}/20</span>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <span style={{ padding: "8px 16px", borderRadius: "999px", fontWeight: "600", fontSize: "13px", background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>
                     🎯 Uygunluk: — (pozisyon için hesaplanamadı)
@@ -4154,7 +4165,12 @@ function App() {
 
               {opsSummary.tasks.length > 0 && (
                 <div style={{ marginBottom: "20px" }}>
-                  <p className="section-label">{t('dashboard.todaysTasks')}</p>
+                  <button onClick={() => setShowTasks(!showTasks)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, width: "100%", textAlign: "left" }}>
+                    <p className="section-label" style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                      {showTasks ? '▼' : '▶'} {t('dashboard.todaysTasks')} ({opsSummary.tasks.length})
+                    </p>
+                  </button>
+                  {showTasks && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {opsSummary.tasks.map((task, i) => (
                       <button key={i} onClick={() => {
@@ -4162,10 +4178,7 @@ function App() {
                           openCrewDetail(task.crew_id);
                         } else if (task.link.startsWith('/ship-detail')) {
                           const id = task.link.split('/').pop();
-                          const ship = ships.find((s) => String(s.id) === id);
-                          setSelectedShip(ship || null);
-                          setSelectedShipId(Number(id));
-                          setActivePage('ship-detail');
+                          openShipDetail(Number(id));
                         } else if (task.link === '/documents') {
                           setActivePage('documents');
                         } else if (task.link === '/contracts') {
@@ -4178,6 +4191,7 @@ function App() {
                       </button>
                     ))}
                   </div>
+                  )}
                 </div>
               )}
 
