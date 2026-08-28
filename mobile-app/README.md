@@ -60,18 +60,30 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 Uygulama sadece **HTTP/HTTPS** üzerinden backend API'sine bağlanır. PostgreSQL'e doğrudan bağlanmaz.
 
-### Laptop'ta backend'in her yerden erişilebilir olması için:
+### Yöntem 1: Aynı Wi-Fi (Lokal)
 
-1. Laptopun IP adresini bul:
-   ```bash
-   # Windows
-   ipconfig
-   # IPv4 Adresi: 192.168.1.xxx
-   ```
+1. Laptopun IP adresini bul: `ipconfig`
+2. Uygulamaya `http://192.168.1.xxx:8000` yaz
 
-2. Uygulamada giriş ekranına `http://192.168.1.xxx:8000` yaz (laptop IP'si)
+### Yöntem 2: Mobil Internet (ngrok — Ücretsiz) 🌟
 
-3. Aynı Wi-Fi ağına bağlı olmalısın
+Telefon mobil internetteyken bile bağlanabilirsin!
+
+```bash
+# 1. ngrok'u başlat (zaten kurulu)
+ngrok http 8000
+
+# 2. Çıktıda bir URL göreceksin:
+# Forwarding  https://xxxx.ngrok-free.dev -> http://localhost:8000
+
+# 3. Android uygulamasına bu URL'yi gir
+``ng`
+
+Veya `start-tunnel.bat` dosyasını çift tıkla.
+
+**Not:** Ücretsiz planda URL 2 saatte bir değişir. Yeni URL için ngrok'u yeniden başlat.
+
+ngrok Management Paneli: http://127.0.0.1:4040
 
 ### Varsayılan giris bilgileri:
 
