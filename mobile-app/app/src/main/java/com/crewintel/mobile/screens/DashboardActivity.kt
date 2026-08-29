@@ -2,6 +2,8 @@ package com.crewintel.mobile.screens
 
 import android.content.Intent
 import android.os.Bundle
+import com.crewintel.mobile.R
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -144,6 +146,28 @@ class DashboardActivity : AppCompatActivity() {
                     binding.tvUrgent.text = "🟠 Acil: ${data.urgentDocuments}"
                     binding.tvApproaching.text = "🟡 Yaklaşıyor: ${data.expiringDocuments}"
                     binding.tvUnmatched.text = "⚪ Eşleşmemiş: ${data.unmatchedDocuments}"
+
+                    // Kinetik animasyonlar — sifir olmayan uyarilara hareket ekle
+                    if (data.expiredDocuments > 0) {
+                        val pulse = AnimationUtils.loadAnimation(this@DashboardActivity, R.anim.pulse_urgent)
+                        binding.tvExpired.startAnimation(pulse)
+                        binding.tvExpired.setTextColor(0xFFDC2626.toInt())
+                    } else {
+                        binding.tvExpired.clearAnimation()
+                    }
+                    if (data.urgentDocuments > 0) {
+                        val shake = AnimationUtils.loadAnimation(this@DashboardActivity, R.anim.pulse_urgent)
+                        binding.tvUrgent.startAnimation(shake)
+                        binding.tvUrgent.setTextColor(0xFFEA580C.toInt())
+                    } else {
+                        binding.tvUrgent.clearAnimation()
+                    }
+                    if (data.expiringDocuments > 0) {
+                        val breathe = AnimationUtils.loadAnimation(this@DashboardActivity, R.anim.breathe)
+                        binding.tvApproaching.startAnimation(breathe)
+                    } else {
+                        binding.tvApproaching.clearAnimation()
+                    }
                 }
             } catch (e: Exception) {
                 Toast.makeText(

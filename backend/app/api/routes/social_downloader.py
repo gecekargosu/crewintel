@@ -201,18 +201,32 @@ def detect_platform(url: str) -> Optional[str]:
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 def get_cookie_args(platform: str) -> list[str]:
-    """Get cookie args for a platform if cookies exist."""
+    """Get cookie args for a platform if cookies exist. Decrypts encrypted cookie files."""
     if not platform:
         return []
     cookie_file = COOKIE_DIR / f"{platform}.txt"
-    if cookie_file.exists():
+    if not cookie_file.exists():
+        return []
+    # Decrypt cookie and write to temp file for yt-dlp
+    import tempfile
+    try:
+        raw = cookie_file.read_bytes()
+        decrypted = _decrypt_cookie(raw)
+        tmp = tempfile.NamedTemporaryFile(
+            mode='w', suffix='.txt', prefix=f'{platform}_cookies_',
+            delete=False, encoding='utf-8'
+        )
+        tmp.write(decrypted)
+        tmp.close()
+        return ["--cookies", tmp.name]
+    except Exception:
+        # Fallback: try reading as plain text (unencrypted)
         return ["--cookies", str(cookie_file)]
-    return []
 
 
 def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
     """Run yt-dlp with given args and return parsed JSON output."""
-    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings", "--user-agent", BROWSER_UA, "--js-runtimes", "node"] + args
+    cmd = ["yt-dlp", "--no-warnings", "--user-agent", BROWSER_UA, "--js-runtimes", "node"] + args
     try:
         result = subprocess.run(
             cmd,
@@ -290,9 +304,11 @@ async def supported_platforms(current_user: User = Depends(get_current_user)):
 
 @router.get("/downloader/history")
 async def download_history(current_user: User = Depends(get_current_user)):
-    """Get all downloaded files across all tasks."""
+    """Get all downloaded files for current user only."""
     all_files = []
     for task_id, task in sorted(_tasks.items(), key=lambda x: x[1].get("started_at", ""), reverse=True):
+        if task.get("user_id") != current_user.id:
+            continue
         if task["status"] == "completed" and task.get("files"):
             for f in task["files"]:
                 all_files.append({
@@ -398,20 +414,20 @@ async def analyze(req: AnalyzeRequest, current_user: User = Depends(get_current_
 # ── Cookie Management ────────────────────────────────────────────────────────
 @router.get("/downloader/cookies")
 async def list_cookies(current_user: User = Depends(get_current_user)):
-    """List saved cookies for all platforms."""
+    """List saved cookies for all platforms (metadata only, no content)."""
     cookies = {}
     for platform in ["youtube", "instagram", "tiktok", "facebook", "pinterest", "twitter", "linkedin"]:
         cookie_file = COOKIE_DIR / f"{platform}.txt"
         if cookie_file.exists():
-            content = cookie_file.read_text(encoding="utf-8")
+            stat = cookie_file.stat()
             cookies[platform] = {
                 "exists": True,
-                "size": len(content),
-                "lines": content.count(chr(10)),
-                "last_modified": cookie_file.stat().st_mtime,
+                "size": stat.st_size,
+                "last_modified": stat.st_mtime,
+                "configured": True,
             }
         else:
-            cookies[platform] = {"exists": False}
+            cookies[platform] = {"exists": False, "configured": False}
     return {"cookies": cookies}
 
 
@@ -486,6 +502,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks, curr
         "title": "",
         "thumbnail": "",
         "progress": 0,
+        "user_id": current_user.id,
     }
     _save_tasks()
 
@@ -575,6 +592,8 @@ async def download_status(task_id: str, current_user: User = Depends(get_current
     # In-memory tracker
     if task_id in _tasks:
         task = _tasks[task_id]
+        if task.get("user_id") != current_user.id:
+            raise HTTPException(status_code=403, detail="Bu task size ait degil")
         if task["status"] == "completed":
             return {
                 "status": "completed",
@@ -628,6 +647,8 @@ async def download_status(task_id: str, current_user: User = Depends(get_current
 @router.get("/downloader/{task_id}/file")
 async def download_file(task_id: str, current_user: User = Depends(get_current_user)):
     """Download the completed file."""
+    if task_id in _tasks and _tasks[task_id].get("user_id") != current_user.id:
+        raise HTTPException(status_code=403, detail="Bu task size ait degil")
     output_dir = DOWNLOAD_DIR / task_id
     files = list(output_dir.glob("*"))
     if not files:
@@ -643,6 +664,8 @@ async def download_file(task_id: str, current_user: User = Depends(get_current_u
 @router.delete("/downloader/{task_id}")
 async def delete_download(task_id: str, current_user: User = Depends(get_current_user)):
     """Delete a downloaded file and remove from history."""
+    if task_id in _tasks and _tasks[task_id].get("user_id") != current_user.id:
+        raise HTTPException(status_code=403, detail="Bu task size ait degil")
     # Remove from tasks
     if task_id in _tasks:
         del _tasks[task_id]

@@ -68,6 +68,7 @@ class UserResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
+    refresh_token: str = ""
     token_type: str = "bearer"
     user: UserResponse
 
@@ -154,12 +155,16 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
 def me(current_user: User = Depends(get_current_user)):
     return _serialize_user(current_user)
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 @router.post("/refresh")
-def refresh_token(refresh_token: str):
+def refresh_token_endpoint(payload: RefreshTokenRequest):
     """Get a new access token using a refresh token."""
     try:
-        payload = decode_refresh_token(refresh_token)
-        email = payload.get("sub")
+        decoded = decode_refresh_token(payload.refresh_token)
+        email = decoded.get("sub")
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     

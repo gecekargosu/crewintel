@@ -44,6 +44,7 @@ class PrefsManager(context: Context) {
     fun clearSession() {
         prefs.edit()
             .remove("auth_token")
+            .remove("refresh_token")
             .remove("user_email")
             .remove("user_role")
             .remove("user_name")

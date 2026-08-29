@@ -53,6 +53,14 @@ class AuthInterceptor(
                 putExtra("session_expired", true)
             }
             context.startActivity(intent)
+            // Return a fresh 401 response instead of the closed one
+            return Response.Builder()
+                .request(request)
+                .protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(401)
+                .message("Unauthorized - session expired")
+                .body(okhttp3.ResponseBody.create(null, ByteArray(0)))
+                .build()
         }
 
         return response
