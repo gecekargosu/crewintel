@@ -1,5 +1,6 @@
 package com.crewintel.mobile.api
 
+import com.crewintel.mobile.BuildConfig
 import com.crewintel.mobile.utils.PrefsManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -20,7 +21,11 @@ object ApiClient {
             currentBaseUrl = baseUrl
 
             val logging = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = if (BuildConfig.DEBUG) {
+                    HttpLoggingInterceptor.Level.BODY
+                } else {
+                    HttpLoggingInterceptor.Level.NONE
+                }
             }
 
             val authInterceptor = Interceptor { chain ->
