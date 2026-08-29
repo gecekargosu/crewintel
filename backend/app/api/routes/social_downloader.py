@@ -163,7 +163,7 @@ def get_cookie_args(platform: str) -> list[str]:
 
 def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
     """Run yt-dlp with given args and return parsed JSON output."""
-    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings", "--user-agent", BROWSER_UA] + args
+    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings", "--user-agent", BROWSER_UA, "--js-runtimes", "node"] + args
     try:
         result = subprocess.run(
             cmd,
@@ -377,8 +377,14 @@ async def save_cookies(req: CookieSaveRequest):
     if req.platform not in valid_platforms:
         raise HTTPException(status_code=400, detail=f"Gecersiz platform: {req.platform}")
 
+
     cookie_file = COOKIE_DIR / f"{req.platform}.txt"
-    cookie_file.write_text(req.cookies, encoding="utf-8")
+    # Ensure Netscape header
+    cookie_content = req.cookies
+    if not cookie_content.strip().startswith("# Netscape"):
+        header = "# Netscape HTTP Cookie File" + chr(10) + "# http://curl.haxx.se/rfc/cookie_spec.html" + chr(10) + "# This is a generated file!  Do not edit." + chr(10) + chr(10)
+        cookie_content = header + cookie_content
+    cookie_file.write_text(cookie_content, encoding="utf-8")
 
     return {
         "status": "saved",
@@ -442,6 +448,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                 "--no-check-certificates",
                 "--no-warnings",
                 "--user-agent", BROWSER_UA,
+                "--js-runtimes", "node",
                 req.url,
             ]
             try:

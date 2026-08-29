@@ -9,8 +9,11 @@ class PrefsManager(context: Context) {
         context.getSharedPreferences("crewintel_prefs", Context.MODE_PRIVATE)
 
     var serverUrl: String
-        get() = prefs.getString("server_url", "http://10.0.2.2:8000") ?: "http://10.0.2.2:8000"
-        set(value) = prefs.edit().putString("server_url", value).apply()
+        get() {
+            val url = prefs.getString("server_url", null) ?: DEFAULT_SERVER_URL
+            return normalizeUrl(url)
+        }
+        set(value) = prefs.edit().putString("server_url", normalizeUrl(value)).apply()
 
     var authToken: String?
         get() = prefs.getString("auth_token", null)
@@ -50,5 +53,18 @@ class PrefsManager(context: Context) {
         userRole = response.user.role
         userName = response.user.fullName
         userId = response.user.id
+    }
+
+    companion object {
+        // WiFi IP of the laptop — phone must be on same network
+        private const val DEFAULT_SERVER_URL = "http://10.160.250.250:8000"
+
+        fun normalizeUrl(url: String): String {
+            var trimmed = url.trim().trimEnd('/')
+            if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+                trimmed = "http://$trimmed"
+            }
+            return trimmed
+        }
     }
 }
