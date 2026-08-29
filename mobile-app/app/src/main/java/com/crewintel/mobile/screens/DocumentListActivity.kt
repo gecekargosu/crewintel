@@ -29,6 +29,7 @@ class DocumentListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         loadDocuments()

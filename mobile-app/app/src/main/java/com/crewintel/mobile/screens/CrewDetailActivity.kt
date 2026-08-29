@@ -32,6 +32,7 @@ class CrewDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
         crewId = intent.getIntExtra("crew_id", -1)
         val crewName = intent.getStringExtra("crew_name") ?: ""
 

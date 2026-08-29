@@ -30,6 +30,7 @@ class ActivityFeedActivity : AppCompatActivity() {
         binding = ActivityFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         binding.btnBack.setOnClickListener { finish() }
         binding.rvFeed.layoutManager = LinearLayoutManager(this)

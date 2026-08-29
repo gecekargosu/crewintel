@@ -24,6 +24,7 @@ class EmailActivity : AppCompatActivity() {
         binding = ActivityEmailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSend.setOnClickListener { sendEmail() }

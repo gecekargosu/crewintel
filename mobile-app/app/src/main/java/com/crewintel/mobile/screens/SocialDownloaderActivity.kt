@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.crewintel.mobile.R
+import com.crewintel.mobile.api.ApiClient
 import com.crewintel.mobile.databinding.ActivitySocialDownloaderBinding
 import com.crewintel.mobile.utils.PrefsManager
 import kotlinx.coroutines.*

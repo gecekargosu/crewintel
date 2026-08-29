@@ -35,6 +35,7 @@ class WarningDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         val filterType = intent.getStringExtra(EXTRA_FILTER_TYPE) ?: FILTER_EXPIRED
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "Uyarı Detayları"

@@ -32,6 +32,7 @@ class QuickContactActivity : AppCompatActivity() {
         binding = ActivityQuickContactBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         binding.btnBack.setOnClickListener { finish() }
         binding.rvCrew.layoutManager = LinearLayoutManager(this)

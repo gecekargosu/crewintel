@@ -27,6 +27,7 @@ class ShipListActivity : AppCompatActivity() {
         binding = ActivityShipListBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         binding.btnBack.setOnClickListener { finish() }
         binding.rvShips.layoutManager = LinearLayoutManager(this)

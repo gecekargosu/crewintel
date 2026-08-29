@@ -31,6 +31,7 @@ class CrewListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.etSearch.addTextChangedListener(object : TextWatcher {

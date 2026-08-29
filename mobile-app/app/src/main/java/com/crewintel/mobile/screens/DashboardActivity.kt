@@ -22,6 +22,7 @@ class DashboardActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         if (!prefs.isLoggedIn()) {
             startActivity(Intent(this, LoginActivity::class.java))

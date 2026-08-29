@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import com.crewintel.mobile.api.ApiClient
 import com.crewintel.mobile.databinding.ActivityJobPostBinding
 import java.io.File
 import java.io.FileOutputStream
