@@ -60,6 +60,24 @@ class DashboardActivity : AppCompatActivity() {
         binding.btnDownloader.setOnClickListener {
             startActivity(Intent(this, SocialDownloaderActivity::class.java))
         }
+
+        // Quick Contact
+        binding.btnContact.setOnClickListener {
+            startActivity(Intent(this, QuickContactActivity::class.java))
+        }
+        // Notes
+        binding.btnNotes.setOnClickListener {
+            startActivity(Intent(this, NotesActivity::class.java))
+        }
+        // Job Post
+        binding.btnJobPost.setOnClickListener {
+            startActivity(Intent(this, JobPostActivity::class.java))
+        }
+        // Salary
+        binding.btnSalary.setOnClickListener {
+            startActivity(Intent(this, SalaryActivity::class.java))
+        }
+
         binding.btnSettings.setOnClickListener {
             showSettingsDialog()
         }

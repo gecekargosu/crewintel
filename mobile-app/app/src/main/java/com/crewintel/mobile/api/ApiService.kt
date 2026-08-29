@@ -118,4 +118,39 @@ interface ApiService {
     // ── GitHub Stats ───────────────────────────────────────
     @GET("api/dashboard/github-stats")
     suspend fun getGithubStats(): Response<Map<String, Any>>
+
+    // ── Notes ───────────────────────────────────────────────
+    @GET("api/notes/")
+    suspend fun getNotes(
+        @Query("crew_member_id") crewId: Int? = null,
+        @Query("done") done: Boolean? = null
+    ): Response<List<Map<String, Any>>>
+
+    @POST("api/notes/")
+    suspend fun createNote(@Body note: Map<String, Any>): Response<Map<String, Any>>
+
+    @PUT("api/notes/{id}")
+    suspend fun updateNote(@Path("id") id: Int, @Body note: Map<String, Any>): Response<Map<String, Any>>
+
+    @DELETE("api/notes/{id}")
+    suspend fun deleteNote(@Path("id") id: Int): Response<Unit>
+
+    // ── Salary ──────────────────────────────────────────────
+    @GET("api/salary/")
+    suspend fun getPayments(
+        @Query("crew_member_id") crewId: Int? = null
+    ): Response<List<Map<String, Any>>>
+
+    @POST("api/salary/")
+    suspend fun createPayment(@Body payment: Map<String, Any>): Response<Map<String, Any>>
+
+    @DELETE("api/salary/{id}")
+    suspend fun deletePayment(@Path("id") id: Int): Response<Unit>
+
+    // ── Jobs ────────────────────────────────────────────────
+    @GET("api/jobs/")
+    suspend fun getJobs(): Response<List<Map<String, Any>>>
+
+    @POST("api/jobs/")
+    suspend fun createJob(@Body job: Map<String, Any>): Response<Map<String, Any>>
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5f7fa">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="#1e3a5f">
+        <TextView android:id="@+id/btnBack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="←" android:textColor="#fff" android:textSize="24sp" android:paddingEnd="16dp" android:clickable="true" android:focusable="true" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Kişisel Notlar" android:textColor="#fff" android:textSize="18sp" android:textStyle="bold" />
+        <TextView android:id="@+id/btnAdd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+ Yeni Not" android:textColor="#fff" android:textSize="14sp" android:background="#16a34a" android:paddingHorizontal="12dp" android:paddingVertical="6dp" android:clickable="true" android:focusable="true" />
+    </LinearLayout>
+
+    <ProgressBar android:id="@+id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_marginTop="20dp" android:visibility="gone" />
+
+    <TextView android:id="@+id/tvEmpty" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📝 Henüz not eklenmemiş\n\n+ butonuna basarak yeni not ekleyebilirsin" android:textColor="#94a3b8" android:textSize="14sp" android:gravity="center" android:layout_marginTop="60dp" android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvNotes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp"
+        android:clipToPadding="false" />
+</LinearLayout>

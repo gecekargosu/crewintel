@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical">
+
+        <View android:id="@+id/viewPriority" android:layout_width="4dp" android:layout_height="40dp" android:background="#3b82f6" android:layout_marginEnd="12dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView android:id="@+id/tvTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" />
+            <TextView android:id="@+id/tvBody" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#64748b" android:textSize="12sp" android:maxLines="2" android:ellipsize="end" android:layout_marginTop="2dp" />
+            <TextView android:id="@+id/tvDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#94a3b8" android:textSize="11sp" android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/btnDone" android:layout_width="30dp" android:layout_height="30dp" android:gravity="center" android:text="✓" android:textSize="16sp" android:textColor="#16a34a" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:layout_marginStart="8dp" />
+        <TextView android:id="@+id/btnDelete" android:layout_width="30dp" android:layout_height="30dp" android:gravity="center" android:text="🗑" android:textSize="16sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:layout_marginStart="4dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

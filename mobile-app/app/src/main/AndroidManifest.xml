@@ -41,6 +41,10 @@
         <activity android:name=".screens.AIAnalysisActivity" android:exported="false" />
         <activity android:name=".screens.SocialSettingsActivity" android:exported="false" />
         <activity android:name=".screens.WarningDetailActivity" android:exported="false" />
+        <activity android:name=".screens.QuickContactActivity" android:exported="false" />
+        <activity android:name=".screens.NotesActivity" android:exported="false" />
+        <activity android:name=".screens.JobPostActivity" android:exported="false" />
+        <activity android:name=".screens.SalaryActivity" android:exported="false" />
         <activity android:name=".screens.ActivityFeedActivity" android:exported="false" />
         <activity android:name=".screens.EmailActivity" android:exported="false" />
         <activity android:name=".screens.DocumentUploadActivity" android:exported="false" />

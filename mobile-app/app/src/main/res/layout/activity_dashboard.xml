@@ -340,6 +340,63 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
+
+                <!-- Row 5: Hızlı İletişim + Notlar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContact"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="📱 İletişim"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNotes"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:text="📝 Notlar"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Row 6: İş İlanı + Maaş -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnJobPost"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="📋 İş İlanı"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSalary"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:text="💰 Maaş"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
                 <!-- Row 4: E-posta -->
                 <LinearLayout
                     android:layout_width="match_parent"

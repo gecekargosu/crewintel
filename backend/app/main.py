@@ -25,6 +25,8 @@ from app.api.routes.settings import router as settings_router
 from app.api.routes.ships import router as ship_router
 from app.api.routes.ai import router as ai_router
 from app.api.routes.social_downloader import router as social_router
+from app.api.routes.notes import router as notes_router
+from app.api.routes.salary import router as salary_router
 from app.core.config import get_settings
 from app.db.database import engine
 
@@ -95,3 +97,5 @@ def database_health():
         ) from error
 
     return {"status": "healthy", "database": "connected"}
+app.include_router(notes_router)
+app.include_router(salary_router)

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5f7fa">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="#1e3a5f">
+        <TextView android:id="@+id/btnBack" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="←" android:textColor="#fff" android:textSize="24sp" android:paddingEnd="16dp" android:clickable="true" android:focusable="true" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="İş İlanı Oluştur" android:textColor="#fff" android:textSize="18sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+
+            <!-- Image/Video selection -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardMedia" android:layout_width="match_parent" android:layout_height="140dp" android:layout_marginBottom="16dp" android:clickable="true" android:focusable="true">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:background="#e2e8f0">
+                    <TextView android:id="@+id/tvMediaIcon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🖼️" android:textSize="40sp" />
+                    <TextView android:id="@+id/tvMediaHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Arka Plan Resmi/Video Seç" android:textColor="#64748b" android:textSize="13sp" android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📋 Pozisyon" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
+            <EditText android:id="@+id/etPosition" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: Kaptan, Başmühendis" android:textSize="14sp" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🚢 Gemi Tipi" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
+            <EditText android:id="@+id/etVesselType" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: Tanker, Bulk Carrier" android:textSize="14sp" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📝 Açıklama" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
+            <EditText android:id="@+id/etDescription" android:layout_width="match_parent" android:layout_height="120dp" android:background="#fff" android:padding="12dp" android:hint="İş ilanı açıklaması..." android:textSize="14sp" android:inputType="textMultiLine" android:gravity="top" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="💰 Maaş" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
+            <EditText android:id="@+id/etSalary" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: 5000 USD" android:textSize="14sp" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📞 İletişim" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
+            <EditText android:id="@+id/etContact" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Telefon / E-posta" android:textSize="14sp" android:layout_marginBottom="20dp" />
+
+            <!-- Preview -->
+            <TextView android:id="@+id/tvPreview" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#fff" android:padding="16dp" android:textColor="#1e3a5f" android:textSize="13sp" android:lineSpacingExtra="4dp" android:layout_marginBottom="16dp" android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnPreview" android:layout_width="match_parent" android:layout_height="48dp" android:text="👁️ Önizle" android:textSize="14sp" android:backgroundTint="#64748b" android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnShare" android:layout_width="match_parent" android:layout_height="52dp" android:text="📤 İlanı Paylaş" android:textSize="15sp" android:textStyle="bold" android:backgroundTint="#16a34a" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
