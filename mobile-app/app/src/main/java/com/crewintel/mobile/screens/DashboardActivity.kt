@@ -88,6 +88,32 @@ class DashboardActivity : AppCompatActivity() {
                     binding.tvUnmatched.text = "⚪ Eşleşmemiş: ${data.unmatchedDocuments}"
                 }
 
+                    // Click listeners for warnings
+                    binding.tvExpired.setOnClickListener {
+                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
+                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_EXPIRED)
+                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Suresi Dolmus Belgeler")
+                        })
+                    }
+                    binding.tvUrgent.setOnClickListener {
+                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
+                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_URGENT)
+                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Acil Belgeler (30 gun)")
+                        })
+                    }
+                    binding.tvApproaching.setOnClickListener {
+                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
+                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_APPROACHING)
+                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Yaklasıyor (90 gun)")
+                        })
+                    }
+                    binding.tvUnmatched.setOnClickListener {
+                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
+                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_UNMATCHED)
+                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Eslesmemis Belgeler")
+                        })
+                    }
+
             } catch (e: Exception) {
                 Toast.makeText(
                     this@DashboardActivity,
