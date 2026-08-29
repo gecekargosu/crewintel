@@ -43,6 +43,32 @@ RATE_LIMIT_WINDOW = 60  # seconds
 RATE_LIMIT_MAX = 20  # max requests per window
 
 
+# Cookie encryption
+import hashlib
+
+def _get_encrypt_key():
+    """Get encryption key from settings."""
+    from app.core.config import get_settings
+    settings = get_settings()
+    return hashlib.sha256(settings.jwt_secret_key.encode()).digest()
+
+def _encrypt_cookie(content: str) -> bytes:
+    """Simple XOR encryption for cookie files."""
+    key = _get_encrypt_key()
+    data = content.encode('utf-8')
+    encrypted = bytearray()
+    for i, byte in enumerate(data):
+        encrypted.append(byte ^ key[i % len(key)])
+    return bytes(encrypted)
+
+def _decrypt_cookie(encrypted: bytes) -> str:
+    """Simple XOR decryption for cookie files."""
+    key = _get_encrypt_key()
+    decrypted = bytearray()
+    for i, byte in enumerate(encrypted):
+        decrypted.append(byte ^ key[i % len(key)])
+    return decrypted.decode('utf-8')
+
 def _check_rate_limit(user_id: str):
     """Check if user has exceeded rate limit."""
     now = time.time()
@@ -408,7 +434,9 @@ async def save_cookies(req: CookieSaveRequest, current_user: User = Depends(get_
     if not cookie_content.strip().startswith("# Netscape"):
         header = "# Netscape HTTP Cookie File" + chr(10) + "# http://curl.haxx.se/rfc/cookie_spec.html" + chr(10) + "# This is a generated file!  Do not edit." + chr(10) + chr(10)
         cookie_content = header + cookie_content
-    cookie_file.write_text(cookie_content, encoding="utf-8")
+    # Encrypt and save cookie file
+    encrypted = _encrypt_cookie(cookie_content)
+    cookie_file.write_bytes(encrypted)
     
     # Secure cookie file permissions (read/write owner only)
     try:
