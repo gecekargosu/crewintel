@@ -1,20 +1,15 @@
-"""Kişisel notlar — admin/hr crew notları."""
-
+"""Kişisel notlar — PostgreSQL-backed storage."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, require_roles
+from app.api.deps import get_current_user
 from app.db.database import get_db
+from app.models.note import Note
 from app.models.user import User
 
-
 router = APIRouter(prefix="/api/notes", tags=["Notes"])
-
-# In-memory store (persistent in production — DB table needed)
-_notes: list[dict] = []
-_note_id_counter = 0
 
 
 class NoteCreate(BaseModel):
@@ -31,16 +26,16 @@ class NoteUpdate(BaseModel):
     done: bool | None = None
 
 
-def _serialize(note: dict) -> dict:
+def _serialize(note: Note) -> dict:
     return {
-        "id": note["id"],
-        "title": note["title"],
-        "body": note.get("body", ""),
-        "crew_member_id": note.get("crew_member_id"),
-        "priority": note.get("priority", "normal"),
-        "done": note.get("done", False),
-        "created_at": note.get("created_at", ""),
-        "user_email": note.get("user_email", ""),
+        "id": note.id,
+        "title": note.title,
+        "body": note.body or "",
+        "crew_member_id": note.crew_member_id,
+        "priority": note.priority or "normal",
+        "done": note.done,
+        "created_at": note.created_at.isoformat() if note.created_at else "",
+        "user_email": note.user_email or "",
     }
 
 
@@ -48,62 +43,68 @@ def _serialize(note: dict) -> dict:
 def list_notes(
     crew_member_id: int | None = None,
     done: bool | None = None,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    results = _notes
+    q = db.query(Note)
     if crew_member_id is not None:
-        results = [n for n in results if n.get("crew_member_id") == crew_member_id]
+        q = q.filter(Note.crew_member_id == crew_member_id)
     if done is not None:
-        results = [n for n in results if n.get("done", False) == done]
-    return [_serialize(n) for n in sorted(results, key=lambda x: x["id"], reverse=True)]
+        q = q.filter(Note.done == done)
+    notes = q.order_by(Note.id.desc()).all()
+    return [_serialize(n) for n in notes]
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 def create_note(
-    payload: NoteCreate,
+    body: NoteCreate,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    global _note_id_counter
-    _note_id_counter += 1
-    from datetime import datetime
-    note = {
-        "id": _note_id_counter,
-        "title": payload.title,
-        "body": payload.body,
-        "crew_member_id": payload.crew_member_id,
-        "priority": payload.priority,
-        "done": False,
-        "created_at": datetime.now().isoformat(),
-        "user_email": current_user.email,
-    }
-    _notes.append(note)
+    note = Note(
+        title=body.title,
+        body=body.body,
+        priority=body.priority,
+        crew_member_id=body.crew_member_id,
+        user_email=current_user.email,
+    )
+    db.add(note)
+    db.commit()
+    db.refresh(note)
     return _serialize(note)
 
 
-@router.put("/{note_id}")
+@router.put("/{note_id}", response_model=dict)
 def update_note(
     note_id: int,
-    payload: NoteUpdate,
+    body: NoteUpdate,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    for note in _notes:
-        if note["id"] == note_id:
-            if payload.title is not None:
-                note["title"] = payload.title
-            if payload.body is not None:
-                note["body"] = payload.body
-            if payload.priority is not None:
-                note["priority"] = payload.priority
-            if payload.done is not None:
-                note["done"] = payload.done
-            return _serialize(note)
-    raise HTTPException(status_code=404, detail="Not bulunamadı.")
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    if body.title is not None:
+        note.title = body.title
+    if body.body is not None:
+        note.body = body.body
+    if body.priority is not None:
+        note.priority = body.priority
+    if body.done is not None:
+        note.done = body.done
+    db.commit()
+    db.refresh(note)
+    return _serialize(note)
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(
     note_id: int,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    global _notes
-    _notes = [n for n in _notes if n["id"] != note_id]
+    note = db.query(Note).filter(Note.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    db.delete(note)
+    db.commit()

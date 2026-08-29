@@ -228,7 +228,7 @@ class JobPostActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/*"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, text)
+            // Text removed — overlay text is drawn on image via Canvas
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             if (targetPackage != null) setPackage(targetPackage)
         }
