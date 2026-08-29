@@ -11,9 +11,13 @@ import re
 import uuid
 import subprocess
 import json
+import logging
+import traceback
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
+
+logger = logging.getLogger("social-downloader")
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -119,32 +123,28 @@ def extract_info(url: str) -> dict:
     return json.loads(result["output"])
 
 
-def build_format_args(quality: str, format_type: str) -> list[str]:
-    """Build yt-dlp format arguments with robust fallback chain."""
+def build_format_specs(quality: str, format_type: str) -> list[list[str]]:
+    """Build ordered list of yt-dlp argument sets to try (most specific → least).
+    Each item is a complete argument list fragment (e.g. ['-f', 'bestvideo+bestaudio']).
+    """
     if format_type == "audio":
-        return ["-x", "--audio-format", "mp3"]
+        return [
+            ["-x", "--audio-format", "mp3"],
+        ]
 
-    # Format fallback chain — tries each until one works
-    # YouTube serves video+audio separately, so we need bestvideo+bestaudio
-    fallbacks = {
-        "best": [
-            "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best",
-        ],
-        "1080": [
-            "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-        ],
-        "720": [
-            "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]",
-        ],
-        "480": [
-            "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]",
-        ],
-    }
+    # Progressive fallback: specific → generic → no format spec at all
+    all_specs = [
+        # 1st try: exact quality with preferred codec
+        ["-f", f"bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<={quality}]+bestaudio/best[height<={quality}]", "--merge-output-format", "mp4"],
+        # 2nd try: just bestvideo+bestaudio merge (any codec)
+        ["-f", "bestvideo+bestaudio/best", "--merge-output-format", "mp4"],
+        # 3rd try: just "best" (single combined stream)
+        ["-f", "best", "--merge-output-format", "mp4"],
+        # 4th try: no format specification at all — let yt-dlp decide
+        [],
+    ]
 
-    specs = fallbacks.get(quality, fallbacks["best"])
-    format_spec = specs[0]
-
-    return ["-f", format_spec, "--merge-output-format", "mp4"]
+    return all_specs
 
 
 # ── API Endpoints ─────────────────────────────────────────────────────────────
@@ -209,17 +209,22 @@ async def analyze(req: AnalyzeRequest):
     try:
         info = extract_info(req.url)
 
-        # Quality options — use actual available formats
+        # Quality options — only show downloadable formats (HTTPS, not m3u8/mhtml)
         formats = []
         if info.get("formats"):
             seen = set()
             for f in info["formats"]:
                 h = f.get("height")
                 ext = f.get("ext", "mp4")
-                # Skip storyboards, mhtml, and non-video formats
+                proto = f.get("protocol", "")
+                # Skip: storyboards, mhtml, m3u8-only (HLS), audio-only
                 if ext in ("mhtml", "json"):
                     continue
-                if h and h not in seen:
+                if proto == "m3u8" or proto == "m3u8_native":
+                    continue
+                if not h or h == 0:
+                    continue
+                if h not in seen:
                     seen.add(h)
                     formats.append({
                         "quality": f"{h}p",
@@ -231,6 +236,10 @@ async def analyze(req: AnalyzeRequest):
 
         # Always add audio option
         formats.append({"quality": "Ses (MP3)", "height": 0, "ext": "mp3", "filesize": None})
+
+        # If no downloadable video formats found, add best available
+        if not any(f["height"] > 0 for f in formats):
+            formats.insert(0, {"quality": "En iyi kalite (otomatik)", "height": -1, "ext": "mp4", "filesize": None})
 
         return {
             "success": True,
@@ -285,76 +294,71 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
         "progress": 0,
     }
 
-    # Build yt-dlp command with robust format fallback
-    format_args = build_format_args(req.quality, req.format_type)
+    # Build format specs to try in order
     output_template = str(output_dir / "%(title).80s.%(ext)s")
-
-    cmd = ["yt-dlp"] + format_args + [
-        "-o", output_template,
-        "--no-check-certificates",
-        "--no-warnings",
-        "--newline",  # Progress on new lines
-        req.url,
-    ]
+    format_specs = build_format_specs(req.quality, req.format_type)
 
     # Run in background (concurrent-safe)
     def run_download():
-        try:
-            # First try with the format spec
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        logger.info(f"Download started: task_id={task_id}, url={req.url}, quality={req.quality}")
+        last_error = "Bilinmeyen hata"
+        result = None
 
-            # If failed, try with simpler fallback
-            if result.returncode != 0:
-                error_text = (result.stderr or "").lower()
-                # Retry with "best" fallback
-                if "format" in error_text or "requested" in error_text:
-                    fallback_cmd = [
-                        "yt-dlp",
-                        "-f", "best",
-                        "-o", output_template,
-                        "--no-check-certificates",
-                        "--no-warnings",
-                        req.url,
-                    ]
-                    result = subprocess.run(fallback_cmd, capture_output=True, text=True, timeout=600)
-
-                # If still failed, try without format spec at all
-                if result.returncode != 0:
-                    fallback_cmd2 = [
-                        "yt-dlp",
-                        "-o", output_template,
-                        "--no-check-certificates",
-                        "--no-warnings",
-                        req.url,
-                    ]
-                    result = subprocess.run(fallback_cmd2, capture_output=True, text=True, timeout=600)
-
-            if result.returncode != 0:
-                error_msg = (result.stderr or result.stdout or "Bilinmeyen hata").strip()
-                _tasks[task_id]["status"] = "failed"
-                _tasks[task_id]["error"] = error_msg[:500]
-                return
-
-            # Check if files exist
-            files = [f for f in output_dir.glob("*") if f.is_file()]
-            if not files:
-                _tasks[task_id]["status"] = "failed"
-                _tasks[task_id]["error"] = "Dosya indirilemedi — platform giris gerektirebilir"
-                return
-
-            _tasks[task_id]["status"] = "completed"
-            _tasks[task_id]["completed_at"] = datetime.now().isoformat()
-            _tasks[task_id]["files"] = [
-                {"name": f.name, "size": f.stat().st_size}
-                for f in files
+        # Try each format spec in order until one succeeds
+        for i, spec in enumerate(format_specs):
+            logger.info(f"Task {task_id}: Trying format spec {i+1}/{len(format_specs)}: {spec}")
+            cmd = ["yt-dlp"] + spec + [
+                "-o", output_template,
+                "--no-check-certificates",
+                "--no-warnings",
+                req.url,
             ]
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+                if result.returncode == 0:
+                    # Check if files exist
+                    files = [f for f in output_dir.glob("*") if f.is_file()]
+                    if files:
+                        logger.info(f"Task {task_id}: Download completed with spec {i+1}, file={files[0].name}")
+                        _tasks[task_id]["status"] = "completed"
+                        _tasks[task_id]["completed_at"] = datetime.now().isoformat()
+                        _tasks[task_id]["files"] = [
+                            {"name": f.name, "size": f.stat().st_size}
+                            for f in files
+                        ]
+                        return
+                    else:
+                        logger.warning(f"Task {task_id}: yt-dlp returned 0 but no files in {output_dir}")
+                        last_error = "Dosya indirilemedi"
+                else:
+                    logger.warning(f"Task {task_id}: Format spec {i+1} failed: {(result.stderr or '').strip()[:200]}")
+                    last_error = (result.stderr or result.stdout or "Format uyumsuz").strip()[:200]
+            except subprocess.TimeoutExpired:
+                last_error = "Zaman asimi (10 dk)"
+                break
+            except Exception as e:
+                last_error = str(e)[:200]
 
-        except subprocess.TimeoutExpired:
-            _tasks[task_id]["status"] = "failed"
-            _tasks[task_id]["error"] = "Indirme zaman asimina ugradi (10 dakika)"
-        except Exception as e:
-            _tasks[task_id]["status"] = "failed"
-            _tasks[task_id]["error"] = str(e)[:500]
+        # All formats failed
+        logger.error(f"Task {task_id}: All format specs failed. Last error: {last_error[:200]}")
+        # Translate common errors to Turkish
+        error_msg = last_error
+        if "format" in error_msg.lower() or "requested" in error_msg.lower():
+            error_msg = "Secilen kalite bu video icin uygun degil — daha dusuk bir kalite secin"
+        elif "login" in error_msg.lower() or "private" in error_msg.lower():
+            error_msg = "Bu video ozel/gizli — giris yapmaniz gerekiyor"
+        elif "drm" in error_msg.lower():
+            error_msg = "Bu video DRM ile korumali — indirilemez"
+        elif "unavailable" in error_msg.lower() or "not available" in error_msg.lower():
+            error_msg = "Video su an erisilebilir degil"
+        elif "geo" in error_msg.lower() or "blocked" in error_msg.lower():
+            error_msg = "Video bolgenizden erisime kapali"
+        else:
+            error_msg = f"Indirme basarisiz: {error_msg[:150]}"
+
+        _tasks[task_id]["status"] = "failed"
+        _tasks[task_id]["error"] = error_msg
+        logger.error(f"Task {task_id}: FAILED — {error_msg[:100]}")
 
     background_tasks.add_task(run_download)
 
