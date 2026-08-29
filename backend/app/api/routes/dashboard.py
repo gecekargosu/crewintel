@@ -146,7 +146,22 @@ def dashboard_summary(
                 "link": f"/ship-detail/{ship['ship_id']}",
             })
 
+    # Mobile app compatibility — top-level fields
+    total_crew = db.query(CrewMember).count()
+    unmatched_docs = db.query(Document).filter(Document.match_status == "unmatched").count()
+
     return {
+        # Top-level fields for mobile app
+        "totalCrew": total_crew,
+        "totalDocuments": total_docs,
+        "activeShips": len(ships),
+        "expiredDocuments": expired_docs,
+        "urgentDocuments": urgent_docs,
+        "expiringDocuments": approaching_docs,
+        "unmatchedDocuments": unmatched_docs,
+        "totalPersonnel": total_crew,
+        "activePersonnel": db.query(CrewMember).filter(CrewMember.status == "active").count(),
+        # Detailed nested fields
         "documents": {
             "total": total_docs,
             "expired": expired_docs,
