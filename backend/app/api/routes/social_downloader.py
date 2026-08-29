@@ -229,16 +229,32 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
     # Run in background
     def run_download():
         try:
-            subprocess.run(cmd, capture_output=True, timeout=300)
-            # Mark as completed
-            files = list(output_dir.glob("*"))
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            # Check if yt-dlp actually succeeded
+            if result.returncode != 0:
+                error_msg = (result.stderr or result.stdout or "Bilinmeyen hata").strip()
+                _tasks[task_id]["status"] = "failed"
+                _tasks[task_id]["error"] = error_msg[:500]
+                return
+
+            # Check if any files were actually downloaded
+            files = [f for f in output_dir.glob("*") if f.is_file()]
+            if not files:
+                _tasks[task_id]["status"] = "failed"
+                _tasks[task_id]["error"] = "Dosya indirilemedi — platform giriş gerektirebilir"
+                return
+
             _tasks[task_id]["status"] = "completed"
             _tasks[task_id]["files"] = [
                 {"name": f.name, "size": f.stat().st_size}
-                for f in files if f.is_file()
+                for f in files
             ]
-        except Exception:
+        except subprocess.TimeoutExpired:
             _tasks[task_id]["status"] = "failed"
+            _tasks[task_id]["error"] = "İndirme zaman aşımına uğradı (5 dakika)"
+        except Exception as e:
+            _tasks[task_id]["status"] = "failed"
+            _tasks[task_id]["error"] = str(e)[:500]
 
     background_tasks.add_task(run_download)
 
@@ -261,7 +277,10 @@ async def download_status(task_id: str):
                 "files": task["files"],
             }
         elif task["status"] == "failed":
-            return {"status": "failed", "error": "İndirme başarısız oldu"}
+            return {
+                "status": "failed",
+                "error": task.get("error", "İndirme başarısız oldu"),
+            }
 
     # Fallback: check filesystem
     output_dir = DOWNLOAD_DIR / task_id

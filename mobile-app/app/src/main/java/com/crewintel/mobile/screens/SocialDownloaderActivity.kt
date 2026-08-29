@@ -1,9 +1,7 @@
 package com.crewintel.mobile.screens
 
-import android.app.DownloadManager
-import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -21,6 +19,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -28,18 +28,20 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySocialDownloaderBinding
     private var currentUrl: String? = null
-    private var downloadClientId: Long = -1
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
             .build()
     }
 
     private val backendUrl by lazy {
         PrefsManager(this).serverUrl
     }
+
+    private val authToken: String
+        get() = PrefsManager(this).authToken ?: ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,14 +55,14 @@ class SocialDownloaderActivity : AppCompatActivity() {
         handleShareIntent(intent)
     }
 
-    override fun onNewIntent(intent: android.content.Intent?) {
+    override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         intent?.let { handleShareIntent(it) }
     }
 
-    private fun handleShareIntent(intent: android.content.Intent?) {
-        if (intent?.action == android.content.Intent.ACTION_SEND && intent.type == "text/plain") {
-            val sharedText = intent.getStringExtra(android.content.Intent.EXTRA_TEXT)
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             sharedText?.let {
                 binding.etUrl.setText(it)
                 analyzeUrl()
@@ -97,7 +99,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
                     if (!response.isSuccessful) {
                         val error = JSONObject(body)
-                        throw Exception(error.optString("detail", "Analiz hatası"))
+                        throw Exception(error.optString("detail", "Analiz hatasi"))
                     }
 
                     JSONObject(body)
@@ -124,25 +126,25 @@ class SocialDownloaderActivity : AppCompatActivity() {
         binding.tvUploader.text = buildString {
             if (uploader.isNotEmpty()) append(uploader)
             if (duration > 0) {
-                if (isNotEmpty()) append(" · ")
+                if (isNotEmpty()) append(" . ")
                 val min = duration / 60
                 val sec = duration % 60
                 append("${min}:${String.format("%02d", sec)}")
             }
             if (views > 0) {
-                if (isNotEmpty()) append(" · ")
+                if (isNotEmpty()) append(" . ")
                 append("${views / 1000}K views")
             }
         }
 
         val platform = data.optString("platform", "unknown")
         val platformName = when (platform) {
-            "youtube" -> "▶️ YouTube"
-            "instagram" -> "📷 Instagram"
-            "tiktok" -> "🎵 TikTok"
-            "facebook" -> "📘 Facebook"
-            "pinterest" -> "📌 Pinterest"
-            "twitter" -> "🐦 Twitter/X"
+            "youtube" -> "YouTube"
+            "instagram" -> "Instagram"
+            "tiktok" -> "TikTok"
+            "facebook" -> "Facebook"
+            "pinterest" -> "Pinterest"
+            "twitter" -> "Twitter/X"
             else -> platform
         }
         binding.tvPlatform.text = platformName
@@ -200,7 +202,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
         val url = currentUrl ?: return
 
         binding.downloadCard.visibility = View.VISIBLE
-        binding.tvDownloadStatus.text = "İndiriliyor..."
+        binding.tvDownloadStatus.text = "Indiriliyor..."
         binding.btnDownload.isEnabled = false
 
         lifecycleScope.launch {
@@ -228,7 +230,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                 if (taskId.isNotEmpty()) {
                     pollDownload(taskId)
                 } else {
-                    binding.tvDownloadStatus.text = "İndirme başlatılamadı"
+                    binding.tvDownloadStatus.text = "Indirme baslatilamadi"
                     binding.btnDownload.isEnabled = true
                 }
 
@@ -241,7 +243,11 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
     private fun pollDownload(taskId: String) {
         lifecycleScope.launch {
-            while (true) {
+            val maxAttempts = 150 // 5 minutes max (150 * 2 seconds)
+            var attempts = 0
+
+            while (attempts < maxAttempts) {
+                attempts++
                 kotlinx.coroutines.delay(2000)
                 try {
                     val status = withContext(Dispatchers.IO) {
@@ -252,31 +258,118 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         JSONObject(response.body?.string() ?: "{}")
                     }
 
-                    if (status.optString("status") == "completed") {
+                    val statusStr = status.optString("status", "")
+
+                    if (statusStr == "completed") {
                         val files = status.optJSONArray("files")
                         if (files != null && files.length() > 0) {
                             val file = files.getJSONObject(0)
                             val fileName = file.optString("name", "video.mp4")
-                            val downloadUrl = "$backendUrl/api/social/downloader/$taskId/file"
 
-                            val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                            val request = DownloadManager.Request(Uri.parse(downloadUrl))
-                                .setTitle("CREWINTEL Downloader")
-                                .setDescription("İndiriliyor: $fileName")
-                                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "CREWINTEL/$fileName")
-                                .setAllowedOverMetered(true)
-                                .setAllowedOverRoaming(true)
-
-                            downloadClientId = dm.enqueue(request)
-
-                            binding.tvDownloadStatus.text = "✅ Galeriye indirildi: $fileName"
+                            // Use OkHttp with auth token to download the file
+                            downloadFileWithAuth(taskId, fileName)
+                        } else {
+                            binding.tvDownloadStatus.text = "Hata: Indirme tamamlandi ama dosya bulunamadi"
                             binding.btnDownload.isEnabled = true
-                            Toast.makeText(this@SocialDownloaderActivity, "İndirme tamamlandı!", Toast.LENGTH_SHORT).show()
                         }
-                        break
+                        return@launch
                     }
-                } catch (_: Exception) {}
+
+                    if (statusStr == "failed") {
+                        val errorMsg = status.optString("error", "Indirme basarisiz oldu")
+                        binding.tvDownloadStatus.text = "Basarisiz: $errorMsg"
+                        binding.btnDownload.isEnabled = true
+                        Toast.makeText(
+                            this@SocialDownloaderActivity,
+                            "Video indirilemedi: $errorMsg",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+
+                    // Still downloading
+                    binding.tvDownloadStatus.text = "Indiriliyor... ($attempts/${maxAttempts})"
+
+                } catch (_: Exception) {
+                    // Network error during polling, keep trying
+                }
+            }
+
+            // Timeout
+            binding.tvDownloadStatus.text = "Zaman asimi — indirme cok uzun surdu"
+            binding.btnDownload.isEnabled = true
+        }
+    }
+
+    private fun downloadFileWithAuth(taskId: String, fileName: String) {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val request = Request.Builder()
+                        .url("$backendUrl/api/social/downloader/$taskId/file")
+                        .apply {
+                            if (authToken.isNotEmpty()) {
+                                addHeader("Authorization", "Bearer $authToken")
+                            }
+                        }
+                        .build()
+
+                    val response = httpClient.newCall(request).execute()
+
+                    if (!response.isSuccessful) {
+                        throw Exception("Dosya indirilemedi: HTTP ${response.code}")
+                    }
+
+                    val body = response.body ?: throw Exception("Bos yanit")
+
+                    // Save to Downloads/CREWINTEL/
+                    val downloadsDir = File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                        "CREWINTEL"
+                    )
+                    downloadsDir.mkdirs()
+
+                    val outputFile = File(downloadsDir, fileName)
+                    body.byteStream().use { input ->
+                        FileOutputStream(outputFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+
+                    // Notify media scanner
+                    val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                    mediaScanIntent.data = android.net.Uri.fromFile(outputFile)
+                    sendBroadcast(mediaScanIntent)
+
+                    outputFile.name to outputFile.length()
+                }
+
+                val (savedName, savedSize) = withContext(Dispatchers.IO) {
+                    val downloadsDir = File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                        "CREWINTEL"
+                    )
+                    val f = File(downloadsDir, fileName)
+                    f.name to f.length()
+                }
+
+                val sizeMB = String.format("%.1f", savedSize / 1048576.0)
+                binding.tvDownloadStatus.text = "Indirildi: $savedName ($sizeMB MB)"
+                binding.btnDownload.isEnabled = true
+                Toast.makeText(
+                    this@SocialDownloaderActivity,
+                    "Video galeriye kaydedildi!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } catch (e: Exception) {
+                binding.tvDownloadStatus.text = "Hata: ${e.localizedMessage}"
+                binding.btnDownload.isEnabled = true
+                Toast.makeText(
+                    this@SocialDownloaderActivity,
+                    "Indirme basarisiz: ${e.localizedMessage}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
