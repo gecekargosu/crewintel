@@ -119,6 +119,12 @@ PLATFORM_PATTERNS = {
         r"linkedin\.com/posts/",
         r"linkedin\.com/feed/update/",
         r"linkedin\.com/video/",
+        r"linkedin\.com/watch/",
+        r"linkedin\.com/reel/",
+        r"linkedin\.com/learning/",
+        r"linkedin\.com/embed/",
+        r"linkedin\.com/.+/videos/",
+        r"linkedin\.com/.+/live/",
     ],
 }
 
