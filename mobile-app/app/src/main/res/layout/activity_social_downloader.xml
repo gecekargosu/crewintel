@@ -4,104 +4,103 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#f5f7fa">
+    android:background="#0F172A">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#1e3a5f"
-        app:titleTextColor="#ffffff"
-        app:navigationIconTint="#ffffff"
-        app:title="📥 Video İndirici"
-        app:navigationIcon="?attr/homeAsUpIndicator" />
+        android:background="#1E293B"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="Video Indirici"
+        app:titleTextColor="#F8FAFC" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="16dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Supported Platforms -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginBottom="16dp">
-
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="▶️" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="📷" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="🎵" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="📘" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="📌" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="🐦" android:textSize="20sp" android:layout_marginHorizontal="8dp" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="YouTube · Instagram · TikTok · Facebook · Pinterest · Twitter"
-                android:textColor="#64748b"
-                android:textSize="11sp"
-                android:gravity="center"
-                android:layout_marginBottom="16dp" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <!-- URL Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/InputStyle"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Video linkini yapıştırın..."
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
                 android:layout_marginBottom="12dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etUrl"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textUri"
-                    android:singleLine="true" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <!-- Analyze Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAnalyze"
-                style="@style/PrimaryButton"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="🔍 Videoyu Analiz Et"
-                android:textSize="15sp"
-                android:layout_marginBottom="16dp" />
+                    <EditText
+                        android:id="@+id/etUrl"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="#334155"
+                        android:hint="YouTube, Instagram, TikTok linki yapistirin"
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#94A3B8"
+                        android:paddingHorizontal="16dp"
+                        android:singleLine="true"
+                        android:inputType="textUri" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp">
+
+                        <Button
+                            android:id="@+id/btnAnalyze"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="Analiz Et"
+                            android:textColor="#FFFFFF"
+                            android:backgroundTint="#2563EB" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Loading -->
-            <com.google.android.material.progressindicator.LinearProgressIndicator
+            <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:indeterminate="true"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <!-- Error -->
+            <TextView
+                android:id="@+id/tvError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#EF4444"
+                android:textSize="13sp"
                 android:visibility="gone"
-                android:layout_marginBottom="12dp" />
+                android:padding="8dp"
+                android:layout_marginBottom="8dp" />
 
             <!-- Result Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/resultCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginBottom="12dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -115,115 +114,135 @@
                         android:layout_width="match_parent"
                         android:layout_height="180dp"
                         android:scaleType="centerCrop"
-                        android:background="#e2e8f0"
-                        android:layout_marginBottom="12dp"
-                        android:contentDescription="Thumbnail" />
+                        android:background="#334155" />
+
+                    <!-- Platform badge -->
+                    <TextView
+                        android:id="@+id/tvPlatform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:layout_marginTop="8dp"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
                     <!-- Title -->
                     <TextView
                         android:id="@+id/tvTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#0f172a"
-                        android:textSize="15sp"
+                        android:textColor="#F8FAFC"
+                        android:textSize="16sp"
                         android:textStyle="bold"
-                        android:maxLines="3"
-                        android:ellipsize="end"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginTop="8dp"
+                        android:maxLines="2"
+                        android:ellipsize="end" />
 
-                    <!-- Uploader -->
+                    <!-- Uploader + Duration -->
                     <TextView
                         android:id="@+id/tvUploader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#64748b"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="8dp" />
-
-                    <!-- Platform Badge -->
-                    <TextView
-                        android:id="@+id/tvPlatform"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="3dp"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
-
-                    <!-- Quality Selection -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kalite Seçin:"
-                        android:textColor="#475569"
+                        android:textColor="#94A3B8"
                         android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp" />
+                        android:layout_marginTop="4dp" />
 
-                    <Spinner
-                        android:id="@+id/spinnerQuality"
+                    <!-- Quality Spinner -->
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:background="#e2e8f0"
-                        android:layout_marginBottom="12dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kalite: "
+                            android:textColor="#94A3B8"
+                            android:textSize="14sp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerQuality"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="#334155" />
+
+                    </LinearLayout>
 
                     <!-- Download Button -->
-                    <com.google.android.material.button.MaterialButton
+                    <Button
                         android:id="@+id/btnDownload"
-                        style="@style/PrimaryButton"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:text="⬇️ İndir"
-                        android:textSize="15sp" />
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Indir"
+                        android:textColor="#FFFFFF"
+                        android:backgroundTint="#16A34A" />
+                    <!-- Download Status Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/downloadCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="8dp"
+                        app:cardBackgroundColor="#334155"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvDownloadStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#94A3B8"
+                            android:textSize="13sp"
+                            android:padding="12dp"
+                            android:text="Indiriliyor..." />
+
+                    </com.google.android.material.card.MaterialCardView>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Error -->
+            <!-- Active Downloads Section -->
             <TextView
-                android:id="@+id/tvError"
+                android:id="@+id/tvActiveHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#dc2626"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:visibility="gone"
-                android:padding="12dp"
-                android:background="#fef2f2"
-                android:layout_marginBottom="12dp" />
+                android:text="Aktif Indirmeler"
+                android:textColor="#F8FAFC"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
 
-            <!-- Download Progress Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/downloadCard"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvActiveDownloads"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
+                android:nestedScrollingEnabled="false"
+                android:visibility="gone" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+            <!-- Download History Section -->
+            <TextView
+                android:id="@+id/tvHistoryHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Indirme Gecmisi"
+                android:textColor="#F8FAFC"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
 
-                    <TextView
-                        android:id="@+id/tvDownloadStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="İndiriliyor..."
-                        android:textColor="#1e3a5f"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp" />
-
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/downloadProgress"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:indeterminate="true" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>

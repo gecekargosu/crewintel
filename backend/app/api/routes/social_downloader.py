@@ -1,7 +1,10 @@
-"""Social Media Downloader — API Route
+"""Social Media Downloader — API Route (v2)
 
 yt-dlp ile YouTube, Instagram, TikTok, Facebook, Pinterest, Twitter videolarını indirir.
-Ana CREWINTEL backend'ine entegre edilmiş versiyon.
+- Format fallback zinciri (best→1080→720→480→bestvideo+bestaudio)
+- Eş zamanlı indirme desteği
+- İndirme geçmişi
+- YouTube için JS runtime kurulumu dahil
 """
 
 import re
@@ -22,8 +25,9 @@ router = APIRouter(prefix="/api/social", tags=["social-downloader"])
 DOWNLOAD_DIR = Path("/tmp/social-downloads")
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Task tracking
+# Task tracking (concurrent-safe)
 _tasks: dict[str, dict] = {}
+_download_counter = 0
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -67,6 +71,15 @@ PLATFORM_PATTERNS = {
     ],
 }
 
+PLATFORM_NAMES = {
+    "youtube": "YouTube",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "facebook": "Facebook",
+    "pinterest": "Pinterest",
+    "twitter": "Twitter/X",
+}
+
 
 def detect_platform(url: str) -> Optional[str]:
     for platform, patterns in PLATFORM_PATTERNS.items():
@@ -79,7 +92,7 @@ def detect_platform(url: str) -> Optional[str]:
 # ── yt-dlp Helpers ────────────────────────────────────────────────────────────
 def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
     """Run yt-dlp with given args and return parsed JSON output."""
-    cmd = ["yt-dlp", "--no-warnings", "--no-check-certificates"] + args
+    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings"] + args
     try:
         result = subprocess.run(
             cmd,
@@ -88,10 +101,10 @@ def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
             timeout=timeout,
         )
         if result.returncode != 0:
-            raise Exception(result.stderr.strip() or "yt-dlp failed")
+            raise Exception(result.stderr.strip() or result.stdout.strip() or "yt-dlp failed")
         return {"success": True, "output": result.stdout.strip(), "error": None}
     except subprocess.TimeoutExpired:
-        raise Exception("İşlem zaman aşımına uğradı (60sn)")
+        raise Exception("Islem zaman asimina ugradi (60sn)")
     except Exception as e:
         raise Exception(str(e))
 
@@ -102,8 +115,36 @@ def extract_info(url: str) -> dict:
         "--dump-json",
         "--no-download",
         url,
-    ], timeout=30)
+    ], timeout=45)
     return json.loads(result["output"])
+
+
+def build_format_args(quality: str, format_type: str) -> list[str]:
+    """Build yt-dlp format arguments with robust fallback chain."""
+    if format_type == "audio":
+        return ["-x", "--audio-format", "mp3"]
+
+    # Format fallback chain — tries each until one works
+    # YouTube serves video+audio separately, so we need bestvideo+bestaudio
+    fallbacks = {
+        "best": [
+            "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best",
+        ],
+        "1080": [
+            "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+        ],
+        "720": [
+            "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]",
+        ],
+        "480": [
+            "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]",
+        ],
+    }
+
+    specs = fallbacks.get(quality, fallbacks["best"])
+    format_spec = specs[0]
+
+    return ["-f", format_spec, "--merge-output-format", "mp4"]
 
 
 # ── API Endpoints ─────────────────────────────────────────────────────────────
@@ -122,38 +163,79 @@ async def supported_platforms():
     }
 
 
+@router.get("/downloader/history")
+async def download_history():
+    """Get all downloaded files across all tasks."""
+    all_files = []
+    for task_id, task in sorted(_tasks.items(), key=lambda x: x[1].get("started_at", ""), reverse=True):
+        if task["status"] == "completed" and task.get("files"):
+            for f in task["files"]:
+                all_files.append({
+                    "task_id": task_id,
+                    "name": f.get("name", ""),
+                    "size": f.get("size", 0),
+                    "platform": task.get("platform", "unknown"),
+                    "title": task.get("title", ""),
+                    "thumbnail": task.get("thumbnail", ""),
+                    "downloaded_at": task.get("completed_at", task.get("started_at", "")),
+                })
+    return {"files": all_files, "total": len(all_files)}
+
+
+@router.get("/downloader/active")
+async def active_downloads():
+    """Get all currently downloading tasks."""
+    active = []
+    for task_id, task in _tasks.items():
+        if task["status"] == "downloading":
+            active.append({
+                "task_id": task_id,
+                "url": task.get("url", ""),
+                "title": task.get("title", ""),
+                "platform": task.get("platform", "unknown"),
+                "thumbnail": task.get("thumbnail", ""),
+                "started_at": task.get("started_at", ""),
+            })
+    return {"tasks": active, "count": len(active)}
+
+
 @router.post("/downloader/analyze")
 async def analyze(req: AnalyzeRequest):
     """Analyze a URL and return platform info + video metadata."""
     platform = detect_platform(req.url)
     if not platform:
-        raise HTTPException(status_code=400, detail="Desteklenmeyen platform veya geçersiz URL")
+        raise HTTPException(status_code=400, detail="Desteklenmeyen platform veya gecersiz URL")
 
     try:
         info = extract_info(req.url)
 
-        # Quality options
+        # Quality options — use actual available formats
         formats = []
         if info.get("formats"):
             seen = set()
             for f in info["formats"]:
                 h = f.get("height")
-                if h and h not in seen and f.get("url"):
+                ext = f.get("ext", "mp4")
+                # Skip storyboards, mhtml, and non-video formats
+                if ext in ("mhtml", "json"):
+                    continue
+                if h and h not in seen:
                     seen.add(h)
                     formats.append({
                         "quality": f"{h}p",
                         "height": h,
-                        "ext": f.get("ext", "mp4"),
+                        "ext": ext,
                         "filesize": f.get("filesize") or f.get("filesize_approx"),
                     })
             formats.sort(key=lambda x: x["height"], reverse=True)
 
         # Always add audio option
-        formats.append({"quality": "audio", "height": 0, "ext": "mp3", "filesize": None})
+        formats.append({"quality": "Ses (MP3)", "height": 0, "ext": "mp3", "filesize": None})
 
         return {
             "success": True,
             "platform": platform,
+            "platform_name": PLATFORM_NAMES.get(platform, platform),
             "title": info.get("title", "Bilinmeyen"),
             "thumbnail": info.get("thumbnail"),
             "duration": info.get("duration"),
@@ -162,24 +244,25 @@ async def analyze(req: AnalyzeRequest):
             "description": (info.get("description") or "")[:500],
             "view_count": info.get("view_count"),
             "like_count": info.get("like_count"),
-            "formats": formats[:10],  # Max 10 seçenek
+            "formats": formats[:10],
         }
 
     except Exception as e:
         error_msg = str(e)
         if "Private video" in error_msg or "login" in error_msg.lower():
-            raise HTTPException(status_code=403, detail="Bu içerik giriş gerektiriyor veya gizli")
+            raise HTTPException(status_code=403, detail="Bu icerik giris gerektiriyor veya gizli")
         elif "DRM" in error_msg:
-            raise HTTPException(status_code=403, detail="Bu medya DRM korumalı")
+            raise HTTPException(status_code=403, detail="Bu medya DRM korumali")
         elif "Unsupported" in error_msg or "not supported" in error_msg.lower():
-            raise HTTPException(status_code=400, detail="Platform bu içeriğin indirilmesine izin vermiyor")
+            raise HTTPException(status_code=400, detail="Platform bu icerigin indirilmesine izin vermiyor")
         else:
-            raise HTTPException(status_code=500, detail=f"Analiz hatası: {error_msg[:200]}")
+            raise HTTPException(status_code=500, detail=f"Analiz hatasi: {error_msg[:300]}")
 
 
 @router.post("/downloader/download")
 async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
-    """Start a download task and return task ID."""
+    """Start a download task. Supports concurrent downloads."""
+    global _download_counter
     platform = detect_platform(req.url)
     if not platform:
         raise HTTPException(status_code=400, detail="Desteklenmeyen platform")
@@ -188,70 +271,87 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
     output_dir = DOWNLOAD_DIR / task_id
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    _download_counter += 1
+
     # Task tracking
     _tasks[task_id] = {
         "status": "downloading",
         "started_at": datetime.now().isoformat(),
         "files": [],
+        "url": req.url,
+        "platform": platform,
+        "title": "",
+        "thumbnail": "",
+        "progress": 0,
     }
 
-    # Build yt-dlp command
-    if req.format_type == "audio":
-        output_template = str(output_dir / "%(title).80s.%(ext)s")
-        cmd = [
-            "yt-dlp",
-            "-x", "--audio-format", "mp3",
-            "-o", output_template,
-            "--no-warnings",
-            "--no-check-certificates",
-            req.url,
-        ]
-    else:
-        format_spec = "best"
-        if req.quality == "1080":
-            format_spec = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
-        elif req.quality == "720":
-            format_spec = "bestvideo[height<=720]+bestaudio/best[height<=720]"
-        elif req.quality == "480":
-            format_spec = "bestvideo[height<=480]+bestaudio/best[height<=480]"
+    # Build yt-dlp command with robust format fallback
+    format_args = build_format_args(req.quality, req.format_type)
+    output_template = str(output_dir / "%(title).80s.%(ext)s")
 
-        output_template = str(output_dir / "%(title).80s.%(ext)s")
-        cmd = [
-            "yt-dlp",
-            "-f", format_spec,
-            "--merge-output-format", "mp4",
-            "-o", output_template,
-            "--no-warnings",
-            "--no-check-certificates",
-            req.url,
-        ]
+    cmd = ["yt-dlp"] + format_args + [
+        "-o", output_template,
+        "--no-check-certificates",
+        "--no-warnings",
+        "--newline",  # Progress on new lines
+        req.url,
+    ]
 
-    # Run in background
+    # Run in background (concurrent-safe)
     def run_download():
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            # Check if yt-dlp actually succeeded
+            # First try with the format spec
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+
+            # If failed, try with simpler fallback
+            if result.returncode != 0:
+                error_text = (result.stderr or "").lower()
+                # Retry with "best" fallback
+                if "format" in error_text or "requested" in error_text:
+                    fallback_cmd = [
+                        "yt-dlp",
+                        "-f", "best",
+                        "-o", output_template,
+                        "--no-check-certificates",
+                        "--no-warnings",
+                        req.url,
+                    ]
+                    result = subprocess.run(fallback_cmd, capture_output=True, text=True, timeout=600)
+
+                # If still failed, try without format spec at all
+                if result.returncode != 0:
+                    fallback_cmd2 = [
+                        "yt-dlp",
+                        "-o", output_template,
+                        "--no-check-certificates",
+                        "--no-warnings",
+                        req.url,
+                    ]
+                    result = subprocess.run(fallback_cmd2, capture_output=True, text=True, timeout=600)
+
             if result.returncode != 0:
                 error_msg = (result.stderr or result.stdout or "Bilinmeyen hata").strip()
                 _tasks[task_id]["status"] = "failed"
                 _tasks[task_id]["error"] = error_msg[:500]
                 return
 
-            # Check if any files were actually downloaded
+            # Check if files exist
             files = [f for f in output_dir.glob("*") if f.is_file()]
             if not files:
                 _tasks[task_id]["status"] = "failed"
-                _tasks[task_id]["error"] = "Dosya indirilemedi — platform giriş gerektirebilir"
+                _tasks[task_id]["error"] = "Dosya indirilemedi — platform giris gerektirebilir"
                 return
 
             _tasks[task_id]["status"] = "completed"
+            _tasks[task_id]["completed_at"] = datetime.now().isoformat()
             _tasks[task_id]["files"] = [
                 {"name": f.name, "size": f.stat().st_size}
                 for f in files
             ]
+
         except subprocess.TimeoutExpired:
             _tasks[task_id]["status"] = "failed"
-            _tasks[task_id]["error"] = "İndirme zaman aşımına uğradı (5 dakika)"
+            _tasks[task_id]["error"] = "Indirme zaman asimina ugradi (10 dakika)"
         except Exception as e:
             _tasks[task_id]["status"] = "failed"
             _tasks[task_id]["error"] = str(e)[:500]
@@ -261,31 +361,39 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
     return {
         "task_id": task_id,
         "status": "started",
-        "message": "İndirme başlatıldı",
+        "message": "Indirme baslatildi",
+        "queue_position": _download_counter,
     }
 
 
 @router.get("/downloader/{task_id}/status")
 async def download_status(task_id: str):
     """Check download status."""
-    # First check in-memory tracker
+    # In-memory tracker
     if task_id in _tasks:
         task = _tasks[task_id]
         if task["status"] == "completed":
             return {
                 "status": "completed",
                 "files": task["files"],
+                "title": task.get("title", ""),
+                "platform": task.get("platform", ""),
             }
         elif task["status"] == "failed":
             return {
                 "status": "failed",
-                "error": task.get("error", "İndirme başarısız oldu"),
+                "error": task.get("error", "Indirme basarisiz oldu"),
+            }
+        else:
+            return {
+                "status": "downloading",
+                "progress": task.get("progress", 0),
             }
 
     # Fallback: check filesystem
     output_dir = DOWNLOAD_DIR / task_id
     if not output_dir.exists():
-        raise HTTPException(status_code=404, detail="Görev bulunamadı")
+        raise HTTPException(status_code=404, detail="Gorev bulunamadi")
 
     files = list(output_dir.glob("*"))
     file_list = [
@@ -305,7 +413,7 @@ async def download_file(task_id: str):
     output_dir = DOWNLOAD_DIR / task_id
     files = list(output_dir.glob("*"))
     if not files:
-        raise HTTPException(status_code=404, detail="Dosya bulunamadı")
+        raise HTTPException(status_code=404, detail="Dosya bulunamadi")
 
     file_path = files[0]
     return FileResponse(

@@ -1,7 +1,9 @@
 package com.crewintel.mobile.screens
 
-import android.content.Intent
+import android.content.*
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -9,11 +11,10 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.crewintel.mobile.databinding.ActivitySocialDownloaderBinding
 import com.crewintel.mobile.utils.PrefsManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -22,12 +23,26 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 class SocialDownloaderActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySocialDownloaderBinding
     private var currentUrl: String? = null
+    private var currentTitle: String = ""
+    private var currentPlatform: String = ""
+    private var currentThumbnail: String = ""
+
+    // Adapters
+    private val activeAdapter = ActiveDownloadAdapter()
+    private val historyAdapter = DownloadHistoryAdapter { item -> playVideo(item) }
+
+    // Active downloads tracking
+    private val activeTasks = ConcurrentHashMap<String, ActiveDownload>()
+
+    // Polling jobs
+    private val pollJobs = ConcurrentHashMap<String, Job>()
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
@@ -36,9 +51,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
             .build()
     }
 
-    private val backendUrl by lazy {
-        PrefsManager(this).serverUrl
-    }
+    private val backendUrl by lazy { PrefsManager(this).serverUrl }
 
     private val authToken: String
         get() = PrefsManager(this).authToken ?: ""
@@ -51,6 +64,16 @@ class SocialDownloaderActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.btnAnalyze.setOnClickListener { analyzeUrl() }
         binding.btnDownload.setOnClickListener { startDownload() }
+
+        // Setup RecyclerViews
+        binding.rvActiveDownloads.layoutManager = LinearLayoutManager(this)
+        binding.rvActiveDownloads.adapter = activeAdapter
+
+        binding.rvHistory.layoutManager = LinearLayoutManager(this)
+        binding.rvHistory.adapter = historyAdapter
+
+        // Load history on start
+        loadHistory()
 
         handleShareIntent(intent)
     }
@@ -95,13 +118,12 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         .build()
 
                     val response = httpClient.newCall(request).execute()
-                    val body = response.body?.string() ?: throw Exception("Empty response")
+                    val body = response.body?.string() ?: throw Exception("Bos yanit")
 
                     if (!response.isSuccessful) {
                         val error = JSONObject(body)
                         throw Exception(error.optString("detail", "Analiz hatasi"))
                     }
-
                     JSONObject(body)
                 }
 
@@ -118,7 +140,11 @@ class SocialDownloaderActivity : AppCompatActivity() {
     private fun displayResult(data: JSONObject) {
         binding.resultCard.visibility = View.VISIBLE
 
-        binding.tvTitle.text = data.optString("title", "Bilinmeyen video")
+        currentTitle = data.optString("title", "Bilinmeyen video")
+        currentPlatform = data.optString("platform", "unknown")
+        currentThumbnail = data.optString("thumbnail", "")
+
+        binding.tvTitle.text = currentTitle
 
         val uploader = data.optString("uploader", "")
         val duration = data.optInt("duration", 0)
@@ -126,29 +152,26 @@ class SocialDownloaderActivity : AppCompatActivity() {
         binding.tvUploader.text = buildString {
             if (uploader.isNotEmpty()) append(uploader)
             if (duration > 0) {
-                if (isNotEmpty()) append(" . ")
-                val min = duration / 60
-                val sec = duration % 60
-                append("${min}:${String.format("%02d", sec)}")
+                if (isNotEmpty()) append(" | ")
+                append("${duration / 60}:${String.format("%02d", duration % 60)}")
             }
             if (views > 0) {
-                if (isNotEmpty()) append(" . ")
+                if (isNotEmpty()) append(" | ")
                 append("${views / 1000}K views")
             }
         }
 
-        val platform = data.optString("platform", "unknown")
-        val platformName = when (platform) {
+        val platformName = when (currentPlatform) {
             "youtube" -> "YouTube"
             "instagram" -> "Instagram"
             "tiktok" -> "TikTok"
             "facebook" -> "Facebook"
             "pinterest" -> "Pinterest"
             "twitter" -> "Twitter/X"
-            else -> platform
+            else -> currentPlatform
         }
         binding.tvPlatform.text = platformName
-        val bgColor = when (platform) {
+        val bgColor = when (currentPlatform) {
             "youtube" -> 0xFFFF0000.toInt()
             "instagram" -> 0xFFE1306C.toInt()
             "tiktok" -> 0xFF000000.toInt()
@@ -160,9 +183,8 @@ class SocialDownloaderActivity : AppCompatActivity() {
         binding.tvPlatform.setTextColor(0xFFFFFFFF.toInt())
         binding.tvPlatform.setBackgroundColor(bgColor)
 
-        val thumbnailUrl = data.optString("thumbnail", "")
-        if (thumbnailUrl.isNotEmpty()) {
-            loadThumbnail(thumbnailUrl)
+        if (currentThumbnail.isNotEmpty()) {
+            loadThumbnail(currentThumbnail)
         }
 
         val formats = data.optJSONArray("formats")
@@ -170,14 +192,10 @@ class SocialDownloaderActivity : AppCompatActivity() {
         if (formats != null) {
             for (i in 0 until formats.length()) {
                 val fmt = formats.getJSONObject(i)
-                val quality = fmt.optString("quality", "?")
-                val ext = fmt.optString("ext", "mp4")
-                qualityList.add("$quality ($ext)")
+                qualityList.add(fmt.optString("quality", "?"))
             }
         }
-        if (qualityList.isEmpty()) {
-            qualityList.add("En iyi kalite")
-        }
+        if (qualityList.isEmpty()) qualityList.add("En iyi kalite")
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, qualityList)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -188,18 +206,19 @@ class SocialDownloaderActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val bitmap = withContext(Dispatchers.IO) {
-                    val stream = URL(url).openStream()
-                    BitmapFactory.decodeStream(stream)
+                    BitmapFactory.decodeStream(URL(url).openStream())
                 }
                 binding.ivThumbnail.setImageBitmap(bitmap)
-            } catch (_: Exception) {
-                binding.ivThumbnail.setImageResource(android.R.color.darker_gray)
-            }
+            } catch (_: Exception) {}
         }
     }
 
+    // ── Download ─────────────────────────────────────────────────────────────
     private fun startDownload() {
         val url = currentUrl ?: return
+
+        // Start foreground service for screen-off support
+        startDownloadService(currentTitle)
 
         binding.downloadCard.visibility = View.VISIBLE
         binding.tvDownloadStatus.text = "Indiriliyor..."
@@ -208,10 +227,14 @@ class SocialDownloaderActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
+                    val quality = binding.spinnerQuality.selectedItem?.toString() ?: "best"
+                    val qualityValue = quality.replace("p", "").replace("Ses (MP3)", "audio").lowercase()
+                    val formatType = if (qualityValue == "audio") "audio" else "video"
+
                     val jsonBody = JSONObject()
                         .put("url", url)
-                        .put("quality", "best")
-                        .put("format_type", "video")
+                        .put("quality", qualityValue)
+                        .put("format_type", formatType)
 
                     val requestBody = jsonBody.toString()
                         .toRequestBody("application/json".toMediaType())
@@ -222,12 +245,24 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         .build()
 
                     val response = httpClient.newCall(request).execute()
-                    val body = response.body?.string() ?: throw Exception("Empty response")
+                    val body = response.body?.string() ?: throw Exception("Bos yanit")
                     JSONObject(body)
                 }
 
                 val taskId = result.optString("task_id", "")
                 if (taskId.isNotEmpty()) {
+                    // Add to active downloads
+                    val activeDownload = ActiveDownload(
+                        taskId = taskId,
+                        title = currentTitle,
+                        platform = currentPlatform,
+                        thumbnail = currentThumbnail,
+                        startedAt = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+                    )
+                    activeTasks[taskId] = activeDownload
+                    updateActiveList()
+
+                    // Start polling
                     pollDownload(taskId)
                 } else {
                     binding.tvDownloadStatus.text = "Indirme baslatilamadi"
@@ -237,18 +272,19 @@ class SocialDownloaderActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 binding.tvDownloadStatus.text = "Hata: ${e.localizedMessage}"
                 binding.btnDownload.isEnabled = true
+                stopDownloadService()
             }
         }
     }
 
     private fun pollDownload(taskId: String) {
-        lifecycleScope.launch {
-            val maxAttempts = 150 // 5 minutes max (150 * 2 seconds)
+        val job = lifecycleScope.launch {
+            val maxAttempts = 300 // 10 minutes
             var attempts = 0
 
-            while (attempts < maxAttempts) {
+            while (isActive && attempts < maxAttempts) {
                 attempts++
-                kotlinx.coroutines.delay(2000)
+                delay(3000)
                 try {
                     val status = withContext(Dispatchers.IO) {
                         val request = Request.Builder()
@@ -260,45 +296,39 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
                     val statusStr = status.optString("status", "")
 
-                    if (statusStr == "completed") {
-                        val files = status.optJSONArray("files")
-                        if (files != null && files.length() > 0) {
-                            val file = files.getJSONObject(0)
-                            val fileName = file.optString("name", "video.mp4")
-
-                            // Use OkHttp with auth token to download the file
-                            downloadFileWithAuth(taskId, fileName)
-                        } else {
-                            binding.tvDownloadStatus.text = "Hata: Indirme tamamlandi ama dosya bulunamadi"
-                            binding.btnDownload.isEnabled = true
+                    when (statusStr) {
+                        "completed" -> {
+                            val files = status.optJSONArray("files")
+                            if (files != null && files.length() > 0) {
+                                val file = files.getJSONObject(0)
+                                val fileName = file.optString("name", "video.mp4")
+                                downloadFileWithAuth(taskId, fileName)
+                            } else {
+                                showError("Indirme tamamlandi ama dosya bulunamadi")
+                                binding.btnDownload.isEnabled = true
+                            }
+                            return@launch
                         }
-                        return@launch
+                        "failed" -> {
+                            val errorMsg = status.optString("error", "Basarisiz")
+                            binding.tvDownloadStatus.text = "Basarisiz: $errorMsg"
+                            binding.btnDownload.isEnabled = true
+                            Toast.makeText(this@SocialDownloaderActivity, "Video indirilemedi", Toast.LENGTH_LONG).show()
+                            stopDownloadService()
+                            return@launch
+                        }
+                        else -> {
+                            binding.tvDownloadStatus.text = "Indiriliyor... ($attempts)"
+                        }
                     }
-
-                    if (statusStr == "failed") {
-                        val errorMsg = status.optString("error", "Indirme basarisiz oldu")
-                        binding.tvDownloadStatus.text = "Basarisiz: $errorMsg"
-                        binding.btnDownload.isEnabled = true
-                        Toast.makeText(
-                            this@SocialDownloaderActivity,
-                            "Video indirilemedi: $errorMsg",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        return@launch
-                    }
-
-                    // Still downloading
-                    binding.tvDownloadStatus.text = "Indiriliyor... ($attempts/${maxAttempts})"
-
-                } catch (_: Exception) {
-                    // Network error during polling, keep trying
-                }
+                } catch (_: Exception) {}
             }
 
-            // Timeout
-            binding.tvDownloadStatus.text = "Zaman asimi — indirme cok uzun surdu"
+            binding.tvDownloadStatus.text = "Zaman asimi"
             binding.btnDownload.isEnabled = true
+            stopDownloadService()
         }
+        pollJobs[taskId] = job
     }
 
     private fun downloadFileWithAuth(taskId: String, fileName: String) {
@@ -315,14 +345,10 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         .build()
 
                     val response = httpClient.newCall(request).execute()
-
-                    if (!response.isSuccessful) {
-                        throw Exception("Dosya indirilemedi: HTTP ${response.code}")
-                    }
+                    if (!response.isSuccessful) throw Exception("HTTP ${response.code}")
 
                     val body = response.body ?: throw Exception("Bos yanit")
 
-                    // Save to Downloads/CREWINTEL/
                     val downloadsDir = File(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                         "CREWINTEL"
@@ -337,43 +363,140 @@ class SocialDownloaderActivity : AppCompatActivity() {
                     }
 
                     // Notify media scanner
-                    val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                    mediaScanIntent.data = android.net.Uri.fromFile(outputFile)
-                    sendBroadcast(mediaScanIntent)
-
-                    outputFile.name to outputFile.length()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        android.media.MediaScannerConnection.scanFile(
+                            this@SocialDownloaderActivity,
+                            arrayOf(outputFile.absolutePath),
+                            null, null
+                        )
+                    } else {
+                        sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outputFile)))
+                    }
                 }
 
-                val (savedName, savedSize) = withContext(Dispatchers.IO) {
-                    val downloadsDir = File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                        "CREWINTEL"
-                    )
-                    val f = File(downloadsDir, fileName)
-                    f.name to f.length()
-                }
+                // Remove from active, add to history
+                activeTasks.remove(taskId)
+                pollJobs.remove(taskId)?.cancel()
+                updateActiveList()
 
-                val sizeMB = String.format("%.1f", savedSize / 1048576.0)
-                binding.tvDownloadStatus.text = "Indirildi: $savedName ($sizeMB MB)"
+                binding.tvDownloadStatus.text = "Indirildi: $fileName"
                 binding.btnDownload.isEnabled = true
-                Toast.makeText(
-                    this@SocialDownloaderActivity,
-                    "Video galeriye kaydedildi!",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+                val sizeMB = withContext(Dispatchers.IO) {
+                    val f = File(
+                        File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "CREWINTEL"),
+                        fileName
+                    )
+                    String.format("%.1f MB", f.length() / 1048576.0)
+                }
+
+                Toast.makeText(this@SocialDownloaderActivity, "Video kaydedildi! ($sizeMB)", Toast.LENGTH_SHORT).show()
+
+                // Reload history
+                loadHistory()
+                stopDownloadService()
 
             } catch (e: Exception) {
                 binding.tvDownloadStatus.text = "Hata: ${e.localizedMessage}"
                 binding.btnDownload.isEnabled = true
-                Toast.makeText(
-                    this@SocialDownloaderActivity,
-                    "Indirme basarisiz: ${e.localizedMessage}",
-                    Toast.LENGTH_LONG
-                ).show()
+                stopDownloadService()
             }
         }
     }
 
+    // ── History ──────────────────────────────────────────────────────────────
+    private fun loadHistory() {
+        lifecycleScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val request = Request.Builder()
+                        .url("$backendUrl/api/social/downloader/history")
+                        .build()
+                    val response = httpClient.newCall(request).execute()
+                    JSONObject(response.body?.string() ?: "{}")
+                }
+
+                val files = result.optJSONArray("files")
+                val items = mutableListOf<HistoryItem>()
+                if (files != null) {
+                    for (i in 0 until files.length()) {
+                        val f = files.getJSONObject(i)
+                        items.add(HistoryItem(
+                            taskId = f.optString("task_id", ""),
+                            title = f.optString("title", ""),
+                            platform = f.optString("platform", ""),
+                            fileName = f.optString("name", ""),
+                            fileSize = f.optLong("size", 0),
+                            thumbnail = f.optString("thumbnail", ""),
+                            downloadedAt = f.optString("downloaded_at", ""),
+                        ))
+                    }
+                }
+
+                if (items.isNotEmpty()) {
+                    binding.tvHistoryHeader.visibility = View.VISIBLE
+                    binding.rvHistory.visibility = View.VISIBLE
+                    historyAdapter.updateList(items)
+                } else {
+                    binding.tvHistoryHeader.visibility = View.GONE
+                    binding.rvHistory.visibility = View.GONE
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun playVideo(item: HistoryItem) {
+        val downloadsDir = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "CREWINTEL"
+        )
+        val file = File(downloadsDir, item.fileName)
+        if (file.exists()) {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(Uri.fromFile(file), "video/*")
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "Dosya bulunamadi: ${item.fileName}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ── Active Downloads UI ──────────────────────────────────────────────────
+    private fun updateActiveList() {
+        val active = activeTasks.values.toList()
+        if (active.isNotEmpty()) {
+            binding.tvActiveHeader.visibility = View.VISIBLE
+            binding.rvActiveDownloads.visibility = View.VISIBLE
+            activeAdapter.updateList(active)
+        } else {
+            binding.tvActiveHeader.visibility = View.GONE
+            binding.rvActiveDownloads.visibility = View.GONE
+        }
+    }
+
+    // ── Foreground Service ───────────────────────────────────────────────────
+    private fun startDownloadService(title: String) {
+        val intent = Intent(this, DownloadService::class.java).apply {
+            action = DownloadService.ACTION_START
+            putExtra(DownloadService.EXTRA_TITLE, "Indiriliyor: $title")
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    private fun stopDownloadService() {
+        if (activeTasks.isEmpty()) {
+            val intent = Intent(this, DownloadService::class.java).apply {
+                action = DownloadService.ACTION_STOP
+            }
+            startService(intent)
+        }
+    }
+
+    // ── UI Helpers ───────────────────────────────────────────────────────────
     private fun showLoading(show: Boolean) {
         binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
         binding.btnAnalyze.isEnabled = !show
@@ -389,7 +512,15 @@ class SocialDownloaderActivity : AppCompatActivity() {
         binding.tvError.visibility = View.VISIBLE
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        pollJobs.values.forEach { it.cancel() }
+        pollJobs.clear()
+        stopDownloadService()
+    }
+
     private fun hideError() {
         binding.tvError.visibility = View.GONE
     }
+
 }
