@@ -687,3 +687,7 @@ Do not start yet:
 | 2026-08-28 | Kişisel bilgiler tablosu 3x Uyruk hatası düzeltildi | FASE 3 |
 | 2026-08-28 | Bireysel WhatsApp butonu eklendi (personel detayı) | FASE 3 |
 | 2026-08-28 | E-posta gönderme test edildi — SMTP aktif, çalışıyor | FASE 3 |
+| 2026-08-29 | Social Downloader entegre edildi (yt-dlp + ffmpeg, `/api/social/downloader/*`) | FASE 3 |
+| 2026-08-29 | Android SocialDownloaderActivity URL fix — port 8001 bağımlılığı kaldırıldı | FASE 3 |
+| 2026-08-29 | Dockerfile'a ffmpeg kurulumu eklendi | FASE 3 |
+| 2026-08-29 | Social downloader analiz YouTube, Instagram, TikTok, Facebook, Pinterest, Twitter destekli | FASE 3 |

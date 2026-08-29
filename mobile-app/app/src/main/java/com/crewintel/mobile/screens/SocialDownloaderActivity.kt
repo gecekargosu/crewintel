@@ -38,8 +38,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
     }
 
     private val backendUrl by lazy {
-        val prefs = PrefsManager(this)
-        prefs.serverUrl.replace(":8000", ":8001")
+        PrefsManager(this).serverUrl
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +88,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         .toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("$backendUrl/api/analyze")
+                        .url("$backendUrl/api/social/downloader/analyze")
                         .post(requestBody)
                         .build()
 
@@ -216,7 +215,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         .toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("$backendUrl/api/download")
+                        .url("$backendUrl/api/social/downloader/download")
                         .post(requestBody)
                         .build()
 
@@ -247,7 +246,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                 try {
                     val status = withContext(Dispatchers.IO) {
                         val request = Request.Builder()
-                            .url("$backendUrl/api/download/$taskId/status")
+                            .url("$backendUrl/api/social/downloader/$taskId/status")
                             .build()
                         val response = httpClient.newCall(request).execute()
                         JSONObject(response.body?.string() ?: "{}")
@@ -258,7 +257,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                         if (files != null && files.length() > 0) {
                             val file = files.getJSONObject(0)
                             val fileName = file.optString("name", "video.mp4")
-                            val downloadUrl = "$backendUrl/api/download/$taskId/file"
+                            val downloadUrl = "$backendUrl/api/social/downloader/$taskId/file"
 
                             val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
                             val request = DownloadManager.Request(Uri.parse(downloadUrl))

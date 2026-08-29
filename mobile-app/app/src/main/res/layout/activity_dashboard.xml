@@ -307,6 +307,16 @@
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDownloader"
+                    style="@style/SecondaryButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="📥 Video İndirici"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="#25d366" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSettings"
                     style="@style/SecondaryButton"
                     android:layout_width="match_parent"
