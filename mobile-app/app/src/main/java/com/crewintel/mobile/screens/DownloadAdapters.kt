@@ -91,7 +91,8 @@ data class HistoryItem(
 
 class DownloadHistoryAdapter(
     private val items: MutableList<HistoryItem> = mutableListOf(),
-    private val onPlay: (HistoryItem) -> Unit = {}
+    private val onPlay: (HistoryItem) -> Unit = {},
+    private val onDelete: (HistoryItem) -> Unit = {}
 ) : RecyclerView.Adapter<DownloadHistoryAdapter.VH>() {
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {
@@ -99,6 +100,7 @@ class DownloadHistoryAdapter(
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
         val tvSize: TextView = view.findViewById(R.id.tvSize)
         val btnPlay: ImageView = view.findViewById(R.id.btnPlay)
+        val btnDelete: ImageView = view.findViewById(R.id.btnDelete)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -112,9 +114,18 @@ class DownloadHistoryAdapter(
         holder.tvTitle.text = item.title.ifEmpty { item.fileName }
         holder.tvSize.text = formatSize(item.fileSize)
         holder.btnPlay.setOnClickListener { onPlay(item) }
+        holder.btnDelete.setOnClickListener { onDelete(item) }
     }
 
     override fun getItemCount() = items.size
+
+    fun removeItem(taskId: String) {
+        val index = items.indexOfFirst { it.taskId == taskId }
+        if (index >= 0) {
+            items.removeAt(index)
+            notifyItemRemoved(index)
+        }
+    }
 
     fun updateList(newItems: List<HistoryItem>) {
         items.clear()

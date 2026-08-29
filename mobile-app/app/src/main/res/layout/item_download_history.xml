@@ -60,5 +60,17 @@
             android:contentDescription="Izle"
             android:scaleType="centerInside" />
 
+        <!-- Delete button -->
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Sil"
+            android:scaleType="centerInside"
+            android:tint="#EF4444" />
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

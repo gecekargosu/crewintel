@@ -443,3 +443,18 @@ async def download_file(task_id: str):
         filename=file_path.name,
         media_type="application/octet-stream",
     )
+
+@router.delete("/downloader/{task_id}")
+async def delete_download(task_id: str):
+    """Delete a downloaded file and remove from history."""
+    # Remove from tasks
+    if task_id in _tasks:
+        del _tasks[task_id]
+
+    # Remove files from disk
+    output_dir = DOWNLOAD_DIR / task_id
+    if output_dir.exists():
+        import shutil
+        shutil.rmtree(output_dir, ignore_errors=True)
+
+    return {"status": "deleted", "task_id": task_id}

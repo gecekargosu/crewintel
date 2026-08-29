@@ -36,7 +36,10 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
     // Adapters
     private val activeAdapter = ActiveDownloadAdapter()
-    private val historyAdapter = DownloadHistoryAdapter { item -> playVideo(item) }
+    private val historyAdapter = DownloadHistoryAdapter(
+        onPlay = { item -> playVideo(item) },
+        onDelete = { item -> deleteVideo(item) }
+    )
 
     // Active downloads tracking
     private val activeTasks = ConcurrentHashMap<String, ActiveDownload>()
@@ -452,12 +455,61 @@ class SocialDownloaderActivity : AppCompatActivity() {
         )
         val file = File(downloadsDir, item.fileName)
         if (file.exists()) {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(Uri.fromFile(file), "video/*")
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            startActivity(intent)
+            // Use FileProvider for Android 7+ compatibility
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.fileprovider",
+                    file
+                )
+            } else {
+                Uri.fromFile(file)
+            }
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "video/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                // Fallback: open in browser
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("file://${file.absolutePath}"))
+                startActivity(browserIntent)
+            }
         } else {
             Toast.makeText(this, "Dosya bulunamadi: ${item.fileName}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun deleteVideo(item: HistoryItem) {
+        // Delete from backend
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val request = Request.Builder()
+                        .url("$backendUrl/api/social/downloader/${item.taskId}")
+                        .delete()
+                        .build()
+                    httpClient.newCall(request).execute()
+                }
+                // Delete from local storage
+                val downloadsDir = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "CREWINTEL"
+                )
+                val file = File(downloadsDir, item.fileName)
+                if (file.exists()) file.delete()
+
+                // Update UI
+                historyAdapter.removeItem(item.taskId)
+                Toast.makeText(this@SocialDownloaderActivity, "Silindi: ${item.fileName}", Toast.LENGTH_SHORT).show()
+
+                // Refresh history
+                loadHistory()
+            } catch (e: Exception) {
+                Toast.makeText(this@SocialDownloaderActivity, "Silme hatasi: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
