@@ -19,13 +19,49 @@
     <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
 
-            <!-- Image/Video selection -->
-            <com.google.android.material.card.MaterialCardView android:id="@+id/cardMedia" android:layout_width="match_parent" android:layout_height="140dp" android:layout_marginBottom="16dp" android:clickable="true" android:focusable="true">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:background="#e2e8f0">
-                    <TextView android:id="@+id/tvMediaIcon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🖼️" android:textSize="40sp" />
-                    <TextView android:id="@+id/tvMediaHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Arka Plan Resmi/Video Seç" android:textColor="#64748b" android:textSize="13sp" android:layout_marginTop="4dp" />
+            <!-- Image preview / selection -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"
+                android:background="#e2e8f0">
+
+                <ImageView
+                    android:id="@+id/ivPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/layoutPlaceholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🖼️" android:textSize="48sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Arka Plan Resmi/Video Seç" android:textColor="#64748b" android:textSize="13sp" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <!-- Text overlay preview -->
+                <LinearLayout
+                    android:id="@+id/layoutOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="bottom"
+                    android:padding="12dp"
+                    android:background="#80000000"
+                    android:visibility="gone">
+
+                    <TextView android:id="@+id/tvOverlayTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#fff" android:textSize="16sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvOverlaySub" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FFD700" android:textSize="11sp" android:layout_marginTop="4dp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="⚓ UMAY Admin" android:textColor="#94a3b8" android:textSize="10sp" android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <TextView android:id="@+id/btnSelectMedia" android:layout_width="match_parent" android:layout_height="40dp" android:text="📷 Resim/Video Seç" android:textColor="#fff" android:textSize="13sp" android:background="#3b82f6" android:gravity="center" android:layout_marginBottom="12dp" android:clickable="true" android:focusable="true" />
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📋 Pozisyon" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
             <EditText android:id="@+id/etPosition" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: Kaptan, Başmühendis" android:textSize="14sp" android:layout_marginBottom="12dp" />
@@ -34,20 +70,39 @@
             <EditText android:id="@+id/etVesselType" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: Tanker, Bulk Carrier" android:textSize="14sp" android:layout_marginBottom="12dp" />
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📝 Açıklama" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
-            <EditText android:id="@+id/etDescription" android:layout_width="match_parent" android:layout_height="120dp" android:background="#fff" android:padding="12dp" android:hint="İş ilanı açıklaması..." android:textSize="14sp" android:inputType="textMultiLine" android:gravity="top" android:layout_marginBottom="12dp" />
+            <EditText android:id="@+id/etDescription" android:layout_width="match_parent" android:layout_height="100dp" android:background="#fff" android:padding="12dp" android:hint="İş ilanı açıklaması..." android:textSize="14sp" android:inputType="textMultiLine" android:gravity="top" android:layout_marginBottom="12dp" />
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="💰 Maaş" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
             <EditText android:id="@+id/etSalary" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Örn: 5000 USD" android:textSize="14sp" android:layout_marginBottom="12dp" />
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📞 İletişim" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="4dp" />
-            <EditText android:id="@+id/etContact" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Telefon / E-posta" android:textSize="14sp" android:layout_marginBottom="20dp" />
+            <EditText android:id="@+id/etContact" android:layout_width="match_parent" android:layout_height="48dp" android:background="#fff" android:padding="12dp" android:hint="Telefon / E-posta" android:textSize="14sp" android:layout_marginBottom="16dp" />
 
-            <!-- Preview -->
-            <TextView android:id="@+id/tvPreview" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#fff" android:padding="16dp" android:textColor="#1e3a5f" android:textSize="13sp" android:lineSpacingExtra="4dp" android:layout_marginBottom="16dp" android:visibility="gone" />
+            <!-- Share buttons -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="📤 Paylaş" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp" />
 
-            <com.google.android.material.button.MaterialButton android:id="@+id/btnPreview" android:layout_width="match_parent" android:layout_height="48dp" android:text="👁️ Önizle" android:textSize="14sp" android:backgroundTint="#64748b" android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
 
-            <com.google.android.material.button.MaterialButton android:id="@+id/btnShare" android:layout_width="match_parent" android:layout_height="52dp" android:text="📤 İlanı Paylaş" android:textSize="15sp" android:textStyle="bold" android:backgroundTint="#16a34a" />
+                <TextView android:id="@+id/btnShareWA" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="💬 WhatsApp" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#25D366" android:layout_marginEnd="4dp" android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/btnShareIG" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="📸 Instagram" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#E1306C" android:layout_marginEnd="4dp" android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/btnShareFB" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="📘 Facebook" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#1877F2" android:clickable="true" android:focusable="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView android:id="@+id/btnShareLI" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="💼 LinkedIn" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#0A66C2" android:layout_marginEnd="4dp" android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/btnShareTG" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="✈️ Telegram" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#0088CC" android:layout_marginEnd="4dp" android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/btnShareMore" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="➕ Diğer" android:textColor="#fff" android:textSize="11sp" android:gravity="center" android:background="#64748b" android:clickable="true" android:focusable="true" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

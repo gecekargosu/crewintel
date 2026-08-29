@@ -92,11 +92,21 @@ class NotesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                val note = mapOf("title" to title, "body" to body, "priority" to "normal")
-                api.createNote(note)
-                loadNotes()
+                val note = mapOf(
+                    "title" to title,
+                    "body" to body,
+                    "priority" to "normal",
+                    "done" to false
+                )
+                val response = api.createNote(note)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@NotesActivity, "✅ Not kaydedildi", Toast.LENGTH_SHORT).show()
+                    loadNotes()
+                } else {
+                    Toast.makeText(this@NotesActivity, "Hata: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@NotesActivity, "Kaydedilemedi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@NotesActivity, "Kaydedilemedi: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

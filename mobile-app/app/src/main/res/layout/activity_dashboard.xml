@@ -24,14 +24,10 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="20dp">
 
-                <TextView
+                <View
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="UMAY Admin"
-                    android:textColor="#1e3a5f"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/tvUserRole"

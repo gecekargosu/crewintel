@@ -3,6 +3,8 @@ package com.crewintel.mobile.screens
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +25,7 @@ class QuickContactActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuickContactBinding
     private lateinit var prefs: PrefsManager
     private val adapter = CrewContactAdapter()
+    private var allCrew = listOf<CrewMember>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +37,14 @@ class QuickContactActivity : AppCompatActivity() {
         binding.rvCrew.layoutManager = LinearLayoutManager(this)
         binding.rvCrew.adapter = adapter
 
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterCrew(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         loadCrew()
     }
 
@@ -44,8 +55,8 @@ class QuickContactActivity : AppCompatActivity() {
                 val api = ApiClient.getApi(prefs)
                 val response = api.getCrewList()
                 if (response.isSuccessful) {
-                    val crew = response.body() ?: emptyList()
-                    adapter.submitList(crew)
+                    allCrew = response.body() ?: emptyList()
+                    adapter.submitList(allCrew)
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@QuickContactActivity, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -53,6 +64,22 @@ class QuickContactActivity : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
             }
         }
+    }
+
+    private fun filterCrew(query: String) {
+        if (query.isBlank()) {
+            adapter.submitList(allCrew)
+            return
+        }
+        val lower = query.lowercase()
+        val filtered = allCrew.filter {
+            it.firstName.lowercase().contains(lower) ||
+            it.lastName.lowercase().contains(lower) ||
+            "${it.firstName} ${it.lastName}".lowercase().contains(lower) ||
+            (it.position?.lowercase()?.contains(lower) == true) ||
+            (it.rank?.lowercase()?.contains(lower) == true)
+        }
+        adapter.submitList(filtered)
     }
 }
 
@@ -70,46 +97,50 @@ class CrewContactAdapter : androidx.recyclerview.widget.ListAdapter<CrewMember, 
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val crew = getItem(position)
+        val crew = getItem(holder.adapterPosition)
+        val ctx = holder.itemView.context
         holder.binding.tvName.text = "${crew.firstName} ${crew.lastName}"
         holder.binding.tvPosition.text = crew.position ?: crew.rank ?: "Personel"
         holder.binding.tvPhone.text = crew.phone ?: "Telefon yok"
 
+        val phone = crew.phone?.replace("[^0-9+]", "") ?: ""
+
         // WhatsApp
         holder.binding.btnWhatsApp.setOnClickListener {
-            if (crew.phone.isNullOrBlank()) {
-                Toast.makeText(holder.itemView.context, "Telefon numarası yok", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val phone = crew.phone.replace("[^0-9+]", "")
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("whatsapp://send?phone=$phone&text=Merhaba ${crew.firstName}")
-            }
+            if (phone.isBlank()) { Toast.makeText(ctx, "Telefon yok", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
             try {
-                holder.itemView.context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(holder.itemView.context, "WhatsApp yüklü değil", Toast.LENGTH_SHORT).show()
+                ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("whatsapp://send?phone=$phone&text=Merhaba ${crew.firstName}")))
+            } catch (_: Exception) { Toast.makeText(ctx, "WhatsApp yüklü değil", Toast.LENGTH_SHORT).show() }
+        }
+
+        // Telegram
+        holder.binding.btnTelegram.setOnClickListener {
+            try {
+                ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=${crew.firstName.lowercase()}")))
+            } catch (_: Exception) {
+                // Fallback: open Telegram web
+                try {
+                    ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/")))
+                } catch (_: Exception) { Toast.makeText(ctx, "Telegram yüklü değil", Toast.LENGTH_SHORT).show() }
             }
         }
 
-        // Phone call
+        // Call
         holder.binding.btnCall.setOnClickListener {
-            if (crew.phone.isNullOrBlank()) {
-                Toast.makeText(holder.itemView.context, "Telefon numarası yok", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${crew.phone}"))
-            holder.itemView.context.startActivity(intent)
+            if (phone.isBlank()) { Toast.makeText(ctx, "Telefon yok", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            ctx.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
         }
 
         // SMS
-        holder.binding.btnMessage.setOnClickListener {
-            if (crew.phone.isNullOrBlank()) {
-                Toast.makeText(holder.itemView.context, "Telefon numarası yok", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${crew.phone}"))
-            holder.itemView.context.startActivity(intent)
+        holder.binding.btnSMS.setOnClickListener {
+            if (phone.isBlank()) { Toast.makeText(ctx, "Telefon yok", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            ctx.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone")))
+        }
+
+        // Email
+        holder.binding.btnEmail.setOnClickListener {
+            if (crew.email.isNullOrBlank()) { Toast.makeText(ctx, "E-posta yok", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            ctx.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${crew.email}")))
         }
     }
 }
