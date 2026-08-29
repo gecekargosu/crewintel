@@ -23,16 +23,57 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/api/social", tags=["social-downloader"])
 
 # ── Config ────────────────────────────────────────────────────────────────────
-DOWNLOAD_DIR = Path("/tmp/social-downloads")
+# Persistent paths (survive Docker restarts)
+DATA_DIR = Path("/app/data")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+DOWNLOAD_DIR = DATA_DIR / "social-downloads"
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Cookie storage
-COOKIE_DIR = Path("/tmp/social-cookies")
+COOKIE_DIR = DATA_DIR / "social-cookies"
 COOKIE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Task history file (persist across restarts)
+TASKS_FILE = DATA_DIR / "tasks.json"
 
 # Task tracking (concurrent-safe)
 _tasks: dict[str, dict] = {}
 _download_counter = 0
+
+
+def _load_tasks():
+    """Load task history from JSON file."""
+    global _tasks, _download_counter
+    if TASKS_FILE.exists():
+        try:
+            saved = json.loads(TASKS_FILE.read_text(encoding="utf-8"))
+            _tasks = saved.get("tasks", {})
+            _download_counter = saved.get("counter", 0)
+            # Only load completed/failed tasks, not stale 'downloading' ones
+            now = datetime.now().isoformat()
+            for tid, task in list(_tasks.items()):
+                if task.get("status") == "downloading":
+                    # Mark stale downloading tasks as failed
+                    task["status"] = "failed"
+                    task["error"] = "Sunucu yeniden baslatildi"
+                    task["completed_at"] = now
+        except Exception:
+            pass
+
+
+def _save_tasks():
+    """Save task history to JSON file."""
+    try:
+        TASKS_FILE.write_text(
+            json.dumps({"tasks": _tasks, "counter": _download_counter}, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    except Exception:
+        pass
+
+
+# Load on startup
+_load_tasks()
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -101,9 +142,22 @@ def detect_platform(url: str) -> Optional[str]:
 
 
 # ── yt-dlp Helpers ────────────────────────────────────────────────────────────
+# Browser-like User-Agent — Instagram checks this
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
+def get_cookie_args(platform: str) -> list[str]:
+    """Get cookie args for a platform if cookies exist."""
+    if not platform:
+        return []
+    cookie_file = COOKIE_DIR / f"{platform}.txt"
+    if cookie_file.exists():
+        return ["--cookies", str(cookie_file)]
+    return []
+
+
 def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
     """Run yt-dlp with given args and return parsed JSON output."""
-    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings"] + args
+    cmd = ["yt-dlp", "--no-check-certificates", "--no-warnings", "--user-agent", BROWSER_UA] + args
     try:
         result = subprocess.run(
             cmd,
@@ -120,13 +174,13 @@ def run_ytdlp(args: list[str], timeout: int = 60) -> dict:
         raise Exception(str(e))
 
 
-def extract_info(url: str) -> dict:
-    """Extract video metadata without downloading."""
+def extract_info(url: str, platform: str = "") -> dict:
+    """Extract video metadata without downloading. Uses cookies if available."""
+    cookie_args = get_cookie_args(platform)
     result = run_ytdlp([
         "--dump-json",
         "--no-download",
-        url,
-    ], timeout=45)
+    ] + cookie_args + [url], timeout=45)
     return json.loads(result["output"])
 
 
@@ -134,12 +188,7 @@ def build_format_specs(quality: str, format_type: str, platform: str = "") -> li
     """Build ordered list of yt-dlp argument sets to try (most specific → least).
     Each item is a complete argument list fragment (e.g. ['-f', 'bestvideo+bestaudio']).
     """
-    # Cookie args if available
-    cookie_args = []
-    if platform:
-        cookie_file = COOKIE_DIR / f"{platform}.txt"
-        if cookie_file.exists():
-            cookie_args = ["--cookies", str(cookie_file)]
+    cookie_args = get_cookie_args(platform)
 
     if format_type == "audio":
         return [
@@ -228,7 +277,7 @@ async def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="Desteklenmeyen platform veya gecersiz URL")
 
     try:
-        info = extract_info(req.url)
+        info = extract_info(req.url, platform=platform)
 
         # Quality options — only show downloadable formats (HTTPS, not m3u8/mhtml)
         formats = []
@@ -367,6 +416,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
         "thumbnail": "",
         "progress": 0,
     }
+    _save_tasks()
 
     # Build format specs to try in order
     output_template = str(output_dir / "%(title).80s.%(ext)s")
@@ -385,6 +435,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                 "-o", output_template,
                 "--no-check-certificates",
                 "--no-warnings",
+                "--user-agent", BROWSER_UA,
                 req.url,
             ]
             try:
@@ -400,6 +451,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                             {"name": f.name, "size": f.stat().st_size}
                             for f in files
                         ]
+                        _save_tasks()
                         return
                     else:
                         print(f"Task {task_id}: yt-dlp returned 0 but no files in {output_dir}")
@@ -432,6 +484,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
 
         _tasks[task_id]["status"] = "failed"
         _tasks[task_id]["error"] = error_msg
+        _save_tasks()
         print(f"Task {task_id}: FAILED — {error_msg[:100]}")
 
     background_tasks.add_task(run_download)

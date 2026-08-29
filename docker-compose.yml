@@ -52,6 +52,7 @@ services:
         condition: service_healthy
     volumes:
       - ./storage:/app/storage
+      - social_downloads:/app/data
 
   frontend:
     build:
@@ -68,3 +69,4 @@ services:
 
 volumes:
   crewintel_postgres_data:
+  social_downloads:
