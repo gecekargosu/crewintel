@@ -106,7 +106,8 @@ class AIAnalysisActivity : AppCompatActivity() {
                 val api = ApiClient.getApi(prefs)
                 val response = api.aiMatch(AIAnalyzeRequest(text))
                 if (response.isSuccessful) {
-                    val result = response.body()!!
+                    val raw = response.body()
+                    val result = if (raw is Map<*, *>) raw else emptyMap<Any, Any>()
                     binding.tvResult.text = buildString {
                         result.forEach { (k, v) ->
                             appendLine("$k: $v")

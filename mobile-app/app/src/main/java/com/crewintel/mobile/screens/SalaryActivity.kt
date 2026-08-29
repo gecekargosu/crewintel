@@ -45,7 +45,8 @@ class SalaryActivity : AppCompatActivity() {
                 val api = ApiClient.getApi(prefs)
                 val response = api.getPayments()
                 if (response.isSuccessful) {
-                    val payments = response.body() ?: emptyList()
+                    val body = response.body()
+                    val payments = if (body is List<*>) body.filterIsInstance<Map<String, Any>>() else emptyList()
                     if (payments.isEmpty()) {
                         binding.tvEmpty.visibility = View.VISIBLE
                     } else {

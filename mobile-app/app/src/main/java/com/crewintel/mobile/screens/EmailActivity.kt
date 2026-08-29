@@ -89,9 +89,10 @@ class EmailActivity : AppCompatActivity() {
                 )
                 val response = api.sendEmail(request)
                 if (response.isSuccessful) {
-                    val result = response.body() ?: emptyMap()
-                    val status = result["status"]?.toString() ?: ""
-                    val message = result["message"]?.toString() ?: "Gönderildi"
+                    val result = response.body()
+                    val resultMap = if (result is Map<*, *>) result else emptyMap<Any, Any>()
+                    val status = resultMap["status"]?.toString() ?: ""
+                    val message = resultMap["message"]?.toString() ?: "Gönderildi"
                     binding.tvStatus.visibility = View.VISIBLE
                     binding.tvStatus.text = "✅ $message (${crew.firstName} ${crew.lastName} → ${crew.email})"
                     binding.tvStatus.setTextColor(0xFF16a34a.toInt())

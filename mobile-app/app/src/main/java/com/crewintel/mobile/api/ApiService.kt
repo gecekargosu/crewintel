@@ -87,7 +87,7 @@ interface ApiService {
     suspend fun aiAnalyze(@Body request: AIAnalyzeRequest): Response<AIAnalyzeResponse>
 
     @POST("api/ai/match")
-    suspend fun aiMatch(@Body request: AIAnalyzeRequest): Response<Map<String, Any>>
+    suspend fun aiMatch(@Body request: AIAnalyzeRequest): Response<Any>
 
     // ── Notifications ─────────────────────────────────────
     @GET("api/notifications/")
@@ -99,13 +99,13 @@ interface ApiService {
     suspend fun markNotificationRead(@Path("id") id: Int): Response<Unit>
 
     @POST("api/notifications/generate")
-    suspend fun generateAlerts(): Response<Map<String, Any>>
+    suspend fun generateAlerts(): Response<Any>
 
     @POST("api/notifications/send-email")
-    suspend fun sendEmail(@Body request: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun sendEmail(@Body request: Map<String, Any>): Response<Any>
 
     @POST("api/notifications/send-bulk")
-    suspend fun sendBulkEmail(@Body request: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun sendBulkEmail(@Body request: Map<String, Any>): Response<Any>
 
     // ── Audit Logs ────────────────────────────────────────
     @GET("api/audit-logs/")
@@ -117,7 +117,7 @@ interface ApiService {
 
     // ── GitHub Stats ───────────────────────────────────────
     @GET("api/dashboard/github-stats")
-    suspend fun getGithubStats(): Response<Map<String, Any>>
+    suspend fun getGithubStats(): Response<Any>
 
     // ── Notes ───────────────────────────────────────────────
     @GET("api/notes/")
@@ -127,10 +127,10 @@ interface ApiService {
     ): Response<List<Map<String, Any>>>
 
     @POST("api/notes/")
-    suspend fun createNote(@Body note: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun createNote(@Body note: Map<String, Any>): Response<Any>
 
     @PUT("api/notes/{id}")
-    suspend fun updateNote(@Path("id") id: Int, @Body note: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun updateNote(@Path("id") id: Int, @Body note: Map<String, Any>): Response<Any>
 
     @DELETE("api/notes/{id}")
     suspend fun deleteNote(@Path("id") id: Int): Response<Unit>
@@ -142,7 +142,7 @@ interface ApiService {
     ): Response<List<Map<String, Any>>>
 
     @POST("api/salary/")
-    suspend fun createPayment(@Body payment: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun createPayment(@Body payment: Map<String, Any>): Response<Any>
 
     @DELETE("api/salary/{id}")
     suspend fun deletePayment(@Path("id") id: Int): Response<Unit>
@@ -152,5 +152,5 @@ interface ApiService {
     suspend fun getJobs(): Response<List<Map<String, Any>>>
 
     @POST("api/jobs/")
-    suspend fun createJob(@Body job: Map<String, Any>): Response<Map<String, Any>>
+    suspend fun createJob(@Body job: Map<String, Any>): Response<Any>
 }
