@@ -71,14 +71,16 @@ data class Ship(
 
 // ── Dashboard ─────────────────────────────────────────────
 data class DashboardSummary(
-    @SerializedName("total_crew") val totalCrew: Int = 0,
-    @SerializedName("active_ships") val activeShips: Int = 0,
-    @SerializedName("total_documents") val totalDocuments: Int = 0,
-    @SerializedName("expiring_documents") val expiringDocuments: Int = 0,
-    @SerializedName("expired_documents") val expiredDocuments: Int = 0,
-    @SerializedName("urgent_documents") val urgentDocuments: Int = 0,
-    @SerializedName("unmatched_documents") val unmatchedDocuments: Int = 0,
-    @SerializedName("active_contracts") val activeContracts: Int = 0
+    @SerializedName("totalCrew") val totalCrew: Int = 0,
+    @SerializedName("totalPersonnel") val totalPersonnel: Int = 0,
+    @SerializedName("activePersonnel") val activePersonnel: Int = 0,
+    @SerializedName("activeShips") val activeShips: Int = 0,
+    @SerializedName("totalDocuments") val totalDocuments: Int = 0,
+    @SerializedName("expiringDocuments") val expiringDocuments: Int = 0,
+    @SerializedName("expiredDocuments") val expiredDocuments: Int = 0,
+    @SerializedName("urgentDocuments") val urgentDocuments: Int = 0,
+    @SerializedName("unmatchedDocuments") val unmatchedDocuments: Int = 0,
+    @SerializedName("activeContracts") val activeContracts: Int = 0
 )
 
 // ── Contract ──────────────────────────────────────────────
