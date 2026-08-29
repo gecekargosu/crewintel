@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.crewintel.mobile.R
 import com.crewintel.mobile.databinding.ActivitySocialDownloaderBinding
 import com.crewintel.mobile.utils.PrefsManager
 import kotlinx.coroutines.*
@@ -65,6 +66,15 @@ class SocialDownloaderActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_settings -> {
+                    startActivity(android.content.Intent(this, SocialSettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
         binding.btnAnalyze.setOnClickListener { analyzeUrl() }
         binding.btnDownload.setOnClickListener { startDownload() }
 

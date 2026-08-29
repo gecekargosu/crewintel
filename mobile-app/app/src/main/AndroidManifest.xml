@@ -12,7 +12,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_logo"
+        android:icon="@mipmap/ic_launcher"
         android:label="UMAY Admin"
         android:supportsRtl="true"
         android:theme="@style/Theme.Crewintel"
@@ -37,7 +37,11 @@
         <activity android:name=".screens.ShipListActivity" android:exported="false" />
         <activity android:name=".screens.SettingsActivity" android:exported="false" />
         <activity android:name=".screens.AIAnalysisActivity" android:exported="false" />
-        <activity android:name=".screens.SocialDownloaderActivity" android:exported="true">
+        <activity android:name=".screens.SocialSettingsActivity" android:exported="false" />
+
+        <activity
+            android:name=".screens.SocialDownloaderActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -54,7 +58,6 @@
             android:name=".screens.DownloadService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
-
 
         <provider
             android:name="androidx.core.content.FileProvider"

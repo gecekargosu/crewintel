@@ -14,7 +14,8 @@
         android:background="#1E293B"
         app:navigationIcon="@drawable/ic_back"
         app:title="Video Indirici"
-        app:titleTextColor="#F8FAFC" />
+        app:titleTextColor="#F8FAFC"
+        app:menu="@menu/menu_social_downloader" />
 
     <ScrollView
         android:layout_width="match_parent"

@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0F172A">
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1E293B"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="Sosyal Medya Ayarlari"
+        app:titleTextColor="#F8FAFC" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Info card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E3A5F"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Nasil Baglanir?"
+                        android:textColor="#60A5FA"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#CBD5E1"
+                        android:textSize="13sp"
+                        android:layout_marginTop="8dp"
+                        android:text="1. Tarayicida (Chrome) ilgili siteye giris yapin\n2. Get cookies.txt eklentisini kurun (Chrome Web Store)\n3. Site acikken eklentiye tiklayin > Export\n4. Cookie icerigini asagidaki kutuya yapistirin\n5. Kaydet butonuna basin" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Instagram -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardInstagram"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Instagram"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvInstagramStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etInstagramCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnInstagramSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#E1306C" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- YouTube -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="YouTube"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvYouTubeStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Opsiyonel"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etYouTubeCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin (opsiyonel)..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnYouTubeSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#FF0000" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- TikTok -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="TikTok"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTikTokStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etTikTokCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnTikTokSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#000000" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Pinterest -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Pinterest"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvPinterestStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etPinterestCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnPinterestSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#E60023" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- LinkedIn -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="LinkedIn"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvLinkedInStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etLinkedInCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnLinkedInSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#0A66C2" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Facebook -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Facebook"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvFacebookStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etFacebookCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnFacebookSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#1877F2" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Twitter/X -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#1E293B"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Twitter / X"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTwitterStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Baglanmadi"
+                            android:textColor="#EF4444"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/etTwitterCookies"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="#334155"
+                        android:hint="Cookie yapistirin..."
+                        android:textColor="#F8FAFC"
+                        android:textColorHint="#64748B"
+                        android:padding="12dp"
+                        android:inputType="textMultiLine"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+
+                    <Button
+                        android:id="@+id/btnTwitterSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Kaydet"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:backgroundTint="#1DA1F2" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
