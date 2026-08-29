@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_roles
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import create_access_token, create_refresh_token, decode_refresh_token, hash_password, verify_password
 from app.db.database import get_db
 from app.models.user import User
 from app.services.audit import log_event
@@ -146,12 +146,32 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     db.commit()
 
     token = create_access_token(user.email, extra_claims={"role": user.role})
-    return LoginResponse(access_token=token, user=_serialize_user(user))
+    refresh = create_refresh_token(user.email, extra_claims={"role": user.role})
+    return LoginResponse(access_token=token, refresh_token=refresh, user=_serialize_user(user))
 
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
     return _serialize_user(current_user)
+
+@router.post("/refresh")
+def refresh_token(refresh_token: str):
+    """Get a new access token using a refresh token."""
+    try:
+        payload = decode_refresh_token(refresh_token)
+        email = payload.get("sub")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
+    from app.db.database import get_db
+    db = next(get_db())
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or inactive")
+    
+    new_token = create_access_token(user.email, extra_claims={"role": user.role})
+    return {"access_token": new_token, "token_type": "bearer"}
+
 
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)

@@ -15,6 +15,9 @@ interface ApiService {
     @GET("api/auth/me")
     suspend fun getMe(): Response<Any>
 
+    @POST("api/auth/refresh")
+    suspend fun refreshToken(@Body body: Map<String, String>): Response<Any>
+
     // ── Dashboard ──────────────────────────────────────────
     @GET("api/dashboard/summary")
     suspend fun dashboardSummary(): Response<DashboardSummary>

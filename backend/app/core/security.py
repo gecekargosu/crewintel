@@ -44,3 +44,28 @@ def decode_access_token(token: str) -> dict:
     """Decode and validate a JWT access token. Raises jwt.PyJWTError on failure."""
     settings = get_settings()
     return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+
+
+def create_refresh_token(subject: str, extra_claims: dict | None = None) -> str:
+    """Create a long-lived refresh token for the given user email."""
+    settings = get_settings()
+    now = datetime.now(UTC)
+    # Refresh token lives 7 days
+    payload: dict = {
+        "sub": subject,
+        "iat": now,
+        "exp": now + timedelta(days=7),
+        "type": "refresh",
+    }
+    if extra_claims:
+        payload.update(extra_claims)
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
+def decode_refresh_token(token: str) -> dict:
+    """Decode and validate a refresh token. Raises jwt.PyJWTError on failure."""
+    settings = get_settings()
+    payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+    if payload.get("type") != "refresh":
+        raise jwt.InvalidTokenError("Not a refresh token")
+    return payload

@@ -19,6 +19,10 @@ class PrefsManager(context: Context) {
         get() = prefs.getString("auth_token", null)
         set(value) = prefs.edit().putString("auth_token", value).apply()
 
+    var refreshToken: String?
+        get() = prefs.getString("refresh_token", null)
+        set(value) = prefs.edit().putString("refresh_token", value).apply()
+
     var userEmail: String?
         get() = prefs.getString("user_email", null)
         set(value) = prefs.edit().putString("user_email", value).apply()
@@ -49,6 +53,7 @@ class PrefsManager(context: Context) {
 
     fun saveLogin(response: LoginResponse) {
         authToken = response.accessToken
+        refreshToken = response.refreshToken
         userEmail = response.user.email
         userRole = response.user.role
         userName = response.user.fullName
