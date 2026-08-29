@@ -175,7 +175,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Uyarılar"
+                        android:text="⚠️ Uyarılar"
                         android:textColor="#1e3a5f"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -194,7 +194,8 @@
                             android:text="🔴 Süresi Dolmuş: 0"
                             android:textColor="#dc2626"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:padding="4dp" />
 
                         <TextView
                             android:id="@+id/tvUrgent"
@@ -204,7 +205,8 @@
                             android:text="🟠 Acil: 0"
                             android:textColor="#ea580c"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:padding="4dp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -221,7 +223,8 @@
                             android:text="🟡 Yaklaşıyor: 0"
                             android:textColor="#ca8a04"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:padding="4dp" />
 
                         <TextView
                             android:id="@+id/tvUnmatched"
@@ -231,7 +234,8 @@
                             android:text="⚪ Eşleşmemiş: 0"
                             android:textColor="#64748b"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:padding="4dp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -252,6 +256,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- Row 1: Personel + Belgeler -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -279,6 +284,7 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
+                <!-- Row 2: Gemiler + AI -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -306,6 +312,59 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
+                <!-- Row 3: Aktivite + Belge Yükle -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnActivity"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="📋 Aktivite"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUpload"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:text="📤 Belge Yükle"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Row 4: E-posta -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEmail"
+                        style="@style/SecondaryButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="📧 E-posta"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <!-- Video İndirici -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDownloader"
                     style="@style/SecondaryButton"
@@ -316,6 +375,7 @@
                     android:layout_marginBottom="8dp"
                     android:backgroundTint="#25d366" />
 
+                <!-- Ayarlar -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSettings"
                     style="@style/SecondaryButton"

@@ -91,7 +91,21 @@ data class Contract(
     val status: String = "active",
     @SerializedName("start_date") val startDate: String? = null,
     @SerializedName("end_date") val endDate: String? = null,
-    @SerializedName("position") val position: String? = null
+    val position: String? = null
+)
+
+// ── Notification ──────────────────────────────────────────
+data class NotificationItem(
+    val id: Int,
+    val title: String,
+    val message: String,
+    val channel: String? = null,
+    val status: String? = null,
+    @SerializedName("entity_type") val entityType: String? = null,
+    @SerializedName("entity_id") val entityId: Int? = null,
+    val link: String? = null,
+    val read: Boolean = false,
+    @SerializedName("created_at") val createdAt: String? = null
 )
 
 // ── AI ────────────────────────────────────────────────────

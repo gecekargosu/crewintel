@@ -44,6 +44,7 @@ class DashboardActivity : AppCompatActivity() {
 
         binding.swipeRefresh.setOnRefreshListener { loadDashboard() }
 
+        // Quick action buttons
         binding.btnCrew.setOnClickListener {
             startActivity(Intent(this, CrewListActivity::class.java))
         }
@@ -61,6 +62,47 @@ class DashboardActivity : AppCompatActivity() {
         }
         binding.btnSettings.setOnClickListener {
             showSettingsDialog()
+        }
+
+        // Activity feed button
+        binding.btnActivity.setOnClickListener {
+            startActivity(Intent(this, ActivityFeedActivity::class.java))
+        }
+
+        // Email button
+        binding.btnEmail.setOnClickListener {
+            startActivity(Intent(this, EmailActivity::class.java))
+        }
+
+        // Upload button
+        binding.btnUpload.setOnClickListener {
+            startActivity(Intent(this, DocumentUploadActivity::class.java))
+        }
+
+        // Warning click listeners
+        binding.tvExpired.setOnClickListener {
+            startActivity(Intent(this, WarningDetailActivity::class.java).apply {
+                putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_EXPIRED)
+                putExtra(WarningDetailActivity.EXTRA_TITLE, "Süresi Dolmuş Belgeler")
+            })
+        }
+        binding.tvUrgent.setOnClickListener {
+            startActivity(Intent(this, WarningDetailActivity::class.java).apply {
+                putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_URGENT)
+                putExtra(WarningDetailActivity.EXTRA_TITLE, "Acil Belgeler (30 gün)")
+            })
+        }
+        binding.tvApproaching.setOnClickListener {
+            startActivity(Intent(this, WarningDetailActivity::class.java).apply {
+                putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_APPROACHING)
+                putExtra(WarningDetailActivity.EXTRA_TITLE, "Yaklaşıyor (90 gün)")
+            })
+        }
+        binding.tvUnmatched.setOnClickListener {
+            startActivity(Intent(this, WarningDetailActivity::class.java).apply {
+                putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_UNMATCHED)
+                putExtra(WarningDetailActivity.EXTRA_TITLE, "Eşleşmemiş Belgeler")
+            })
         }
     }
 
@@ -87,33 +129,6 @@ class DashboardActivity : AppCompatActivity() {
                     binding.tvApproaching.text = "🟡 Yaklaşıyor: ${data.expiringDocuments}"
                     binding.tvUnmatched.text = "⚪ Eşleşmemiş: ${data.unmatchedDocuments}"
                 }
-
-                    // Click listeners for warnings
-                    binding.tvExpired.setOnClickListener {
-                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
-                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_EXPIRED)
-                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Suresi Dolmus Belgeler")
-                        })
-                    }
-                    binding.tvUrgent.setOnClickListener {
-                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
-                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_URGENT)
-                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Acil Belgeler (30 gun)")
-                        })
-                    }
-                    binding.tvApproaching.setOnClickListener {
-                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
-                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_APPROACHING)
-                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Yaklasıyor (90 gun)")
-                        })
-                    }
-                    binding.tvUnmatched.setOnClickListener {
-                        startActivity(Intent(this@DashboardActivity, WarningDetailActivity::class.java).apply {
-                            putExtra(WarningDetailActivity.EXTRA_FILTER_TYPE, WarningDetailActivity.FILTER_UNMATCHED)
-                            putExtra(WarningDetailActivity.EXTRA_TITLE, "Eslesmemis Belgeler")
-                        })
-                    }
-
             } catch (e: Exception) {
                 Toast.makeText(
                     this@DashboardActivity,
@@ -130,9 +145,10 @@ class DashboardActivity : AppCompatActivity() {
     private fun showSettingsDialog() {
         val items = arrayOf(
             "📧 E-posta Gönder",
+            "📤 Belge Yükle",
             "🔍 AI ile Analiz",
             "📥 Video İndirici",
-            "📋 Audit Log",
+            "📋 Aktivite Akışı",
             "🔄 Sunucu Adresini Değiştir",
             "🚪 Çıkış Yap"
         )
@@ -141,40 +157,16 @@ class DashboardActivity : AppCompatActivity() {
             .setTitle("İşlemler")
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> Toast.makeText(this, "E-posta modülü yakında", Toast.LENGTH_SHORT).show()
-                    1 -> startActivity(Intent(this, AIAnalysisActivity::class.java))
-                    2 -> startActivity(Intent(this, SocialDownloaderActivity::class.java))
-                    3 -> loadAuditLog()
-                    4 -> showChangeServerDialog()
-                    5 -> logout()
+                    0 -> startActivity(Intent(this, EmailActivity::class.java))
+                    1 -> startActivity(Intent(this, DocumentUploadActivity::class.java))
+                    2 -> startActivity(Intent(this, AIAnalysisActivity::class.java))
+                    3 -> startActivity(Intent(this, SocialDownloaderActivity::class.java))
+                    4 -> startActivity(Intent(this, ActivityFeedActivity::class.java))
+                    5 -> showChangeServerDialog()
+                    6 -> logout()
                 }
             }
             .show()
-    }
-
-    private fun loadAuditLog() {
-        lifecycleScope.launch {
-            try {
-                val api = ApiClient.getApi(prefs)
-                val response = api.getAuditLogs(20)
-                if (response.isSuccessful) {
-                    val logs = response.body() ?: emptyList()
-                    val message = logs.take(10).joinToString("\n") { log ->
-                        val action = log["action"]?.toString() ?: "?"
-                        val entity = log["entity_type"]?.toString() ?: "?"
-                        val detail = log["detail"]?.toString() ?: ""
-                        "• $action ($entity): $detail"
-                    }
-                    AlertDialog.Builder(this@DashboardActivity)
-                        .setTitle("Son İşlemler")
-                        .setMessage(message.ifEmpty { "Kayıt yok" })
-                        .setPositiveButton("Tamam", null)
-                        .show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@DashboardActivity, "Audit log yüklenemedi", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     private fun showChangeServerDialog() {

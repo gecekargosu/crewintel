@@ -47,7 +47,8 @@ interface ApiService {
     suspend fun getDocuments(
         @Query("crew_member_id") crewId: Int? = null,
         @Query("document_type") docType: String? = null,
-        @Query("match_status") matchStatus: String? = null
+        @Query("match_status") matchStatus: String? = null,
+        @Query("expiry_status") expiryStatus: String? = null
     ): Response<List<Document>>
 
     @GET("api/documents/{id}")
@@ -63,7 +64,7 @@ interface ApiService {
     ): Response<List<Document>>
 
     @Multipart
-    @POST("api/documents/batch-upload")
+    @POST("api/documents/batch")
     suspend fun batchUpload(
         @Part files: List<MultipartBody.Part>
     ): Response<BatchResponse>
@@ -89,12 +90,28 @@ interface ApiService {
     suspend fun aiMatch(@Body request: AIAnalyzeRequest): Response<Map<String, Any>>
 
     // ── Notifications ─────────────────────────────────────
+    @GET("api/notifications/")
+    suspend fun getNotifications(
+        @Query("unread_only") unreadOnly: Boolean = false
+    ): Response<List<NotificationItem>>
+
+    @POST("api/notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: Int): Response<Unit>
+
+    @POST("api/notifications/generate")
+    suspend fun generateAlerts(): Response<Map<String, Any>>
+
     @POST("api/notifications/send-email")
     suspend fun sendEmail(@Body request: Map<String, Any>): Response<Map<String, Any>>
+
+    @POST("api/notifications/send-bulk")
+    suspend fun sendBulkEmail(@Body request: Map<String, Any>): Response<Map<String, Any>>
 
     // ── Audit Logs ────────────────────────────────────────
     @GET("api/audit-logs/")
     suspend fun getAuditLogs(
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("action") action: String? = null,
+        @Query("entity") entity: String? = null
     ): Response<List<Map<String, Any>>>
 }
