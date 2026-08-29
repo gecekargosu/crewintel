@@ -100,6 +100,8 @@ class CrewContactAdapter : androidx.recyclerview.widget.ListAdapter<CrewMember, 
         val crew = getItem(holder.adapterPosition)
         val ctx = holder.itemView.context
         holder.binding.tvName.text = "${crew.firstName} ${crew.lastName}"
+        val initial = (crew.firstName.firstOrNull()?.toString() ?: "?") + (crew.lastName.firstOrNull()?.toString() ?: "")
+        holder.binding.tvAvatar.text = initial.uppercase()
         holder.binding.tvPosition.text = crew.position ?: crew.rank ?: "Personel"
         holder.binding.tvPhone.text = crew.phone ?: "Telefon yok"
 

@@ -5,37 +5,52 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="1dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="14dp"
         android:gravity="center_vertical">
+
+        <!-- Avatar circle -->
+        <TextView
+            android:id="@+id/tvAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="#1e3a5f" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
 
-            <TextView android:id="@+id/tvName" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#1e3a5f" android:textSize="14sp" android:textStyle="bold" />
-            <TextView android:id="@+id/tvPosition" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#64748b" android:textSize="12sp" />
-            <TextView android:id="@+id/tvPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#94a3b8" android:textSize="11sp" />
+            <TextView android:id="@+id/tvName" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#1e3a5f" android:textSize="15sp" android:textStyle="bold" />
+            <TextView android:id="@+id/tvPosition" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#64748b" android:textSize="12sp" android:layout_marginTop="1dp" />
+            <TextView android:id="@+id/tvPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#94a3b8" android:textSize="11sp" android:layout_marginTop="1dp" />
         </LinearLayout>
 
+        <!-- Action buttons row -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView android:id="@+id/btnWhatsApp" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="💬" android:textSize="18sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:contentDescription="WhatsApp" />
-            <TextView android:id="@+id/btnTelegram" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="✈️" android:textSize="18sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:contentDescription="Telegram" />
-            <TextView android:id="@+id/btnCall" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="📞" android:textSize="18sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:contentDescription="Ara" />
-            <TextView android:id="@+id/btnSMS" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="✉️" android:textSize="18sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:contentDescription="SMS" />
-            <TextView android:id="@+id/btnEmail" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="📧" android:textSize="18sp" android:background="?selectableItemBackgroundBorderless" android:clickable="true" android:focusable="true" android:contentDescription="E-posta" />
+            <TextView android:id="@+id/btnWhatsApp" android:layout_width="34dp" android:layout_height="34dp" android:gravity="center" android:text="W" android:textSize="13sp" android:textStyle="bold" android:textColor="#FFFFFF" android:background="@drawable/bg_icon_green" android:layout_marginEnd="6dp" android:clickable="true" android:focusable="true" android:contentDescription="WhatsApp" />
+            <TextView android:id="@+id/btnTelegram" android:layout_width="34dp" android:layout_height="34dp" android:gravity="center" android:text="T" android:textSize="13sp" android:textStyle="bold" android:textColor="#FFFFFF" android:background="@drawable/bg_icon_blue" android:layout_marginEnd="6dp" android:clickable="true" android:focusable="true" android:contentDescription="Telegram" />
+            <TextView android:id="@+id/btnCall" android:layout_width="34dp" android:layout_height="34dp" android:gravity="center" android:text="☎" android:textSize="14sp" android:textColor="#FFFFFF" android:background="@drawable/bg_icon_teal" android:layout_marginEnd="6dp" android:clickable="true" android:focusable="true" android:contentDescription="Ara" />
+            <TextView android:id="@+id/btnSMS" android:layout_width="34dp" android:layout_height="34dp" android:gravity="center" android:text="S" android:textSize="13sp" android:textStyle="bold" android:textColor="#FFFFFF" android:background="@drawable/bg_icon_orange" android:layout_marginEnd="6dp" android:clickable="true" android:focusable="true" android:contentDescription="SMS" />
+            <TextView android:id="@+id/btnEmail" android:layout_width="34dp" android:layout_height="34dp" android:gravity="center" android:text="@" android:textSize="14sp" android:textStyle="bold" android:textColor="#FFFFFF" android:background="@drawable/bg_icon_red" android:clickable="true" android:focusable="true" android:contentDescription="E-posta" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

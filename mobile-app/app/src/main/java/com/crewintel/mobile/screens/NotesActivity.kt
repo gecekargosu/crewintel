@@ -64,28 +64,47 @@ class NotesActivity : AppCompatActivity() {
     }
 
     private fun showAddDialog() {
-        val titleInput = EditText(this).apply { hint = "Not başlığı" }
-        val bodyInput = EditText(this).apply { hint = "Not içeriği..."; minLines = 3 }
+        val titleInput = EditText(this).apply {
+            hint = "Not başlığı"
+            setPadding(48, 32, 48, 16)
+            textSize = 16f
+        }
+        val bodyInput = EditText(this).apply {
+            hint = "Not içeriği..."
+            minLines = 3
+            setPadding(48, 16, 48, 32)
+            textSize = 14f
+        }
 
         val layout = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 0)
+            setPadding(24, 16, 24, 0)
             addView(titleInput)
             addView(bodyInput)
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("📝 Yeni Not")
             .setView(layout)
-            .setPositiveButton("Kaydet") { _, _ ->
+            .setPositiveButton("Kaydet", null)
+            .setNegativeButton("İptal", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val title = titleInput.text.toString().trim()
                 val body = bodyInput.text.toString().trim()
-                if (title.isNotBlank()) {
-                    createNote(title, body)
+                if (title.isBlank()) {
+                    Toast.makeText(this, "Lütfen başlık girin", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
+                dialog.dismiss()
+                Toast.makeText(this, "Kaydediliyor...", Toast.LENGTH_SHORT).show()
+                createNote(title, body)
             }
-            .setNegativeButton("İptal", null)
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun createNote(title: String, body: String) {
