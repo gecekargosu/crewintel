@@ -114,4 +114,8 @@ interface ApiService {
         @Query("action") action: String? = null,
         @Query("entity") entity: String? = null
     ): Response<List<Map<String, Any>>>
+
+    // ── GitHub Stats ───────────────────────────────────────
+    @GET("api/dashboard/github-stats")
+    suspend fun getGithubStats(): Response<Map<String, Any>>
 }

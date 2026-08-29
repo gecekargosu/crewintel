@@ -2,6 +2,8 @@ package com.crewintel.mobile.screens
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -46,47 +48,65 @@ class WarningDetailActivity : AppCompatActivity() {
     }
 
     private fun loadDocuments(filterType: String) {
-        binding.progressBar.visibility = android.view.View.VISIBLE
-        binding.tvEmpty.visibility = android.view.View.GONE
+        binding.progressBar.visibility = View.VISIBLE
+        binding.tvEmpty.visibility = View.GONE
 
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                val response = api.getDocuments(matchStatus = filterType)
+
+                // Fetch ALL documents and filter client-side for reliability
+                val response = api.getDocuments()
+                Log.d("WarningDetail", "API response code: ${response.code()}, body size: ${response.body()?.size}")
+
                 if (response.isSuccessful) {
-                    val docs = response.body() ?: emptyList()
-                    if (docs.isEmpty()) {
-                        binding.tvEmpty.visibility = android.view.View.VISIBLE
-                        binding.tvEmpty.text = "Bu kategoride belge bulunamadı"
+                    val allDocs = response.body() ?: emptyList()
+                    Log.d("WarningDetail", "Total docs: ${allDocs.size}, filter: $filterType")
+
+                    val filtered = when (filterType) {
+                        FILTER_EXPIRED -> allDocs.filter {
+                            it.expiryStatus == "expired"
+                        }
+                        FILTER_URGENT -> allDocs.filter {
+                            it.expiryStatus == "urgent"
+                        }
+                        FILTER_APPROACHING -> allDocs.filter {
+                            it.expiryStatus == "approaching"
+                        }
+                        FILTER_UNMATCHED -> allDocs.filter {
+                            it.matchStatus == "unmatched"
+                        }
+                        else -> allDocs
+                    }
+
+                    Log.d("WarningDetail", "Filtered docs: ${filtered.size}")
+
+                    if (filtered.isEmpty()) {
+                        binding.tvEmpty.visibility = View.VISIBLE
+                        binding.tvEmpty.text = when (filterType) {
+                            FILTER_EXPIRED -> "✅ Süresi dolmuş belge bulunmuyor"
+                            FILTER_URGENT -> "✅ Acil belge bulunmuyor"
+                            FILTER_APPROACHING -> "✅ Yaklaşan belge bulunmuyor"
+                            FILTER_UNMATCHED -> "✅ Eşleşmemiş belge bulunmuyor"
+                            else -> "Bu kategoride belge bulunamadı"
+                        }
                     } else {
-                        adapter.submitList(docs)
-                        binding.tvCount.text = "${docs.size} belge"
+                        adapter.submitList(filtered)
+                        binding.tvCount.text = "${filtered.size} belge"
+                        binding.tvCount.visibility = View.VISIBLE
                     }
                 } else {
-                    // Try alternative: fetch all and filter client-side
-                    val allDocs = api.getDocuments()
-                    if (allDocs.isSuccessful) {
-                        val docs = allDocs.body() ?: emptyList()
-                        val filtered = when (filterType) {
-                            FILTER_EXPIRED -> docs.filter { it.expiryStatus == "expired" || it.matchStatus == "expired" }
-                            FILTER_URGENT -> docs.filter { it.expiryStatus == "urgent" }
-                            FILTER_APPROACHING -> docs.filter { it.expiryStatus == "approaching" }
-                            FILTER_UNMATCHED -> docs.filter { it.matchStatus == "unmatched" }
-                            else -> docs
-                        }
-                        if (filtered.isEmpty()) {
-                            binding.tvEmpty.visibility = android.view.View.VISIBLE
-                            binding.tvEmpty.text = "Bu kategoride belge bulunamadı"
-                        } else {
-                            adapter.submitList(filtered)
-                            binding.tvCount.text = "${filtered.size} belge"
-                        }
-                    }
+                    Log.e("WarningDetail", "API error: ${response.code()} - ${response.errorBody()?.string()}")
+                    binding.tvEmpty.visibility = View.VISIBLE
+                    binding.tvEmpty.text = "Sunucu hatası: ${response.code()}"
                 }
             } catch (e: Exception) {
+                Log.e("WarningDetail", "Exception: ${e.message}", e)
                 Toast.makeText(this@WarningDetailActivity, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
+                binding.tvEmpty.visibility = View.VISIBLE
+                binding.tvEmpty.text = "Bağlantı hatası: ${e.message}"
             } finally {
-                binding.progressBar.visibility = android.view.View.GONE
+                binding.progressBar.visibility = View.GONE
             }
         }
     }
@@ -117,24 +137,22 @@ class WarningDocAdapter : androidx.recyclerview.widget.ListAdapter<Document, War
 
         // Status color
         val color = when {
-            doc.matchStatus == "unmatched" -> 0xFFEF4444.toInt() // Red
-            doc.expiryStatus == "expired" -> 0xFFEF4444.toInt() // Red
-            doc.expiryStatus == "urgent" -> 0xFFF97316.toInt() // Orange
-            doc.expiryStatus == "approaching" -> 0xFFEAB308.toInt() // Yellow
-            doc.matchStatus == "matched" -> 0xFF22C55E.toInt() // Green
-            else -> 0xFF6B7280.toInt() // Gray
+            doc.matchStatus == "unmatched" -> 0xFFEF4444.toInt()
+            doc.expiryStatus == "expired" -> 0xFFEF4444.toInt()
+            doc.expiryStatus == "urgent" -> 0xFFF97316.toInt()
+            doc.expiryStatus == "approaching" -> 0xFFEAB308.toInt()
+            doc.matchStatus == "matched" -> 0xFF22C55E.toInt()
+            else -> 0xFF6B7280.toInt()
         }
         holder.binding.tvDocStatus.setTextColor(color)
 
-        // Expiry date
         if (doc.expiryDate != null) {
             holder.binding.tvExpiry.text = "Bitiş: ${doc.expiryDate}"
-            holder.binding.tvExpiry.visibility = android.view.View.VISIBLE
+            holder.binding.tvExpiry.visibility = View.VISIBLE
         } else {
-            holder.binding.tvExpiry.visibility = android.view.View.GONE
+            holder.binding.tvExpiry.visibility = View.GONE
         }
 
-        // Click to open crew detail
         holder.itemView.setOnClickListener {
             if (doc.crewMemberId != null) {
                 val intent = Intent(holder.itemView.context, CrewDetailActivity::class.java)

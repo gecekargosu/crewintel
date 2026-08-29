@@ -1,4 +1,6 @@
 from datetime import date, timedelta
+import urllib.request
+import json
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
@@ -182,3 +184,26 @@ def dashboard_summary(
         "ship_status": ship_status,
         "tasks": tasks,
     }
+
+
+@router.get("/github-stats")
+def github_stats():
+    """GitHub repo istatistikleri — UMAY Admin dashboard'da gösterilir."""
+    try:
+        url = "https://api.github.com/repos/gecekargosu/crewintel"
+        req = urllib.request.Request(url, headers={"User-Agent": "UMAY-Admin/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+            return {
+                "stars": data.get("stargazers_count", 0),
+                "watchers": data.get("watchers_count", 0),
+                "forks": data.get("forks_count", 0),
+                "open_issues": data.get("open_issues_count", 0),
+                "language": data.get("language", "Unknown"),
+                "created_at": data.get("created_at", ""),
+                "updated_at": data.get("updated_at", ""),
+                "size_kb": data.get("size", 0),
+                "url": data.get("html_url", ""),
+            }
+    except Exception as e:
+        return {"error": str(e), "stars": 0, "watchers": 0, "forks": 0}
