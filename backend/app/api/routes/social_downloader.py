@@ -46,28 +46,27 @@ RATE_LIMIT_MAX = 20  # max requests per window
 # Cookie encryption
 import hashlib
 
-def _get_encrypt_key():
-    """Get encryption key from settings."""
+def _get_fernet():
+    """Get Fernet encryption instance from JWT secret key."""
+    from cryptography.fernet import Fernet
     from app.core.config import get_settings
     settings = get_settings()
-    return hashlib.sha256(settings.jwt_secret_key.encode()).digest()
+    # Derive a valid Fernet key from JWT secret
+    key = hashlib.sha256(settings.jwt_secret_key.encode()).digest()
+    # Fernet needs url-safe base64 encoded 32-byte key
+    import base64
+    fernet_key = base64.urlsafe_b64encode(key)
+    return Fernet(fernet_key)
 
 def _encrypt_cookie(content: str) -> bytes:
-    """Simple XOR encryption for cookie files."""
-    key = _get_encrypt_key()
-    data = content.encode('utf-8')
-    encrypted = bytearray()
-    for i, byte in enumerate(data):
-        encrypted.append(byte ^ key[i % len(key)])
-    return bytes(encrypted)
+    """AES-128 (Fernet) encryption for cookie files."""
+    fernet = _get_fernet()
+    return fernet.encrypt(content.encode('utf-8'))
 
 def _decrypt_cookie(encrypted: bytes) -> str:
-    """Simple XOR decryption for cookie files."""
-    key = _get_encrypt_key()
-    decrypted = bytearray()
-    for i, byte in enumerate(encrypted):
-        decrypted.append(byte ^ key[i % len(key)])
-    return decrypted.decode('utf-8')
+    """AES-128 (Fernet) decryption for cookie files."""
+    fernet = _get_fernet()
+    return fernet.decrypt(encrypted).decode('utf-8')
 
 def _check_rate_limit(user_id: str):
     """Check if user has exceeded rate limit."""

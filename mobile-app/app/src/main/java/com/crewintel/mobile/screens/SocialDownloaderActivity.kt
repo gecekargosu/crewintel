@@ -17,6 +17,8 @@ import com.crewintel.mobile.api.ApiClient
 import com.crewintel.mobile.databinding.ActivitySocialDownloaderBinding
 import com.crewintel.mobile.utils.PrefsManager
 import kotlinx.coroutines.*
+import androidx.work.*
+import com.crewintel.mobile.services.DownloadWorker
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -292,57 +294,42 @@ class SocialDownloaderActivity : AppCompatActivity() {
     }
 
     private fun pollDownload(taskId: String) {
-        val job = lifecycleScope.launch {
-            val maxAttempts = 60 // 3 minutes
-            var attempts = 0
+        // Use WorkManager for background polling — survives Activity destruction
+        val prefs = PrefsManager(this)
+        val workData = workDataOf(
+            DownloadWorker.KEY_TASK_ID to taskId,
+            DownloadWorker.KEY_TITLE to currentTitle,
+            DownloadWorker.KEY_SERVER_URL to backendUrl,
+            DownloadWorker.KEY_AUTH_TOKEN to (prefs.authToken ?: "")
+        )
 
-            while (isActive && attempts < maxAttempts) {
-                attempts++
-                delay(2000)
-                try {
-                    val status = withContext(Dispatchers.IO) {
-                        val request = Request.Builder()
-                            .url("$backendUrl/api/social/downloader/$taskId/status")
-                            .build()
-                        val response = httpClient.newCall(request).execute()
-                        JSONObject(response.body?.string() ?: "{}")
-                    }
+        val workRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setInputData(workData)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 2, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
 
-                    val statusStr = status.optString("status", "")
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            "download_$taskId",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
 
-                    when (statusStr) {
-                        "completed" -> {
-                            val files = status.optJSONArray("files")
-                            if (files != null && files.length() > 0) {
-                                val file = files.getJSONObject(0)
-                                val fileName = file.optString("name", "video.mp4")
-                                downloadFileWithAuth(taskId, fileName)
-                            } else {
-                                showError("Indirme tamamlandi ama dosya bulunamadi")
-                                binding.btnDownload.isEnabled = true
-                            }
-                            return@launch
-                        }
-                        "failed" -> {
-                            val errorMsg = status.optString("error", "Basarisiz")
-                            binding.tvDownloadStatus.text = "Basarisiz: $errorMsg"
-                            binding.btnDownload.isEnabled = true
-                            Toast.makeText(this@SocialDownloaderActivity, "Video indirilemedi", Toast.LENGTH_LONG).show()
-                            stopDownloadService()
-                            return@launch
-                        }
-                        else -> {
-                            binding.tvDownloadStatus.text = "Indiriliyor... Lutfen bekleyin"
-                        }
-                    }
-                } catch (_: Exception) {}
+        // Observe work status
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(workRequest.id).observe(this) { info ->
+            if (info != null && info.state.isFinished) {
+                val status = info.outputData.getString("status")
+                val fileName = info.outputData.getString("file_name")
+                if (status == "completed" && fileName != null) {
+                    downloadFileWithAuth(taskId, fileName)
+                } else {
+                    binding.tvDownloadStatus.text = "Indirme basarisiz"
+                    binding.btnDownload.isEnabled = true
+                }
+                WorkManager.getInstance(this).cancelWorkById(workRequest.id)
             }
-
-            binding.tvDownloadStatus.text = "Zaman asimi"
-            binding.btnDownload.isEnabled = true
-            stopDownloadService()
         }
-        pollJobs[taskId] = job
+
+        binding.tvDownloadStatus.text = "Indiriliyor... Lutfen bekleyin (arka planda)"
     }
 
     private fun downloadFileWithAuth(taskId: String, fileName: String) {
