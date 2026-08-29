@@ -26,6 +26,10 @@ router = APIRouter(prefix="/api/social", tags=["social-downloader"])
 DOWNLOAD_DIR = Path("/tmp/social-downloads")
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+# Cookie storage
+COOKIE_DIR = Path("/tmp/social-cookies")
+COOKIE_DIR.mkdir(parents=True, exist_ok=True)
+
 # Task tracking (concurrent-safe)
 _tasks: dict[str, dict] = {}
 _download_counter = 0
@@ -45,11 +49,10 @@ class DownloadRequest(BaseModel):
 # ── Platform Detection ────────────────────────────────────────────────────────
 PLATFORM_PATTERNS = {
     "youtube": [
-        r"(?:youtube\.com|youtu\.be|youtube\.com/shorts)",
-        r"youtube\.com/watch\?v=",
+        r"(?:youtube\.com|youtu\.be)",
     ],
     "instagram": [
-        r"instagram\.com/(p|reel|tv|stories)",
+        r"instagram\.com/(p|reel|tv|stories|videos)",
         r"instagr\.am/",
     ],
     "tiktok": [
@@ -59,16 +62,22 @@ PLATFORM_PATTERNS = {
     ],
     "facebook": [
         r"facebook\.com/.+/videos",
-        r"fb\.watch/",
+        r"facebook\.com/watch",
         r"facebook\.com/reel",
+        r"fb\.watch/",
+        r"facebook\.com/.+/posts/",
     ],
     "pinterest": [
-        r"pinterest\.com/.+/pin/",
+        r"pinterest\.com/",
         r"pin\.it/",
     ],
     "twitter": [
-        r"twitter\.com/.+/status",
-        r"x\.com/.+/status",
+        r"(?:twitter|x)\.com/.+/status",
+    ],
+    "linkedin": [
+        r"linkedin\.com/posts/",
+        r"linkedin\.com/feed/update/",
+        r"linkedin\.com/video/",
     ],
 }
 
@@ -79,6 +88,7 @@ PLATFORM_NAMES = {
     "facebook": "Facebook",
     "pinterest": "Pinterest",
     "twitter": "Twitter/X",
+    "linkedin": "LinkedIn",
 }
 
 
@@ -120,13 +130,20 @@ def extract_info(url: str) -> dict:
     return json.loads(result["output"])
 
 
-def build_format_specs(quality: str, format_type: str) -> list[list[str]]:
+def build_format_specs(quality: str, format_type: str, platform: str = "") -> list[list[str]]:
     """Build ordered list of yt-dlp argument sets to try (most specific → least).
     Each item is a complete argument list fragment (e.g. ['-f', 'bestvideo+bestaudio']).
     """
+    # Cookie args if available
+    cookie_args = []
+    if platform:
+        cookie_file = COOKIE_DIR / f"{platform}.txt"
+        if cookie_file.exists():
+            cookie_args = ["--cookies", str(cookie_file)]
+
     if format_type == "audio":
         return [
-            ["-x", "--audio-format", "mp3"],
+            ["-x", "--audio-format", "mp3"] + cookie_args,
         ]
 
     # Progressive fallback: specific → generic → no format spec at all
@@ -140,11 +157,11 @@ def build_format_specs(quality: str, format_type: str) -> list[list[str]]:
     # Universal fallbacks (always included)
     all_specs.extend([
         # 2nd try: just bestvideo+bestaudio merge (any codec)
-        ["-f", "bestvideo+bestaudio/best", "--merge-output-format", "mp4"],
+        ["-f", "bestvideo+bestaudio/best", "--merge-output-format", "mp4"] + cookie_args,
         # 3rd try: just "best" (single combined stream)
-        ["-f", "best", "--merge-output-format", "mp4"],
+        ["-f", "best", "--merge-output-format", "mp4"] + cookie_args,
         # 4th try: no format specification at all — let yt-dlp decide
-        [],
+        cookie_args,
     ])
 
     return all_specs
@@ -162,6 +179,7 @@ async def supported_platforms():
             {"id": "facebook", "name": "Facebook", "icon": "📘", "supports": ["video", "reels"]},
             {"id": "pinterest", "name": "Pinterest", "icon": "📌", "supports": ["video", "image"]},
             {"id": "twitter", "name": "Twitter/X", "icon": "🐦", "supports": ["video"]},
+            {"id": "linkedin", "name": "LinkedIn", "icon": "💼", "supports": ["video", "posts"]},
         ]
     }
 
@@ -271,6 +289,59 @@ async def analyze(req: AnalyzeRequest):
             raise HTTPException(status_code=500, detail=f"Analiz hatasi: {error_msg[:300]}")
 
 
+
+# ── Cookie Management ────────────────────────────────────────────────────────
+@router.get("/downloader/cookies")
+async def list_cookies():
+    """List saved cookies for all platforms."""
+    cookies = {}
+    for platform in ["youtube", "instagram", "tiktok", "facebook", "pinterest", "twitter", "linkedin"]:
+        cookie_file = COOKIE_DIR / f"{platform}.txt"
+        if cookie_file.exists():
+            content = cookie_file.read_text(encoding="utf-8")
+            cookies[platform] = {
+                "exists": True,
+                "size": len(content),
+                "lines": content.count(chr(10)),
+                "last_modified": cookie_file.stat().st_mtime,
+            }
+        else:
+            cookies[platform] = {"exists": False}
+    return {"cookies": cookies}
+
+
+class CookieSaveRequest(BaseModel):
+    platform: str
+    cookies: str  # Netscape cookie format
+
+
+@router.post("/downloader/cookies")
+async def save_cookies(req: CookieSaveRequest):
+    """Save cookies for a platform (Netscape format)."""
+    valid_platforms = ["youtube", "instagram", "tiktok", "facebook", "pinterest", "twitter", "linkedin"]
+    if req.platform not in valid_platforms:
+        raise HTTPException(status_code=400, detail=f"Gecersiz platform: {req.platform}")
+
+    cookie_file = COOKIE_DIR / f"{req.platform}.txt"
+    cookie_file.write_text(req.cookies, encoding="utf-8")
+
+    return {
+        "status": "saved",
+        "platform": req.platform,
+        "size": len(req.cookies),
+        "lines": req.cookies.count(chr(10)),
+    }
+
+
+@router.delete("/downloader/cookies/{platform}")
+async def delete_cookies(platform: str):
+    """Delete cookies for a platform."""
+    cookie_file = COOKIE_DIR / f"{platform}.txt"
+    if cookie_file.exists():
+        cookie_file.unlink()
+    return {"status": "deleted", "platform": platform}
+
+
 @router.post("/downloader/download")
 async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
     """Start a download task. Supports concurrent downloads."""
@@ -299,7 +370,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
 
     # Build format specs to try in order
     output_template = str(output_dir / "%(title).80s.%(ext)s")
-    format_specs = build_format_specs(req.quality, req.format_type)
+    format_specs = build_format_specs(req.quality, req.format_type, platform)
 
     # Run in background (concurrent-safe)
     def run_download():
