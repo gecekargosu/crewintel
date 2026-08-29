@@ -109,10 +109,10 @@ class DocumentUploadActivity : AppCompatActivity() {
                     MultipartBody.Part.createFormData("files", item.name, requestBody)
                 }
 
-                val response = api.batchUpload(parts)
+                val response = api.batchUploadDocuments(parts)
                 if (response.isSuccessful) {
                     val result = response.body()
-                    val total = result?.total ?: 0
+                    val total = result?.uploaded ?: 0
                     val dup = result?.duplicate ?: 0
                     val fail = result?.failed ?: 0
                     val msg = "✅ $total belge yüklendi" +

@@ -131,10 +131,7 @@ class DashboardActivity : AppCompatActivity() {
             try {
                 val api = ApiClient.getApi(prefs)
 
-                val health = api.health()
-                if (health.isSuccessful) {
-                    binding.tvServerInfo.text = "Sunucu: ${prefs.serverUrl} ✅"
-                }
+                binding.tvServerInfo.text = "Sunucu: ${prefs.serverUrl}"
 
                 val summary = api.dashboardSummary()
                 if (summary.isSuccessful) {

@@ -4,98 +4,109 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.crewintel.mobile.R
 import com.crewintel.mobile.api.ApiClient
+import com.crewintel.mobile.databinding.ActivityShipListBinding
+import com.crewintel.mobile.databinding.ItemShipBinding
 import com.crewintel.mobile.models.Ship
 import com.crewintel.mobile.utils.PrefsManager
 import kotlinx.coroutines.launch
 
 class ShipListActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityShipListBinding
     private lateinit var prefs: PrefsManager
+    private val adapter = ShipAdapter { ship -> showShipDetail(ship) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_documents)
-
-        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
-        toolbar.title = "Gemiler"
-        toolbar.setNavigationOnClickListener { finish() }
-
+        binding = ActivityShipListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         prefs = PrefsManager(this)
+
+        binding.btnBack.setOnClickListener { finish() }
+        binding.rvShips.layoutManager = LinearLayoutManager(this)
+        binding.rvShips.adapter = adapter
+
         loadShips()
     }
 
     private fun loadShips() {
-        val progressBar = findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progressBar)
-        val rvDocs = findViewById<RecyclerView>(R.id.rvDocs)
-        val tvCount = findViewById<TextView>(R.id.tvCount)
-        val tvEmpty = findViewById<TextView>(R.id.tvEmpty)
+        binding.progressBar.visibility = View.VISIBLE
+        binding.tvEmpty.visibility = View.GONE
 
-        progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
                 val response = api.getShips()
                 if (response.isSuccessful) {
                     val ships = response.body() ?: emptyList()
-                    tvCount.text = "${ships.size} gemi"
+                    binding.tvCount.text = "${ships.size} gemi"
 
                     if (ships.isEmpty()) {
-                        tvEmpty.visibility = View.VISIBLE
-                        rvDocs.visibility = View.GONE
+                        binding.tvEmpty.visibility = View.VISIBLE
                     } else {
-                        tvEmpty.visibility = View.GONE
-                        rvDocs.visibility = View.VISIBLE
-                        rvDocs.layoutManager = this@ShipListActivity.let {
-                            LinearLayoutManager(it)
-                        }
-                        rvDocs.adapter = ShipAdapter(ships) { ship ->
-                            AlertDialog.Builder(this@ShipListActivity)
-                                .setTitle("🚢 ${ship.name}")
-                                .setMessage(buildString {
-                                    appendLine("IMO: ${ship.imo ?: "—"}")
-                                    appendLine("Tip: ${ship.type ?: "—"}")
-                                    appendLine("Bayrak: ${ship.flag ?: "—"}")
-                                    appendLine("Durum: ${ship.status ?: "—"}")
-                                })
-                                .setPositiveButton("Tamam", null)
-                                .show()
-                        }
+                        adapter.submitList(ships)
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ShipListActivity, "Hata: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@ShipListActivity, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
-                progressBar.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
             }
         }
     }
 
-    class ShipAdapter(
-        private val items: List<Ship>,
-        private val onClick: (Ship) -> Unit
-    ) : RecyclerView.Adapter<ShipAdapter.VH>() {
-        class VH(view: View) : RecyclerView.ViewHolder(view) {
-            val tvType: TextView = view.findViewById(R.id.tvDocType)
-            val tvName: TextView = view.findViewById(R.id.tvDocName)
+    private fun showShipDetail(ship: Ship) {
+        AlertDialog.Builder(this)
+            .setTitle("🚢 ${ship.name}")
+            .setMessage(buildString {
+                appendLine("IMO: ${ship.imoNumber ?: "—"}")
+                appendLine("Tip: ${ship.shipType ?: "—"}")
+                appendLine("Bayrak: ${ship.flag ?: "—"}")
+                appendLine("Durum: ${ship.status ?: "—"}")
+            })
+            .setPositiveButton("Tamam", null)
+            .show()
+    }
+}
+
+class ShipAdapter(
+    private val onClick: (Ship) -> Unit
+) : androidx.recyclerview.widget.ListAdapter<Ship, ShipAdapter.ViewHolder>(
+    object : androidx.recyclerview.widget.DiffUtil.ItemCallback<Ship>() {
+        override fun areItemsTheSame(old: Ship, new: Ship) = old.id == new.id
+        override fun areContentsTheSame(old: Ship, new: Ship) = old == new
+    }
+) {
+    class ViewHolder(val binding: ItemShipBinding) : androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemShipBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val ship = getItem(position)
+        holder.binding.tvShipName.text = ship.name
+        holder.binding.tvShipType.text = ship.shipType ?: "Gemi"
+        holder.binding.tvIMO.text = if (ship.imoNumber != null) "IMO: ${ship.imoNumber}" else ""
+        holder.binding.tvFlag.text = if (ship.flag != null) "🏁 ${ship.flag}" else ""
+
+        val status = ship.status ?: "active"
+        holder.binding.tvStatus.text = status
+        val statusColor = when (status.lowercase()) {
+            "active" -> 0xFF16a34a.toInt()
+            "maintenance" -> 0xFFF97316.toInt()
+            "inactive" -> 0xFF6B7280.toInt()
+            else -> 0xFF3B82F6.toInt()
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            return VH(LayoutInflater.from(parent.context).inflate(R.layout.item_document, parent, false))
-        }
-        override fun onBindViewHolder(holder: VH, position: Int) {
-            val ship = items[position]
-            holder.tvType.text = "🚢 ${ship.type ?: "Gemi"}"
-            holder.tvName.text = ship.name
-            holder.itemView.setOnClickListener { onClick(ship) }
-        }
-        override fun getItemCount() = items.size
+        holder.binding.tvStatus.setBackgroundColor(statusColor)
+
+        holder.itemView.setOnClickListener { onClick(ship) }
     }
 }

@@ -83,7 +83,7 @@ class EmailActivity : AppCompatActivity() {
             try {
                 val api = ApiClient.getApi(prefs)
                 val request = mapOf(
-                    "crew_member_id" to crew.id,
+                    "crew_member_id" to crew.id.toString(),
                     "subject" to subject,
                     "body" to body
                 )

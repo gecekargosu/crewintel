@@ -14,6 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.crewintel.mobile.api.ApiClient
 import com.crewintel.mobile.databinding.ActivityNotesBinding
 import com.crewintel.mobile.databinding.ItemNoteBinding
+import com.crewintel.mobile.models.Note
+import com.crewintel.mobile.models.NoteRequest
+import com.crewintel.mobile.models.NoteUpdateRequest
 import com.crewintel.mobile.utils.PrefsManager
 import kotlinx.coroutines.launch
 
@@ -65,12 +68,12 @@ class NotesActivity : AppCompatActivity() {
 
     private fun showAddDialog() {
         val titleInput = EditText(this).apply {
-            hint = "Not başlığı"
+            hint = "Not basligi"
             setPadding(48, 32, 48, 16)
             textSize = 16f
         }
         val bodyInput = EditText(this).apply {
-            hint = "Not içeriği..."
+            hint = "Not icerigi..."
             minLines = 3
             setPadding(48, 16, 48, 32)
             textSize = 14f
@@ -84,10 +87,10 @@ class NotesActivity : AppCompatActivity() {
         }
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("📝 Yeni Not")
+            .setTitle("Yeni Not")
             .setView(layout)
             .setPositiveButton("Kaydet", null)
-            .setNegativeButton("İptal", null)
+            .setNegativeButton("Iptal", null)
             .create()
 
         dialog.setOnShowListener {
@@ -95,7 +98,7 @@ class NotesActivity : AppCompatActivity() {
                 val title = titleInput.text.toString().trim()
                 val body = bodyInput.text.toString().trim()
                 if (title.isBlank()) {
-                    Toast.makeText(this, "Lütfen başlık girin", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Lutfen baslik girin", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 dialog.dismiss()
@@ -111,15 +114,10 @@ class NotesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                val note = mapOf(
-                    "title" to title,
-                    "body" to body,
-                    "priority" to "normal",
-                    "done" to false
-                )
+                val note = NoteRequest(title = title, body = body, priority = "normal")
                 val response = api.createNote(note)
                 if (response.isSuccessful) {
-                    Toast.makeText(this@NotesActivity, "✅ Not kaydedildi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@NotesActivity, "Not kaydedildi", Toast.LENGTH_SHORT).show()
                     loadNotes()
                 } else {
                     Toast.makeText(this@NotesActivity, "Hata: ${response.code()}", Toast.LENGTH_SHORT).show()
@@ -134,9 +132,9 @@ class NotesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                api.updateNote(id, mapOf("done" to !currentDone))
+                api.updateNote(id, NoteUpdateRequest(done = !currentDone))
                 loadNotes()
-            } catch (e: Exception) {}
+            } catch (_: Exception) {}
         }
     }
 
@@ -146,7 +144,7 @@ class NotesActivity : AppCompatActivity() {
                 val api = ApiClient.getApi(prefs)
                 api.deleteNote(id)
                 loadNotes()
-            } catch (e: Exception) {}
+            } catch (_: Exception) {}
         }
     }
 }
@@ -154,10 +152,10 @@ class NotesActivity : AppCompatActivity() {
 class NoteAdapter(
     private val onDone: (Int, Boolean) -> Unit,
     private val onDelete: (Int) -> Unit
-) : androidx.recyclerview.widget.ListAdapter<Map<String, Any>, NoteAdapter.ViewHolder>(
-    object : androidx.recyclerview.widget.DiffUtil.ItemCallback<Map<String, Any>>() {
-        override fun areItemsTheSame(old: Map<String, Any>, new: Map<String, Any>) = old["id"] == new["id"]
-        override fun areContentsTheSame(old: Map<String, Any>, new: Map<String, Any>) = old == new
+) : androidx.recyclerview.widget.ListAdapter<Note, NoteAdapter.ViewHolder>(
+    object : androidx.recyclerview.widget.DiffUtil.ItemCallback<Note>() {
+        override fun areItemsTheSame(old: Note, new: Note) = old.id == new.id
+        override fun areContentsTheSame(old: Note, new: Note) = old == new
     }
 ) {
     class ViewHolder(val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root)
@@ -169,15 +167,12 @@ class NoteAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val note = getItem(position)
-        val id = (note["id"] as? Number)?.toInt() ?: 0
-        val done = note["done"] as? Boolean ?: false
-        val priority = note["priority"]?.toString() ?: "normal"
 
-        holder.binding.tvTitle.text = note["title"]?.toString() ?: ""
-        holder.binding.tvBody.text = note["body"]?.toString() ?: ""
-        holder.binding.tvDate.text = note["created_at"]?.toString()?.substringBefore("T") ?: ""
+        holder.binding.tvTitle.text = note.title
+        holder.binding.tvBody.text = note.body
+        holder.binding.tvDate.text = note.createdAt.substringBefore("T")
 
-        val color = when (priority) {
+        val color = when (note.priority) {
             "urgent" -> 0xFFEF4444.toInt()
             "high" -> 0xFFF97316.toInt()
             "normal" -> 0xFF3B82F6.toInt()
@@ -185,7 +180,7 @@ class NoteAdapter(
         }
         holder.binding.viewPriority.setBackgroundColor(color)
 
-        if (done) {
+        if (note.done) {
             holder.binding.tvTitle.alpha = 0.5f
             holder.binding.tvBody.alpha = 0.5f
             holder.binding.btnDone.text = "↩"
@@ -195,7 +190,7 @@ class NoteAdapter(
             holder.binding.btnDone.text = "✓"
         }
 
-        holder.binding.btnDone.setOnClickListener { onDone(id, done) }
-        holder.binding.btnDelete.setOnClickListener { onDelete(id) }
+        holder.binding.btnDone.setOnClickListener { onDone(note.id, note.done) }
+        holder.binding.btnDelete.setOnClickListener { onDelete(note.id) }
     }
 }
