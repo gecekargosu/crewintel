@@ -7,6 +7,7 @@ yt-dlp ile YouTube, Instagram, TikTok, Facebook, Pinterest, Twitter videoların�
 - YouTube için JS runtime kurulumu dahil
 """
 
+import os
 import re
 import uuid
 import subprocess
@@ -34,6 +35,26 @@ DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 COOKIE_DIR = DATA_DIR / "social-cookies"
 COOKIE_DIR.mkdir(parents=True, exist_ok=True)
+# Rate limiting (per-user)
+import time
+from collections import defaultdict
+_user_requests: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_MAX = 20  # max requests per window
+
+
+def _check_rate_limit(user_id: str):
+    """Check if user has exceeded rate limit."""
+    now = time.time()
+    # Clean old requests
+    _user_requests[user_id] = [t for t in _user_requests[user_id] if now - t < RATE_LIMIT_WINDOW]
+    if len(_user_requests[user_id]) >= RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Cok fazla istek. {RATE_LIMIT_WINDOW} saniye icinde en fazla {RATE_LIMIT_MAX} istek yapabilirsiniz."
+        )
+    _user_requests[user_id].append(now)
+
 
 # Task history file (persist across restarts)
 TASKS_FILE = DATA_DIR / "tasks.json"
@@ -279,6 +300,7 @@ async def active_downloads(current_user: User = Depends(get_current_user)):
 
 @router.post("/downloader/analyze")
 async def analyze(req: AnalyzeRequest, current_user: User = Depends(get_current_user)):
+    _check_rate_limit(str(current_user.id))
     """Analyze a URL and return platform info + video metadata."""
     platform = detect_platform(req.url)
     if not platform:
@@ -387,6 +409,12 @@ async def save_cookies(req: CookieSaveRequest, current_user: User = Depends(get_
         header = "# Netscape HTTP Cookie File" + chr(10) + "# http://curl.haxx.se/rfc/cookie_spec.html" + chr(10) + "# This is a generated file!  Do not edit." + chr(10) + chr(10)
         cookie_content = header + cookie_content
     cookie_file.write_text(cookie_content, encoding="utf-8")
+    
+    # Secure cookie file permissions (read/write owner only)
+    try:
+        os.chmod(cookie_file, 0o600)
+    except OSError:
+        pass  # Windows may not support chmod
 
     return {
         "status": "saved",
@@ -407,6 +435,7 @@ async def delete_cookies(platform: str, current_user: User = Depends(get_current
 
 @router.post("/downloader/download")
 async def download(req: DownloadRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)):
+    _check_rate_limit(str(current_user.id))
     """Start a download task. Supports concurrent downloads."""
     global _download_counter
     platform = detect_platform(req.url)

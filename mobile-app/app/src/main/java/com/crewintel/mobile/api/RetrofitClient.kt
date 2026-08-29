@@ -1,8 +1,8 @@
 package com.crewintel.mobile.api
 
+import android.content.Context
 import com.crewintel.mobile.BuildConfig
 import com.crewintel.mobile.utils.PrefsManager
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -13,6 +13,11 @@ object ApiClient {
 
     private var retrofit: Retrofit? = null
     private var currentBaseUrl: String? = null
+    private var appContext: Context? = null
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
 
     fun getApi(prefsManager: PrefsManager): ApiService {
         val baseUrl = prefsManager.serverUrl.trimEnd('/') + "/"
@@ -28,15 +33,10 @@ object ApiClient {
                 }
             }
 
-            val authInterceptor = Interceptor { chain ->
-                val request = chain.request().newBuilder().apply {
-                    prefsManager.authToken?.let { token ->
-                        addHeader("Authorization", "Bearer $token")
-                    }
-                    addHeader("Content-Type", "application/json")
-                }.build()
-                chain.proceed(request)
-            }
+            val authInterceptor = AuthInterceptor(
+                context = appContext ?: throw IllegalStateException("Call ApiClient.init(context) first"),
+                prefs = prefsManager
+            )
 
             val client = OkHttpClient.Builder()
                 .addInterceptor(authInterceptor)

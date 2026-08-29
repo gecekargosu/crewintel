@@ -23,10 +23,16 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         prefs = PrefsManager(this)
+        ApiClient.init(this)
 
         // Kayıtlı bilgileri doldur
         binding.etServerUrl.setText(prefs.serverUrl)
         binding.etEmail.setText(prefs.userEmail ?: "")
+
+        // Session suresi dolmus mu?
+        if (intent.getBooleanExtra("session_expired", false)) {
+            Toast.makeText(this, "Oturum sureniz dolmus, lutfen tekrar giris yapin", Toast.LENGTH_LONG).show()
+        }
 
         binding.btnLogin.setOnClickListener { attemptLogin() }
     }
