@@ -28,7 +28,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="CREWINTEL"
+                    android:text="UMAY Admin"
                     android:textColor="#1e3a5f"
                     android:textSize="22sp"
                     android:textStyle="bold" />

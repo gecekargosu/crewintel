@@ -19,12 +19,12 @@
             android:layout_marginTop="48dp"
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_logo"
-            android:contentDescription="CREWINTEL" />
+            android:contentDescription="UMAY Admin" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CREWINTEL"
+            android:text="UMAY Admin"
             android:textColor="#ffffff"
             android:textSize="28sp"
             android:textStyle="bold"

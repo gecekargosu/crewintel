@@ -70,7 +70,7 @@ class CrewDetailActivity : AppCompatActivity() {
                     crew.phone?.let { phone ->
                         binding.btnWhatsApp.setOnClickListener {
                             val cleanPhone = phone.replace(Regex("[^0-9]"), "")
-                            val msg = Uri.encode("Merhaba ${crew.firstName}, CREWINTEL'den bilgilendirme.")
+                            val msg = Uri.encode("Merhaba ${crew.firstName}, UMAY Admin'den bilgilendirme.")
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$cleanPhone?text=$msg"))
                             startActivity(intent)
                         }
@@ -80,7 +80,7 @@ class CrewDetailActivity : AppCompatActivity() {
                     binding.btnEmail.setOnClickListener {
                         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:${crew.email}")
-                            putExtra(Intent.EXTRA_SUBJECT, "CREWINTEL Bildirim")
+                            putExtra(Intent.EXTRA_SUBJECT, "UMAY Admin Bildirim")
                         }
                         try { startActivity(emailIntent) }
                         catch (_: Exception) { Toast.makeText(this@CrewDetailActivity, "E-posta uygulaması bulunamadı", Toast.LENGTH_SHORT).show() }

@@ -63,7 +63,7 @@ class DownloadService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("CREWINTEL Downloader")
+            .setContentTitle("UMAY Admin Downloader")
             .setContentText(title)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentIntent(pendingIntent)

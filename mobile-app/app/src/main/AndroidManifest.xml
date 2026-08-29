@@ -13,7 +13,7 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_logo"
-        android:label="CREWINTEL"
+        android:label="UMAY Admin"
         android:supportsRtl="true"
         android:theme="@style/Theme.Crewintel"
         android:usesCleartextTraffic="true"

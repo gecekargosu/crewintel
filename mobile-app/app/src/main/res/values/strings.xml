@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">CREWINTEL</string>
+    <string name="app_name">UMAY Admin</string>
     <string name="login">Giriş Yap</string>
     <string name="email">E-posta</string>
     <string name="password">Şifre</string>
