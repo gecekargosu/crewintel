@@ -272,7 +272,7 @@ C:\CREWINTEL\
 │
 ├── storage/                      # Yüklenen belge dosyaları
 ├── backups/                      # Yedek dosyalar
-├── mobile/                       # Mobil uygulama (boş)
+├── mobile-app/                   # Android mobil uygulama (UMAY Admin) — 84+ dosya
 ├── deployment/                   # Deployment dosyaları
 │
 ├── CREWINTEL_AUDIT.txt           # ⚠️ Stale dosya
