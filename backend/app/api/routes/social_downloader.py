@@ -11,13 +11,10 @@ import re
 import uuid
 import subprocess
 import json
-import logging
-import traceback
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-logger = logging.getLogger("social-downloader")
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -133,16 +130,22 @@ def build_format_specs(quality: str, format_type: str) -> list[list[str]]:
         ]
 
     # Progressive fallback: specific → generic → no format spec at all
-    all_specs = [
-        # 1st try: exact quality with preferred codec
-        ["-f", f"bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<={quality}]+bestaudio/best[height<={quality}]", "--merge-output-format", "mp4"],
+    all_specs = []
+    
+    # Only add height-specific spec if quality is a number
+    if quality.isdigit():
+        h = int(quality)
+        all_specs.append(["-f", f"bestvideo[height<={h}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<={h}]+bestaudio/best[height<={h}]", "--merge-output-format", "mp4"])
+    
+    # Universal fallbacks (always included)
+    all_specs.extend([
         # 2nd try: just bestvideo+bestaudio merge (any codec)
         ["-f", "bestvideo+bestaudio/best", "--merge-output-format", "mp4"],
         # 3rd try: just "best" (single combined stream)
         ["-f", "best", "--merge-output-format", "mp4"],
         # 4th try: no format specification at all — let yt-dlp decide
         [],
-    ]
+    ])
 
     return all_specs
 
@@ -300,13 +303,13 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
 
     # Run in background (concurrent-safe)
     def run_download():
-        logger.info(f"Download started: task_id={task_id}, url={req.url}, quality={req.quality}")
+        print(f"Download started: task_id={task_id}, url={req.url}, quality={req.quality}")
         last_error = "Bilinmeyen hata"
         result = None
 
         # Try each format spec in order until one succeeds
         for i, spec in enumerate(format_specs):
-            logger.info(f"Task {task_id}: Trying format spec {i+1}/{len(format_specs)}: {spec}")
+            print(f"Task {task_id}: Trying format spec {i+1}/{len(format_specs)}: {spec}")
             cmd = ["yt-dlp"] + spec + [
                 "-o", output_template,
                 "--no-check-certificates",
@@ -319,7 +322,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                     # Check if files exist
                     files = [f for f in output_dir.glob("*") if f.is_file()]
                     if files:
-                        logger.info(f"Task {task_id}: Download completed with spec {i+1}, file={files[0].name}")
+                        print(f"Task {task_id}: Download completed with spec {i+1}, file={files[0].name}")
                         _tasks[task_id]["status"] = "completed"
                         _tasks[task_id]["completed_at"] = datetime.now().isoformat()
                         _tasks[task_id]["files"] = [
@@ -328,10 +331,10 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                         ]
                         return
                     else:
-                        logger.warning(f"Task {task_id}: yt-dlp returned 0 but no files in {output_dir}")
+                        print(f"Task {task_id}: yt-dlp returned 0 but no files in {output_dir}")
                         last_error = "Dosya indirilemedi"
                 else:
-                    logger.warning(f"Task {task_id}: Format spec {i+1} failed: {(result.stderr or '').strip()[:200]}")
+                    print(f"Task {task_id}: Format spec {i+1} failed: {(result.stderr or '').strip()[:200]}")
                     last_error = (result.stderr or result.stdout or "Format uyumsuz").strip()[:200]
             except subprocess.TimeoutExpired:
                 last_error = "Zaman asimi (10 dk)"
@@ -340,7 +343,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
                 last_error = str(e)[:200]
 
         # All formats failed
-        logger.error(f"Task {task_id}: All format specs failed. Last error: {last_error[:200]}")
+        print(f"Task {task_id}: All format specs failed. Last error: {last_error[:200]}")
         # Translate common errors to Turkish
         error_msg = last_error
         if "format" in error_msg.lower() or "requested" in error_msg.lower():
@@ -358,7 +361,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
 
         _tasks[task_id]["status"] = "failed"
         _tasks[task_id]["error"] = error_msg
-        logger.error(f"Task {task_id}: FAILED — {error_msg[:100]}")
+        print(f"Task {task_id}: FAILED — {error_msg[:100]}")
 
     background_tasks.add_task(run_download)
 
@@ -389,6 +392,21 @@ async def download_status(task_id: str):
                 "error": task.get("error", "Indirme basarisiz oldu"),
             }
         else:
+            # Auto-stale: if downloading for > 5 minutes, mark as failed
+            from datetime import datetime, timedelta
+            started = task.get("started_at", "")
+            if started:
+                try:
+                    started_dt = datetime.fromisoformat(started)
+                    if datetime.now() - started_dt > timedelta(minutes=5):
+                        task["status"] = "failed"
+                        task["error"] = "Indirme zaman asimina ugradi (sunucu tarafinda)"
+                        return {
+                            "status": "failed",
+                            "error": task["error"],
+                        }
+                except Exception:
+                    pass
             return {
                 "status": "downloading",
                 "progress": task.get("progress", 0),

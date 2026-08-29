@@ -279,12 +279,12 @@ class SocialDownloaderActivity : AppCompatActivity() {
 
     private fun pollDownload(taskId: String) {
         val job = lifecycleScope.launch {
-            val maxAttempts = 300 // 10 minutes
+            val maxAttempts = 60 // 3 minutes
             var attempts = 0
 
             while (isActive && attempts < maxAttempts) {
                 attempts++
-                delay(3000)
+                delay(2000)
                 try {
                     val status = withContext(Dispatchers.IO) {
                         val request = Request.Builder()
@@ -318,7 +318,7 @@ class SocialDownloaderActivity : AppCompatActivity() {
                             return@launch
                         }
                         else -> {
-                            binding.tvDownloadStatus.text = "Indiriliyor... ($attempts)"
+                            binding.tvDownloadStatus.text = "Indiriliyor... Lutfen bekleyin"
                         }
                     }
                 } catch (_: Exception) {}
