@@ -16,7 +16,9 @@ from typing import Optional
 from datetime import datetime
 
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from app.api.deps import get_current_user
+from app.models.user import User
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -224,7 +226,7 @@ def build_format_specs(quality: str, format_type: str, platform: str = "") -> li
 
 # ── API Endpoints ─────────────────────────────────────────────────────────────
 @router.get("/downloader/platforms")
-async def supported_platforms():
+async def supported_platforms(current_user: User = Depends(get_current_user)):
     """List supported platforms."""
     return {
         "platforms": [
@@ -240,7 +242,7 @@ async def supported_platforms():
 
 
 @router.get("/downloader/history")
-async def download_history():
+async def download_history(current_user: User = Depends(get_current_user)):
     """Get all downloaded files across all tasks."""
     all_files = []
     for task_id, task in sorted(_tasks.items(), key=lambda x: x[1].get("started_at", ""), reverse=True):
@@ -259,7 +261,7 @@ async def download_history():
 
 
 @router.get("/downloader/active")
-async def active_downloads():
+async def active_downloads(current_user: User = Depends(get_current_user)):
     """Get all currently downloading tasks."""
     active = []
     for task_id, task in _tasks.items():
@@ -276,7 +278,7 @@ async def active_downloads():
 
 
 @router.post("/downloader/analyze")
-async def analyze(req: AnalyzeRequest):
+async def analyze(req: AnalyzeRequest, current_user: User = Depends(get_current_user)):
     """Analyze a URL and return platform info + video metadata."""
     platform = detect_platform(req.url)
     if not platform:
@@ -347,7 +349,7 @@ async def analyze(req: AnalyzeRequest):
 
 # ── Cookie Management ────────────────────────────────────────────────────────
 @router.get("/downloader/cookies")
-async def list_cookies():
+async def list_cookies(current_user: User = Depends(get_current_user)):
     """List saved cookies for all platforms."""
     cookies = {}
     for platform in ["youtube", "instagram", "tiktok", "facebook", "pinterest", "twitter", "linkedin"]:
@@ -371,7 +373,7 @@ class CookieSaveRequest(BaseModel):
 
 
 @router.post("/downloader/cookies")
-async def save_cookies(req: CookieSaveRequest):
+async def save_cookies(req: CookieSaveRequest, current_user: User = Depends(get_current_user)):
     """Save cookies for a platform (Netscape format)."""
     valid_platforms = ["youtube", "instagram", "tiktok", "facebook", "pinterest", "twitter", "linkedin"]
     if req.platform not in valid_platforms:
@@ -395,7 +397,7 @@ async def save_cookies(req: CookieSaveRequest):
 
 
 @router.delete("/downloader/cookies/{platform}")
-async def delete_cookies(platform: str):
+async def delete_cookies(platform: str, current_user: User = Depends(get_current_user)):
     """Delete cookies for a platform."""
     cookie_file = COOKIE_DIR / f"{platform}.txt"
     if cookie_file.exists():
@@ -404,7 +406,7 @@ async def delete_cookies(platform: str):
 
 
 @router.post("/downloader/download")
-async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
+async def download(req: DownloadRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)):
     """Start a download task. Supports concurrent downloads."""
     global _download_counter
     platform = detect_platform(req.url)
@@ -511,7 +513,7 @@ async def download(req: DownloadRequest, background_tasks: BackgroundTasks):
 
 
 @router.get("/downloader/{task_id}/status")
-async def download_status(task_id: str):
+async def download_status(task_id: str, current_user: User = Depends(get_current_user)):
     """Check download status."""
     # In-memory tracker
     if task_id in _tasks:
@@ -567,7 +569,7 @@ async def download_status(task_id: str):
 
 
 @router.get("/downloader/{task_id}/file")
-async def download_file(task_id: str):
+async def download_file(task_id: str, current_user: User = Depends(get_current_user)):
     """Download the completed file."""
     output_dir = DOWNLOAD_DIR / task_id
     files = list(output_dir.glob("*"))
@@ -582,7 +584,7 @@ async def download_file(task_id: str):
     )
 
 @router.delete("/downloader/{task_id}")
-async def delete_download(task_id: str):
+async def delete_download(task_id: str, current_user: User = Depends(get_current_user)):
     """Delete a downloaded file and remove from history."""
     # Remove from tasks
     if task_id in _tasks:
