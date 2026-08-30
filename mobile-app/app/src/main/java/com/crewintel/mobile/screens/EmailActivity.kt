@@ -83,17 +83,15 @@ class EmailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                val request = mapOf(
-                    "crew_member_id" to crew.id.toString(),
-                    "subject" to subject,
-                    "body" to body
+                val emailRequest = com.crewintel.mobile.models.EmailRequest(
+                    to = crew.email ?: "",
+                    subject = subject,
+                    body = body
                 )
-                val response = api.sendEmail(request)
+                val response = api.sendEmail(emailRequest)
                 if (response.isSuccessful) {
-                    val result = response.body()
-                    val resultMap = if (result is Map<*, *>) result else emptyMap<Any, Any>()
-                    val status = resultMap["status"]?.toString() ?: ""
-                    val message = resultMap["message"]?.toString() ?: "Gönderildi"
+                    val status = "sent"
+                    val message = "E-posta gonderildi"
                     binding.tvStatus.visibility = View.VISIBLE
                     binding.tvStatus.text = "✅ $message (${crew.firstName} ${crew.lastName} → ${crew.email})"
                     binding.tvStatus.setTextColor(0xFF16a34a.toInt())

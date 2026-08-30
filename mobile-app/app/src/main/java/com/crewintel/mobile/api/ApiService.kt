@@ -16,7 +16,7 @@ interface ApiService {
     suspend fun getMe(): Response<Any>
 
     @POST("api/auth/refresh")
-    suspend fun refreshToken(@Body body: Map<String, String>): Response<Any>
+    suspend fun refreshToken(@Body body: RefreshTokenRequest): Response<LoginResponse>
 
     // ── Dashboard ──────────────────────────────────────────
     @GET("api/dashboard/summary")
@@ -103,14 +103,14 @@ interface ApiService {
     suspend fun getCookiesStatus(): Response<Any>
 
     @POST("api/social/downloader/cookies")
-    suspend fun saveCookies(@Body body: Map<String, String>): Response<Any>
+    suspend fun saveCookies(@Body body: CookieSaveRequest): Response<Any>
 
     // ── Social Downloader ──────────────────────────────────
     @POST("api/social/downloader/analyze")
-    suspend fun analyzeUrl(@Body body: Map<String, String>): Response<Any>
+    suspend fun analyzeUrl(@Body body: AnalyzeRequest): Response<Any>
 
     @POST("api/social/downloader/download")
-    suspend fun startDownload(@Body body: Map<String, String>): Response<Any>
+    suspend fun startDownload(@Body body: DownloadRequest): Response<Any>
 
     @GET("api/social/downloader/history")
     suspend fun getDownloadHistory(): Response<Any>
@@ -126,11 +126,11 @@ interface ApiService {
 
     // ── Email ──────────────────────────────────────────────
     @POST("api/email/send")
-    suspend fun sendEmail(@Body body: Map<String, String>): Response<Any>
+    suspend fun sendEmail(@Body body: EmailRequest): Response<Any>
 
     // ── AI ──────────────────────────────────────────────
     @POST("api/ai/analyze")
-    suspend fun analyzeDocument(@Body body: Map<String, String>): Response<Any>
+    suspend fun analyzeDocument(@Body body: DocumentAnalyzeRequest): Response<Any>
 
     // ── Jobs ───────────────────────────────────────────────
     @GET("api/jobs/")

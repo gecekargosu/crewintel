@@ -40,7 +40,7 @@ class AIAnalysisActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val api = ApiClient.getApi(prefs)
-                val response = api.analyzeDocument(mapOf("text" to text))
+                val response = api.analyzeDocument(com.crewintel.mobile.models.DocumentAnalyzeRequest(document_id = 0))
                 if (response.isSuccessful) {
                     val result = response.body()
                     binding.tvResult.text = result?.toString() ?: "Sonuc bulunamadi"

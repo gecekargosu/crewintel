@@ -12,7 +12,13 @@ data class DashboardSummary(
     @SerializedName("urgentDocuments") val urgentDocuments: Int = 0,
     @SerializedName("unmatchedDocuments") val unmatchedDocuments: Int = 0,
     @SerializedName("warnings") val warnings: Warnings = Warnings(),
-    @SerializedName("health") val health: Map<String, Any>? = null
+    @SerializedName("health") val health: HealthStatus? = null
+)
+
+data class HealthStatus(
+    @SerializedName("database") val database: String = "unknown",
+    @SerializedName("api") val api: String = "unknown",
+    @SerializedName("version") val version: String = ""
 )
 
 data class Warnings(
@@ -172,4 +178,34 @@ data class UserInfo(
     @SerializedName("email") val email: String = "",
     @SerializedName("full_name") val fullName: String = "",
     @SerializedName("role") val role: String = ""
+)
+
+// ── API Request Models ──────────────────────────────────────
+data class CookieSaveRequest(
+    val platform: String,
+    val cookies: String
+)
+
+data class AnalyzeRequest(
+    val url: String
+)
+
+data class DownloadRequest(
+    val url: String,
+    val platform: String = "",
+    val quality: String = "best"
+)
+
+data class EmailRequest(
+    val to: String,
+    val subject: String,
+    val body: String
+)
+
+data class DocumentAnalyzeRequest(
+    val document_id: Int
+)
+
+data class RefreshTokenRequest(
+    val refresh_token: String
 )

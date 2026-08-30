@@ -69,14 +69,29 @@ def _decrypt_cookie(encrypted: bytes) -> str:
     return fernet.decrypt(encrypted).decode('utf-8')
 
 def _check_rate_limit(user_id: str):
-    """Check if user has exceeded rate limit."""
+    """Check if user has exceeded rate limit (sliding window with cleanup)."""
     now = time.time()
-    # Clean old requests
+    
+    # Periodic cleanup: remove users with no recent requests (every 100 calls)
+    if not hasattr(_check_rate_limit, '_call_count'):
+        _check_rate_limit._call_count = 0
+    _check_rate_limit._call_count += 1
+    if _check_rate_limit._call_count % 100 == 0:
+        expired_users = [uid for uid, times in _user_requests.items()
+                        if not times or now - times[-1] > RATE_LIMIT_WINDOW * 2]
+        for uid in expired_users:
+            del _user_requests[uid]
+    
+    # Clean old requests for this user
     _user_requests[user_id] = [t for t in _user_requests[user_id] if now - t < RATE_LIMIT_WINDOW]
+    
     if len(_user_requests[user_id]) >= RATE_LIMIT_MAX:
+        oldest = _user_requests[user_id][0] if _user_requests[user_id] else now
+        retry_after = int(RATE_LIMIT_WINDOW - (now - oldest)) + 1
         raise HTTPException(
             status_code=429,
-            detail=f"Cok fazla istek. {RATE_LIMIT_WINDOW} saniye icinde en fazla {RATE_LIMIT_MAX} istek yapabilirsiniz."
+            detail=f"Cok fazla istek. {RATE_LIMIT_WINDOW} saniye icinde en fazla {RATE_LIMIT_MAX} istek yapabilirsiniz.",
+            headers={"Retry-After": str(retry_after)}
         )
     _user_requests[user_id].append(now)
 

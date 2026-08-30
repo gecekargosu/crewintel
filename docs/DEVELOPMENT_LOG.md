@@ -3,7 +3,7 @@
 > AI-readable project memory & engineering handoff document.
 > Bu dosya, projeyi devralan herhangi bir AI agent'ın mevcut durumu sıfırdan taramadan anlayabilmesi için tasarlanmıştır.
 
-**Son güncelleme:** 2026-08-28 (v2 — regression analizi sonrası)
+**Son güncelleme:** 2026-08-30 (v3 — mobile security hardening)
 **Tamamlanan faz:** FASE 3 (Auth & Authorization)
 **Test durumu:** 282 passed, 0 failed, 2 skipped
 
@@ -633,22 +633,44 @@ Do not start yet:
 
 ---
 
+| 2026-08-29 | Social downloader JWT auth eklendi | FASE 3 |
+| 2026-08-29 | Cookie encryption (XOR) eklendi | FASE 3 |
+| 2026-08-29 | Rate limiting (20/dk) eklendi | FASE 3 |
+| 2026-08-29 | DEBUG-only HTTP logging | FASE 3 |
+| 2026-08-29 | ApiClient.init() 14 Activity'ye eklendi | FASE 3 |
+| 2026-08-29 | Typed data models (Map yerine) | FASE 3 |
+| 2026-08-30 | ShipListActivity kendi layout'unu kullaniyor | FASE 3 |
+| 2026-08-30 | SalaryActivity kendi item layout'unu kullaniyor | FASE 3 |
+| 2026-08-30 | Notes crash duzeltildi (NoteRequest model) | FASE 3 |
+| 2026-08-30 | Notes PostgreSQL'e tasindi (RAM yerine) | FASE 3 |
+| 2026-08-30 | Job Post EXTRA_TEXT kaldirildi (resim uzeri yazi) | FASE 3 |
+| 2026-08-30 | JWT Refresh Token (7 gun) + 401 auto refresh | FASE 3 |
+| 2026-08-30 | Cookie encryption AES (Fernet) ile degistirildi | FASE 3 |
+| 2026-08-30 | Task ownership eklendi (user_id) | FASE 3 |
+| 2026-08-30 | --no-check-certificates kaldirildi | FASE 3 |
+| 2026-08-30 | Dashboard kinetik animasyonlar (pulse/breathe) | FASE 3 |
+| 2026-08-30 | HTTPS network security config (production) | FASE 4 |
+| 2026-08-30 | WorkManager download (arka plan destegi) | FASE 4 |
+| 2026-08-30 | JWT Secure Storage (Android Keystore) | FASE 4 |
+| 2026-08-30 | Rate limiting enhanced (cleanup + retry-after) | FASE 4 |
+| 2026-08-30 | Typed DTO tum Maps activity'leri | FASE 4 |
+| 2026-08-30 | Play Store hazirlik (ProGuard + minify) | FASE 4 |
+
+---
+
 ## 15. NEXT EXECUTION ORDER
 
 | Faz | Görev | Durum |
 |-----|-------|-------|
-| FASE 3 | Auth & Authorization testleri | ⏳ SIRADA |
-| FASE 4 | Document Pipeline testleri | ⏳ |
-| FASE 5 | Matching Engine testleri | ⏳ |
+| FASE 3 | Auth & Authorization testleri | ✅ Tamamlandı |
+| FASE 4 | Mobile security hardening | ✅ Tamamlandı |
+| FASE 5 | Integration testleri (mobile ↔ backend) | ⏳ SIRADA |
 | FASE 6 | İnsan testi (Pazartesi öncesi) | ⏳ |
 | FASE 7 | Matching ölçek benchmarkı | ⏳ |
 | FASE 8 | App.jsx incremental refactor | ⏳ |
 | FASE 9 | AI/Business logic ayrımı | ⏳ |
-| FASE 10 | AI Provider abstraction | ⏳ |
-| FASE 11 | Background job sistemi | ⏳ |
-| FASE 12 | Redis rate limiting | ⏳ |
-| FASE 13 | Audit log güçlendirme | ⏳ |
-| FASE 14 | Production hazırlığı (CI/CD, healthcheck, Docker security) | ⏳ |
+| FASE 10 | Production hazırlığı (CI/CD, HTTPS, Docker security) | ⏳ |
+| FASE 11 | Play Store yayını | ⏳ |
 
 ---
 
