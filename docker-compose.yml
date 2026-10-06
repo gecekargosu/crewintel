@@ -29,7 +29,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       STORAGE_PATH: /app/storage
-      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-25}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-100}
       EXPIRY_APPROACHING_DAYS: ${EXPIRY_APPROACHING_DAYS:-90}
       EXPIRY_URGENT_DAYS: ${EXPIRY_URGENT_DAYS:-30}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-insecure-secret-change-me}

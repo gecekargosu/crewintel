@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     database_url: str = Field(min_length=1)
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     storage_path: str = "../storage"
-    max_upload_size_mb: int = 25
+    max_upload_size_mb: int = 100
     expiry_approaching_days: int = 90
     expiry_urgent_days: int = 30
     # ── Authentication ────────────────────────────────────────────────────────

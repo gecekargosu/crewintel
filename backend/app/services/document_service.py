@@ -30,7 +30,10 @@ from app.services.match_engine import (
 
 
 ALLOWED_UPLOAD_EXTENSIONS = set(PDF_CONVERTIBLE_EXTENSIONS)
-MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB
+# Büyük arşiv taramaları (20MB+ belge paketleri) kabul edilir; sınırlar
+# config.max_upload_size_mb, docker-compose MAX_UPLOAD_SIZE_MB ve
+# frontend/nginx.conf client_max_body_size ile aynı değerde tutulmalı.
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 
 # Uzantı bazlı zorunlu dosya imzaları (magic bytes)
 _MAGIC_BY_SUFFIX: dict[str, tuple[bytes, ...]] = {
@@ -52,20 +55,31 @@ _MAGIC_BY_SUFFIX: dict[str, tuple[bytes, ...]] = {
 }
 
 
-def validate_upload(filename: str, content: bytes) -> None:
+def validate_upload(filename: str, content: bytes) -> str:
     """Backend-side upload validation: extension allowlist + content sniffing.
 
     PDF, TXT, DOC/DOCX, XLSX, resim (JPEG/PNG/WebP/TIFF/BMP) ve OpenOffice
     formatları kabul edilir. API client'a güvenmez: uzantı ile içerik
     uyuşmuyorsa (ör. HTML'in .pdf'e çevrilmesi) reddeder.
+
+    İstisna: içerik GERÇEKTE izin verilen başka bir formattaysa (ör. JPEG
+    içeriği `.pdf` adıyla gelmiş — GERMAN SKY arşivinde görüldü) reddetmek
+    yerine uzantıyı içeriğe göre düzeltip geri döner; çağıran taraf bu
+    düzeltilmiş dosya adını kullanır.
+
+    Returns:
+        Doğrulanmış (gerekirse uzantısı düzeltilmiş) dosya adı.
     """
     suffix = Path(filename).suffix.lower()
 
-    # 1) Dosya boyutu limiti (20MB)
+    # 1) Dosya boyutu limiti (100MB)
     if len(content) > MAX_UPLOAD_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"{filename}: dosya çok büyük ({len(content) // 1024 // 1024}MB). Maksimum 20MB.",
+            detail=(
+                f"{filename}: dosya çok büyük "
+                f"({len(content) // 1024 // 1024}MB). Maksimum 100MB."
+            ),
         )
 
     # 2) Uzantı kontrolü
@@ -81,6 +95,18 @@ def validate_upload(filename: str, content: bytes) -> None:
     # 3) Magic byte doğrulaması (uzantı ile içerik uyuşmalı)
     expected_signatures = _MAGIC_BY_SUFFIX.get(suffix)
     if expected_signatures and not any(content.startswith(sig) for sig in expected_signatures):
+        # İçerik izin verilen başka bir formata aitse: uzantıyı düzelt,
+        # reddetme ("yanlış adlandırılmış ama geçerli dosya").
+        actual_suffix = next(
+            (
+                cand
+                for cand, sigs in _MAGIC_BY_SUFFIX.items()
+                if cand != suffix and any(content.startswith(sig) for sig in sigs)
+            ),
+            None,
+        )
+        if actual_suffix:
+            return str(Path(filename).with_suffix(actual_suffix))
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"{filename}: dosya içeriği {suffix} formatıyla uyuşmuyor.",
@@ -99,6 +125,8 @@ def validate_upload(filename: str, content: bytes) -> None:
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"{filename}: dosya içeriği WebP formatıyla uyuşmuyor.",
         )
+
+    return filename
 
 
 def store_document_file(storage_path: str, original_filename: str, content: bytes) -> tuple[str, str, str]:
@@ -274,7 +302,9 @@ class DocumentService:
 
                 original_filename = upload.filename or "document"
 
-                validate_upload(original_filename, content)
+                # validate_upload: 415/413 fırlatır; içerik başka geçerli bir
+                # formattaysa uzantısı düzeltilmiş dosya adı döner.
+                original_filename = validate_upload(original_filename, content)
 
                 path, stored_name, checksum = store_document_file(
                     self.settings.storage_path,
@@ -445,7 +475,7 @@ class DocumentService:
 
                 # validate_upload 415 firlatirsa dosyayi atla.
                 try:
-                    validate_upload(original_filename, content)
+                    original_filename = validate_upload(original_filename, content)
                 except HTTPException:
                     batch["failed"] += 1
                     batch.setdefault("failed_details", []).append(

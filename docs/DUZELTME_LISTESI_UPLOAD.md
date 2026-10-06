@@ -98,9 +98,28 @@
 7. Match motoru yeniden işleyiş: **58 matched / 25 review / 104 unmatched**
    (örn. `MLC CONTRACT FOR BOSUN PABIT SHARMA.xlsx` → crew#166, 165 puan;
    `Panama COC 2.12.2030.pdf` → crew#176, 90 puan — metin içi tam isim)
-8. Yüklenemeyen 3 dosya (bilinçli limit): `Afiq Baxsiyev evraklar pdf (1).pdf`
-   (>20MB), `Documents for Ch Off Yousef.pdf`, `PANAMA MEDICAL CERT.pdf`
-   (magic-byte uyuşmazlığı) — kullanıcıya rapor edildi.
+8. Yüklenemeyen 3 dosya → **H14 ile çözüldü** (artık üçü de yükleniyor):
+   `Afiq Baxsiyev evraklar pdf (1).pdf` (51MB), `Documents for Ch Off Yousef.pdf`
+   (23MB), `PANAMA MEDICAL CERT.pdf` (aslında JPEG — uzantısı düzeltildi).
+
+### H14 — 3 dosya kalıcı olarak reddediliyordu (boyut + uzantı sahteliği)
+- **Kök nedenler:**
+  1. `MAX_UPLOAD_SIZE = 20MB` (validate_upload) ve `max_upload_size_mb = 25`
+     (batch) — 51MB ve 23MB'lık gerçek arşiv taramaları 413 ile düşüyordu.
+  2. `PANAMA MEDICAL CERT.pdf` içeriği JPEG (`FFD8 FFE0 JFIF`) → magic-byte
+     415 ile reddediyordu; dosya aslında yanlış adlandırılmış geçerli bir görsel.
+- **Düzeltme:**
+  - Limitler **100MB**'a çekildi: `MAX_UPLOAD_SIZE`, `max_upload_size_mb`,
+    `docker-compose MAX_UPLOAD_SIZE_MB`, `.env.example` ×2, `installer/setup.ps1`,
+    `frontend/nginx.conf client_max_body_size 100m` (hepsi aynı değer).
+  - `validate_upload()` artık içerik **izin verilen başka bir formata** aitse
+    reddetmiyor, uzantıyı içeriğe göre düzeltip geri döner (`mislabeled.pdf`
+    → `mislabeled.jpg`). Sahte/hiçbir formata uymayan içerik yine 415.
+- **Uygulamalı doğrulama (canlı API):** üçü de `HTTP 201`:
+  `PANAMA MEDICAL CERT.jpg` (146KB), `Documents for Ch Off Yousef.pdf` (23MB),
+  `Afiq Baxsiyev evraklar pdf (1).pdf` (51MB → crew#180, **165 puanla eşleşti**).
+- **Test:** `test_upload_mislabeled_but_valid_content_fixes_extension` ve
+  `test_upload_still_rejects_content_matching_no_known_type` eklendi → 284 passed.
 
 ## DOCKER UPGRADE (backend Dockerfile)
 - `tesseract-ocr tesseract-ocr-eng tesseract-ocr-tur` — OCR

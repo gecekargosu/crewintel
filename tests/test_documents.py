@@ -58,6 +58,31 @@ def test_upload_accepts_valid_pdf_content(client):
     assert r.status_code == 201
 
 
+def test_upload_mislabeled_but_valid_content_fixes_extension(client):
+    """JPEG içeriği `.pdf` adıyla gelmişse 415 değil, uzantı düzeltilir.
+
+    GERMAN SKY arşivinde `PANAMA MEDICAL CERT.pdf` aslında bir JPEG'ti;
+    böyle geçerli ama yanlış adlandırılmış dosyalar kaybedilmemeli.
+    """
+    jpeg_bytes = b"\xff\xd8\xff\xe0" + b"JFIF\x00" + b"\x00" * 64
+    r = client.post(
+        "/api/documents/upload",
+        files=[("files", ("mislabeled.pdf", jpeg_bytes, "application/pdf"))],
+    )
+    assert r.status_code == 201, r.text
+    doc = r.json()[0]
+    assert doc["original_filename"] == "mislabeled.jpg"
+
+
+def test_upload_still_rejects_content_matching_no_known_type(client):
+    """Uyuşmazlık + hiçbir izin verilen formata ait olmayan içerik → 415."""
+    r = client.post(
+        "/api/documents/upload",
+        files=[("files", ("garbage.pdf", b"\x00\x01GARBAGE", "application/pdf"))],
+    )
+    assert r.status_code == 415
+
+
 # ── P3: Toplu upload başarısızlığında orphan dosya kalmamalı ─────────────────
 
 def _storage_dir():

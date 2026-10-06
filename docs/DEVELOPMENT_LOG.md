@@ -727,3 +727,4 @@ Do not start yet:
 | 2026-10-06 | Match motoru: `text_name` (90) + `text_name_parts` (45) metin-içi isim sinyalleri, `filename_full` 50, kelime sınırı korumalı eşleşme; 187 GERMAN SKY belgesi **11 → 58 otomatik eşleşme** (5.3x) | MATCH |
 | 2026-10-06 | Deneme verileri silindi, GERMAN SKY gerçek verisi: 22 personel + MV GERMAN SKY gemisi + ck arşivi 221 dosya yüklendi | DATA |
 | 2026-10-06 | Doğrulama: pytest **282 passed/2 skipped**, oxlint 0 hata, backend+frontend image rebuild + healthy | QA |
+| 2026-10-06 | Upload limiti 20/25MB → **100MB** (validate, settings, compose, env, installer, nginx hepsi eşit) + yanlış adlandırılmış ama geçerli içerikte uzantı düzeltmesi → 3 kalıcı reddedilen dosya da yüklendi (biri 165 puanla eşleşti); pytest 284 passed | UPLOAD |
