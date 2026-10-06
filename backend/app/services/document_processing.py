@@ -27,16 +27,249 @@ def normalize(value: str | None) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value).strip()
 
 
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".jfif", ".png", ".webp", ".bmp", ".tiff", ".tif"}
+OFFICE_EXTENSIONS = {".doc", ".docx", ".odt", ".rtf", ".xlsx", ".xls", ".ods", ".csv"}
+PDF_CONVERTIBLE_EXTENSIONS = IMAGE_EXTENSIONS | OFFICE_EXTENSIONS | {".txt", ".pdf"}
+
+
+def _extract_docx(content: bytes) -> str:
+    """DOCX: paragraf + tablo metinlerini çıkarır."""
+    import io
+
+    from docx import Document
+
+    try:
+        doc = Document(io.BytesIO(content))
+        parts = [p.text for p in doc.paragraphs if p.text and p.text.strip()]
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [c.text.strip() for c in row.cells if c.text and c.text.strip()]
+                if cells:
+                    parts.append(" | ".join(cells))
+        return "\n".join(parts)
+    except Exception:
+        return ""
+
+
+def _extract_xlsx(content: bytes) -> str:
+    """XLSX: tüm hücre değerlerini satır satır çıkarır."""
+    import io
+
+    from openpyxl import load_workbook
+
+    try:
+        wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+        parts: list[str] = []
+        for ws in wb.worksheets:
+            parts.append(f"[{ws.title}]")
+            for row in ws.iter_rows(values_only=True):
+                values = [str(v).strip() for v in row if v is not None and str(v).strip()]
+                if values:
+                    parts.append(" | ".join(values))
+        return "\n".join(parts)
+    except Exception:
+        return ""
+
+
+def _ocr_image(content: bytes) -> str:
+    """Resimden metin okur (tesseract). Kurulu değilse boş döner."""
+    import io
+
+    from PIL import Image
+
+    try:
+        import pytesseract
+
+        img = Image.open(io.BytesIO(content))
+        if img.mode not in ("L", "RGB"):
+            img = img.convert("RGB")
+        return pytesseract.image_to_string(img, lang="eng+tur")
+    except Exception:
+        return ""
+
+
+def _soffice_convert(content: bytes, source_name: str, target: str) -> bytes | None:
+    """LibreOffice headless ile dosyayı dönüştürür (target: 'pdf').
+
+    Tek instance kilidi olmaması için her çağrıya özel UserInstallation verilir.
+    LibreOffice kurulu değilse None döner.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+    from uuid import uuid4
+
+    soffice = shutil.which("soffice") or shutil.which("libreoffice")
+    if not soffice:
+        return None
+
+    suffix = Path(source_name).suffix.lower() or ".dat"
+    with tempfile.TemporaryDirectory() as tmp:
+        src = Path(tmp) / f"input{suffix}"
+        src.write_bytes(content)
+        out_dir = Path(tmp) / "out"
+        out_dir.mkdir()
+        profile = Path(tmp) / "profile"
+        try:
+            subprocess.run(
+                [
+                    soffice,
+                    "--headless",
+                    "--norestore",
+                    f"-env:UserInstallation=file://{profile}",
+                    "--convert-to",
+                    target,
+                    "--outdir",
+                    str(out_dir),
+                    str(src),
+                ],
+                check=True,
+                capture_output=True,
+                timeout=90,
+            )
+        except Exception:
+            return None
+        produced = list(out_dir.glob(f"*.{target}"))
+        if not produced:
+            return None
+        return produced[0].read_bytes()
+
+
+def _image_to_pdf(content: bytes) -> bytes | None:
+    """Resmi A4 dikey sayfaya yerleştirip PDF yapar."""
+    import io
+
+    from PIL import Image
+
+    try:
+        img = Image.open(io.BytesIO(content))
+        if img.mode not in ("L", "RGB", "RGBA"):
+            img = img.convert("RGB")
+        if img.mode == "RGBA":
+            bg = Image.new("RGB", img.size, (255, 255, 255))
+            bg.paste(img, mask=img.split()[3])
+            img = bg
+        # A4 (595x842 pt) içine sığdır, kenar boşluğu 12pt
+        max_w, max_h = 595 - 24, 842 - 24
+        ratio = min(max_w / img.width, max_h / img.height)
+        new_size = (max(1, int(img.width * ratio)), max(1, int(img.height * ratio)))
+        img = img.resize(new_size, Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format="PDF", resolution=150)
+        return buf.getvalue()
+    except Exception:
+        return None
+
+
+def _find_ttf_font() -> str | None:
+    """Türkçe destekli bir TTF font yolu bulur (fpdf2 için)."""
+    candidates = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/calibri.ttf",
+    ]
+    for path in candidates:
+        if Path(path).exists():
+            return path
+    return None
+
+
+def _text_to_pdf(title: str, text: str) -> bytes:
+    """Düz metni PDF'e çevirir. Türkçe font bulunamazsa latin-1'e düşer."""
+    from fpdf import FPDF
+
+    pdf = FPDF(format="A4")
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    font_path = _find_ttf_font()
+    if font_path:
+        pdf.add_font("body", "", font_path)
+        pdf.set_font("body", size=11)
+    else:
+        pdf.set_font("helvetica", size=11)
+        text = text.encode("latin-1", errors="replace").decode("latin-1")
+    pdf.multi_cell(0, 6, text[:200000])
+    return bytes(pdf.output())
+
+
+def convert_to_pdf(filename: str, content: bytes) -> tuple[bytes | None, str]:
+    """Desteklenen herhangi bir belgeyi PDF'e çevirir.
+
+    Returns:
+        (pdf_bytes, error) — başarılıysa error boş.
+    """
+    suffix = Path(filename).suffix.lower()
+
+    if suffix == ".pdf":
+        return content, ""
+
+    if suffix in IMAGE_EXTENSIONS:
+        pdf = _image_to_pdf(content)
+        if pdf:
+            return pdf, ""
+        return None, "Resim PDF'e çevrilemedi."
+
+    if suffix in OFFICE_EXTENSIONS:
+        pdf = _soffice_convert(content, filename, "pdf")
+        if pdf:
+            return pdf, ""
+        # Fallback: metin çıkarıp basit PDF üret
+        text = extract_text(filename, content)
+        if text:
+            try:
+                return _text_to_pdf(filename, text), ""
+            except Exception:
+                pass
+        return None, "LibreOffice dönüştürme başarısız."
+
+    if suffix == ".txt":
+        try:
+            return _text_to_pdf(filename, content.decode("utf-8", errors="replace")), ""
+        except Exception:
+            return None, "Metin PDF'e çevrilemedi."
+
+    return None, f"Desteklenmeyen format: {suffix}"
+
+
 def extract_text(filename: str, content: bytes) -> str:
+    """Genel metin çıkarma girişi (tüm formatlar).
+
+    NUL (0x00) byte'ları temizlenir: OCR/ofis çıktısı veya bozuk PDF'ten
+    gelen NUL, PostgreSQL text alanlarında `DataError` ile500 üretiyordu.
+    """
+    try:
+        text = _extract_text_raw(filename, content)
+    except Exception:
+        return ""
+    return text.replace("\x00", "") if isinstance(text, str) else ""
+
+
+def _extract_text_raw(filename: str, content: bytes) -> str:
     """Dosya içinden metin çıkarır.
 
+    Desteklenen: PDF, TXT, DOCX, XLSX/ODS/CSV, resimler (OCR), DOC (LibreOffice).
     Bozuk/şifreli/taramalı PDF durumunda boş string dönmez —
     çağrının bu durumu ele alması gerekir.
     """
-    if filename.lower().endswith(".txt"):
+    lower = filename.lower()
+
+    if lower.endswith(".txt") or lower.endswith(".csv"):
         return content.decode("utf-8", errors="replace")
 
-    if filename.lower().endswith(".pdf"):
+    if lower.endswith(".docx"):
+        text = _extract_docx(content)
+        return text or "[DOCX okunamadı]"
+
+    if lower.endswith((".xlsx", ".xlsm")):
+        text = _extract_xlsx(content)
+        return text or "[XLSX okunamadı]"
+
+    if Path(lower).suffix in IMAGE_EXTENSIONS:
+        text = _ocr_image(content)
+        return text or "[resim — OCR metin çıkaramadı]"
+
+    if lower.endswith(".pdf"):
         import io
 
         try:
@@ -57,8 +290,11 @@ def extract_text(filename: str, content: bytes) -> str:
 
             full_text = "\n".join(pages_text)
 
-            # Taramalı PDF (metin yok, sadece resim)
+            # Taramalı PDF (metin yok, sadece resim) → OCR dene
             if not full_text.strip():
+                ocr_text = _ocr_pdf_pages(content)
+                if ocr_text:
+                    return ocr_text
                 return "[taramalı PDF — metin katmanı yok, OCR gerekli]"
 
             return full_text
@@ -66,7 +302,62 @@ def extract_text(filename: str, content: bytes) -> str:
         except Exception:
             return "[PDF okunamadı — bozuk veya desteklenmeyen format]"
 
+    if Path(lower).suffix in OFFICE_EXTENSIONS:
+        # Eski .doc / .xls / .odt: LibreOffice ile PDF yapıp metin çıkar
+        pdf_bytes = _soffice_convert(content, filename, "pdf")
+        if pdf_bytes:
+            text = extract_text("converted.pdf", pdf_bytes)
+            if text and not text.startswith("["):
+                return text
+        text = _extract_docx(content) if "doc" in lower else ""
+        return text or "[ofis belgesi okunamadı — LibreOffice gerekli]"
+
     return ""
+
+
+def _ocr_pdf_pages(content: bytes) -> str:
+    """Taramalı PDF'i sayfa resimlerine çevirip OCR uygular.
+
+    pdf2image/poppler kurulu değilse boş döner.
+    """
+    try:
+        import io
+
+        from pdf2image import convert_from_bytes
+        from PIL import Image
+
+        import pytesseract
+
+        pages = convert_from_bytes(content, dpi=200, last_page=5)
+        texts = []
+        for page in pages:
+            if not isinstance(page, Image.Image):
+                continue
+            texts.append(pytesseract.image_to_string(page, lang="eng+tur"))
+        return "\n".join(texts)
+    except Exception:
+        return ""
+
+
+# Dosya adında isim olmayan kelimeler (belge tipi/ek ifadeler)
+FILENAME_NOISE = {
+    "passport", "pasaport", "stcw", "goc", "eng1", "cv",
+    "crew", "medical", "contract", "seaman", "certificate",
+    "fitness", "agreement", "resume", "new", "old", "copy",
+    "final", "revised", "scan", "scanned", "document", "file",
+    "certificate", "certificates", "republic", "panama", "vessel",
+    "ships", "employment", "word", "doc", "signed", "signature",
+    "page", "img", "image", "pic", "photo", "pic1", "edit",
+}
+
+# Text'ten üretilen isim adaylarında gürültü kelimeleri.
+# DİKKAT: gerçek ad/soyad olabilecek kelimeler (test, date, valid…)
+# burada OLMAMALI — yanlış skip gerçek eşleşmeyi kırar (ör. soyad "Test").
+NAME_NOISE = {
+    "and", "the", "holder", "certificate", "employee", "employer",
+    "ards", "certicate", "certifcate", "republic", "copy", "name",
+    "medical", "contract", "passport", "seaman", "untitled",
+}
 
 
 TURKISH_MONTHS = {
@@ -349,33 +640,40 @@ def extract_name(
         re.IGNORECASE,
     )
 
-    if match:
-        first = match.group(1).title()
-        last = match.group(2).title()
-        skip = {"and", "the", "holder", "certificate", "employee", "employer"}
-        if first.lower() in skip:
-            after = combined[match.end():].strip()
-            next_m = re.match(r"([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)", after)
-            if next_m:
-                return (next_m.group(1).title(), next_m.group(2).title())
-        else:
-            return (first, last)
-
-    ignored = {
-        "passport", "pasaport", "stcw", "goc", "eng1", "cv",
-        "crew", "medical", "contract", "seaman", "certificate",
-        "fitness", "agreement", "resume",
-    }
-
-    parts = [
+    # Dosya adı tabanlı aday (tüm anlamlı parçalar: "AHMED SABRY KAMAL ELHENAWY")
+    fn_parts = [
         part
         for part in re.split(r"[_\-\s]+", Path(filename).stem)
         if len(part) > 2
-        and part.lower() not in ignored
+        and part.lower() not in FILENAME_NOISE
     ]
+    fn_candidate = (" ".join(fn_parts[:-1]), fn_parts[-1]) if len(fn_parts) >= 2 else None
 
-    if len(parts) >= 2:
-        return parts[0].title(), parts[1].title()
+    if match:
+        first = match.group(1).title()
+        last = match.group(2).title()
+        skip = NAME_NOISE
+        if first.lower() in skip or last.lower() in skip:
+            after = combined[match.end():].strip()
+            next_m = re.match(r"([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)", after)
+            if next_m and next_m.group(1).lower() not in skip and next_m.group(2).lower() not in skip:
+                first, last = next_m.group(1).title(), next_m.group(2).title()
+            elif fn_candidate:
+                # Text gürültüsü — dosya adındaki gerçek isme düş.
+                return fn_candidate[0].title(), fn_candidate[1].title()
+
+        # Doğrulama: text adayı dosya adıyla desteklenmiyorsa gürültidir
+        # (ör. "Ards Certicate" — "certificate" etiketinden üretilmiş sahte isim).
+        if fn_candidate:
+            fn_norm = normalize(" ".join(fn_parts))
+            words = set(normalize(f"{first} {last}").split())
+            if words and not any(w in fn_norm for w in words):
+                return fn_candidate[0].title(), fn_candidate[1].title()
+
+        return (first, last)
+
+    if fn_candidate:
+        return fn_candidate[0].title(), fn_candidate[1].title()
 
     return None, None
 

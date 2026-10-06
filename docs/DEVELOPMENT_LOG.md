@@ -713,3 +713,17 @@ Do not start yet:
 | 2026-08-29 | Android SocialDownloaderActivity URL fix — port 8001 bağımlılığı kaldırıldı | FASE 3 |
 | 2026-08-29 | Dockerfile'a ffmpeg kurulumu eklendi | FASE 3 |
 | 2026-08-29 | Social downloader analiz YouTube, Instagram, TikTok, Facebook, Pinterest, Twitter destekli | FASE 3 |
+| 2026-10-04 | Uçtan uca UI testi (10 sayfa, tüm CRUD akışları) — API + frontend doğrulandı | QA |
+| 2026-10-04 | `jobs.addNew` çözülmemiş çeviri key'i düzeltildi (`jobs.add`) — TR/EN/RU/AR | QA |
+| 2026-10-04 | E-posta değiştirme formu butonu yanlışlıkla `password.update` gösteriyordu → `email.update` + 4 locale key | QA |
+| 2026-10-04 | İlan şablonları butonu `jobs.title` yerine `jobs.templates` kullanıyordu (yanıltıcı "İş İlanları (0)") | QA |
+| 2026-10-04 | Uygunluk Motoru default `min_score:50` ama seçenekler 40/60/75/90 → ekranda "40+" görünürken API'ye 50 gidiyordu; default 40 yapıldı | QA |
+| 2026-10-04 | Belgeler tablosu ham enum değerleri (matched/expired/no_date…) basıyordu → documents.* label map eklendi (8 tip × 5 eşleşme × 5 geçerlilik) | QA |
+| 2026-10-04 | EN arayüzde kalan sabit Türkçe butonlar lokalize edildi (Yenile, Yayınla, Görsel Oluştur, Kapat, şablon/kuyruk metinleri) + 4 locale'e `common.refresh`, `email.update`, `jobs.{publish,createImage,noTemplates,processQueue,queueEmpty}` key'leri eklendi | QA |
+| 2026-10-06 | Belge yükleme 18 formata genişletildi (magic-byte doğrulama), iç içe klasör sürükle-bırak + "Klasör Seç" butonu, reddetme mesajı UI'da gösteriliyor | UPLOAD |
+| 2026-10-06 | `convert_to_pdf()` eklendi (LibreOffice/Pillow/fpdf2); PDF olmayan her belge upload'ta PDF olarak saklanıyor; `POST /api/documents/convert` (tek→PDF, çoklu→ZIP) | UPLOAD |
+| 2026-10-06 | OCR: tesseract (eng+tur) resimler + taramalı PDF'ler; LibreOffice ile eski doc/xls/rtf extract; Dockerfile'a tesseract/libreoffice/poppler/fonts + 6 Python paketi | UPLOAD |
+| 2026-10-06 | PostgreSQL `text fields cannot contain NUL` 500 hatası düzeltildi (extract_text NUL temizliği) — toplu yüklemedeki gizli kırılma noktası | UPLOAD |
+| 2026-10-06 | Match motoru: `text_name` (90) + `text_name_parts` (45) metin-içi isim sinyalleri, `filename_full` 50, kelime sınırı korumalı eşleşme; 187 GERMAN SKY belgesi **11 → 58 otomatik eşleşme** (5.3x) | MATCH |
+| 2026-10-06 | Deneme verileri silindi, GERMAN SKY gerçek verisi: 22 personel + MV GERMAN SKY gemisi + ck arşivi 221 dosya yüklendi | DATA |
+| 2026-10-06 | Doğrulama: pytest **282 passed/2 skipped**, oxlint 0 hata, backend+frontend image rebuild + healthy | QA |

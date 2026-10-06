@@ -1,0 +1,78 @@
+Cengiz Kılıç
+Yapay Zeka & Makine Öğrenmesi Lisans Öğrencisi  |  AI & Otomasyon  |  Junior Yazılım Geliştirici Adayı
++90 532 327 61 21   |   cengizkilic1980@gmail.com   |   İzmir, Türkiye   |   linkedin.com/in/cengizkilic   |   github.com/cengizkilic
+Tam zamanlı çalışmaya uygundur  •  Uzaktan ve hibrit çalışmaya açık  •  Seyahat engeli yok
+
+PROFESYONEL ÖZET
+İstanbul Rumeli Üniversitesi Mühendislik Fakültesi Yapay Zeka ve Makine Öğrenmesi Lisans Programı'nda eğitimime devam eden, yazılım ve yapay zeka sektöründe kariyer hedefleyen teknik bir profesyonel.
+20 yılı aşkın iş hayatım boyunca teknik operasyon, proje yönetimi ve girişimcilik deneyimi kazandım. Kendi şirketimi kurarak ürün geliştirme, inovasyon, müşteri analizi ve MVP süreçlerini bizzat yaşadım. Bu geçmiş bana teknik problem çözme, iş disiplini, müşteri odaklı düşünme ve gerçek proje deneyimi kazandırdı. Bu birikimi şimdi yazılım ve yapay zekâ alanına taşıyorum.
+Yapay zeka araçlarını aktif olarak günlük hayatıma entegre ediyorum. Prompt engineering, AI workflow tasarımı, n8n ile otomasyon ve AI agent geliştirme konularında bireysel çalışmalarımı sürdürüyorum. Henüz profesyonel yazılım deneyimim bulunmuyor; ama öğrenmek için buradayim ve kariyerımı bu alana yöneltme kararını net biçimde verdim.
+EĞITIM
+İstanbul Rumeli Üniversitesi	2025 – Devam Ediyor  (Tahmini: 2029)
+Mühendislik Fakültesi
+Yapay Zeka ve Makine Öğrenmesi — Lisans Programı (Devam Ediyor)
+Bölüm Öğrenci Temsilcisi
+Algoritmalar, veri yapıları, makine öğrenmesi, derin öğrenme, yazılım geliştirme temelleri ve yapay zeka uygulamaları üzerine lisans eğitimi.
+Karadeniz Teknik Üniversitesi	1999 – 2001  |  Mezun
+İnşaat Teknikerliği — Ön Lisans
+TEKNIK YETKINLIKLER
+Yapay Zeka
+ChatGPT  •  Claude  •  Gemini  •  Copilot  •  Cursor  •  Antigravity
+AI Otomasyon & Workflow
+n8n  •  Prompt Engineering  •  LLM  •  AI Agent  •  Workflow Design  •  AI destekli üretkenlik
+Programlama
+C (Başlangıç)  •  Python (Öğreniyorum)  •  HTML (Temel)  •  CSS (Temel)  •  JavaScript (Temel)  •  PHP (Öğreniyorum)
+Geliştirme Ortamı
+Git (Temel)  •  GitHub  •  VS Code  •  LibreOffice  •  Microsoft Office
+Tasarım & İçerik
+Figma  •  Canva
+KIŞISEL PROJELER & ÖĞRENME ÇALIŞMALARI
+Henüz profesyonel yazılım deneyimim bulunmamaktadır. Aşağıdaki çalışmalar bireysel öğrenme sürecimin ürünleridir.
+▸  AI destekli web projeleri — Yapay zeka entegrasyonlu arayüz tasarım ve geliştirme çalışmaları.
+▸  n8n ile otomasyon denemeleri — Farklı API’ları ve servisleri bağlayan workflow tasarımları.
+▸  AI Agent tasarımları — Görev odaklı LLM ajanları ve çok adımlı prompt mimarileri.
+▸  AI destekli iş akışları ve otomasyon sistemleri tasarlama — n8n, LLM ve API entegrasyonlarıyla üretkenlik odaklı çözümler.
+▸  Farklı LLM modellerini karşılaştırarak çözüm geliştirme — ChatGPT, Claude, Gemini ve Copilot arasında kullanım senaryolarını değlendirme.
+▸  Web sitesi geliştirme — HTML/CSS/JS ile statik ve dinamik site projeleri.
+▸  Bireysel yazılım çalışmaları — Her gün kod yazma ve AI araçlarıyla verimlilik deneyleri.
+GIRIŞIMCILIK & TEKNOLOJI DENEYIMI
+NGD — New Generation Design  |  Kurucu & Ürün Geliştiricisi	2016 – 2022
+Termal yönetim, teknik tekstil ve savunma sanayii — Ar-Ge odaklı ürün geliştirme şirketi
+▸  Şirketi sıfırdan kurdu; müşteri problemini tanımladı, çözüm hipotezi oluşturdu, prototip geliştirdi ve MVP’yi piyasaya çıkardı — modern bir start-up’ın tüm aşamalarını bizzat yaşadı.
+▸  Müşteri ihtiyaç analizi, ürün-pazar uyumu araştırması ve ürün doğrulama süreçlerini yönetti; B2B müşteriler için özel çözümler geliştirdi.
+▸  Kurumsal web sitesi, dijital pazarlama, ürün lansmanı, reklam organizasyonları ve e-ticaret süreçlerini uçtan uca yönetti.
+▸  Savunma sanayii için özel termal sistemler geliştirdi; Milli Savunma Bakanlığı ve Silahlı Kuvvetler’e teknik sunum yaptı.
+▸  Yerli ve yabancı tedarikçilerle çalıştı; Almanya, Fransa, İsveç, ABD ve Rusya başta olmak üzere çeşitli ülkelere ihracat süreçlerini koordine etti.
+▸  Ulusal medyada geniş yer buldu; ürün çekimleri ve reklam filmlerini organize etti — ürün ve marka algısı yaratma deneyimi.
+MESLEKI GEÇMIŞ (2002 – 2025)
+Yurt içi ve yurt dışında yaklaşık 20 yıl boyunca teknik operasyon, proje koordinasyonu, ekip yönetimi ve kalite kontrol alanlarında görev aldım. Bu deneyim, yazılım sektöründe çalışacak biri olarak bana disiplin, analitik bakış açısı ve saha gerçekliği kattı.
+Farklı ülkelerde edinilen saha deneyimi; değişen şartlara uyum sağlama, farklı disiplinlerle birlikte çalışma ve yüksek sorumluluk gerektiren projelerde sonuç odaklı hareket etme becerilerini geliştirdi.
+AKTIF ÖĞRENME ÇALIŞMALARI
+Aşağıdaki konularda bireysel çalışmalarımı aktif olarak sürdürmekteyim:
+•  Python
+•  Git & GitHub
+•  AI Agent tasarımı ve geliştirme
+•  n8n ile iş akışı otomasyonu
+•  Backend geliştirme temelleri
+•  Yapay zeka uygulama geliştirme
+KIŞISEL NITELIKLER
+•  Analitik düşünme
+•  Hızlı öğrenme becerisi
+•  Problem çözme
+•  Araştırmacı kişilik
+•  Takım çalışmasına yatkın
+•  Adaptasyon yeteneği
+•  Güçlü iş disiplini
+•  Girişimci bakış açısı
+•  Yapay zeka teknolojilerine yoğun ilgi
+•  Sonuç odaklı çalışma anlayışı
+İLGI ALANLARI
+Yapay zeka, makine öğrenmesi, LLM sistemleri, AI Agent tasarımı, backend geliştirme, otomasyon, açık kaynak yazılım, robotik, bilgisayar sistemleri ve yazılım mimarisi.
+YABANCI DIL
+Türkçe — Anadili
+İngilizce — Mesleki Yeterlilik (B2) — Teknik dokümanlar okuyabilme, yazışma ve temel konuşma
+KARIYER HEDEFI
+Yazılım ve yapay zeka sektöründe uzun vadeli bir kariyer inşa etmek istiyorum. Evet, bu alanda yeniyim — bunu saklamıyorum. Ama 20 yıllık iş disiplinimi, girişimcilik tecrübemi ve problem çözme refleksimi şimdi yazılım ve yapay zeka ile birleştiriyorum.
+Deneyimli bir ekipten öğrenmek, gerçek projelerde yer almak ve teknolojiyi üretim ortamında deneyimlemek istiyorum. Amacım yalnızca yazılım geliştirmeyi öğrenmek değil; gerçek problemlere çözüm üreten, yapay zekâyı iş süreçlerine entegre eden ve uzun vadede yüksek katma değer sağlayan projelerde görev almaktır.
+REFERANSLAR
+Talep edilmesi halinde profesyonel referanslarım memnuniyetle paylaşılacaktır.

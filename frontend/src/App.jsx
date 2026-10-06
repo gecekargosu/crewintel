@@ -225,12 +225,14 @@ function App() {
   const [candidateData, setCandidateData] = useState(null); // seçili belgenin adayları
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
+  const convertInputRef = useRef(null);
 
   // Phase 4B — Operasyon merkezi / bildirim / uygunluk / kadro
   const [opsSummary, setOpsSummary] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [eligibilityQuery, setEligibilityQuery] = useState({ position: "", min_score: 50 });
+  const [eligibilityQuery, setEligibilityQuery] = useState({ position: "", min_score: 40 });
   const [eligibilityResults, setEligibilityResults] = useState(null);
   const [eligibilityLoading, setEligibilityLoading] = useState(false);
   const [shipStaffing, setShipStaffing] = useState([]);
@@ -904,8 +906,13 @@ function App() {
   function addStagedFiles(newFiles) {
     setStagedFiles((prev) => {
       const existingKeys = new Set(prev.map((file) => `${file.name}_${file.size}`));
-      // Sadece PDF ve TXT dosyalarını kabul et (drag-and-drop'ta da).
-      const ALLOWED_EXT = [".pdf", ".txt"];
+      // Desteklenen tüm formatlar (backend ile senkron): PDF, ofis, resim, metin.
+      const ALLOWED_EXT = [
+        ".pdf", ".txt", ".csv",
+        ".doc", ".docx", ".odt", ".rtf",
+        ".xls", ".xlsx", ".ods",
+        ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".bmp", ".tif", ".tiff",
+      ];
       const filtered = newFiles.filter((file) => {
         const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
         return ALLOWED_EXT.includes(ext);
@@ -916,7 +923,7 @@ function App() {
         // Geçersiz dosyalar hakkında bilgilendir.
         setLastBatchSummary({
           total: 0, matched: 0, pending: 0, duplicate: 0, error: rejected,
-          detail: `${rejected} file(s) rejected — only PDF and TXT files are supported.`,
+          detail: `${rejected} dosya desteklenmeyen format nedeniyle eklenmedi. Desteklenen: PDF, DOC/DOCX, XLS/XLSX, JPEG, PNG, WebP, TXT`,
         });
       }
       const deduped = filtered.filter((file) => !existingKeys.has(`${file.name}_${file.size}`));
@@ -941,6 +948,43 @@ function App() {
     event.target.value = "";
   }
 
+  function handleFolderInputChange(event) {
+    // webkitdirectory: klasör içindeki TÜM dosyalar (alt klasörler dahil) seçilir.
+    addStagedFiles(Array.from(event.target.files));
+    event.target.value = "";
+  }
+
+  async function handleConvertFiles(event) {
+    // PDF'e Çevir: seçilen dosyaları backend (LibreOffice/Pillow) ile PDF yapıp indirir.
+    const files = Array.from(event.target.files);
+    event.target.value = "";
+    if (!files.length) return;
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f));
+      const res = await axios.post(`${API_URL}/api/documents/convert`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        responseType: "blob",
+      });
+      const blob = new Blob([res.data], { type: res.headers["content-type"] || "application/octet-stream" });
+      const disposition = res.headers["content-disposition"] || "";
+      const match = /filename="([^"]+)"/.exec(disposition);
+      const fallbackName = files.length === 1
+        ? files[0].name.replace(/\.[^.]+$/, "") + ".pdf"
+        : "converted_pdfs.zip";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = match ? match[1] : fallbackName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(t('errors.uploadFailed') + " — dosya PDF'e çevrilemedi.");
+    }
+  }
+
   function handleDragOver(event) {
     event.preventDefault();
     setDragActive(true);
@@ -951,10 +995,46 @@ function App() {
     setDragActive(false);
   }
 
-  function handleDrop(event) {
+  async function handleDrop(event) {
     event.preventDefault();
     setDragActive(false);
-    addStagedFiles(Array.from(event.dataTransfer.files));
+    try {
+      const files = await collectDroppedFiles(event.dataTransfer);
+      addStagedFiles(files);
+    } catch (err) {
+      addStagedFiles(Array.from(event.dataTransfer.files));
+    }
+  }
+
+  async function collectDroppedFiles(dataTransfer) {
+    // Klasör sürükleme: webkitGetAsEntry ile alt klasörler dahil recursive toplar.
+    const entries = [];
+    if (dataTransfer.items) {
+      for (const item of Array.from(dataTransfer.items)) {
+        if (item.kind === "file" && item.webkitGetAsEntry) {
+          const entry = item.webkitGetAsEntry();
+          if (entry) entries.push(entry);
+        }
+      }
+    }
+    if (!entries.length) return Array.from(dataTransfer.files);
+
+    const files = [];
+    const readEntry = async (entry) => {
+      if (entry.isFile) {
+        const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
+        files.push(file);
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        let batch;
+        do {
+          batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+          for (const child of batch) await readEntry(child);
+        } while (batch.length > 0);
+      }
+    };
+    for (const entry of entries) await readEntry(entry);
+    return files;
   }
 
   function fileKey(file) {
@@ -1860,6 +1940,20 @@ function App() {
     // `documents` state holds the server-paginated page; `allDocuments` is only
     // used for the crew document matrix and the pending-match modal.
     const filteredDocs = documents;
+    const docTypeLabel = {
+      passport: t('documents.passport'), seaman_book: t('documents.seamanBook'), stcw: t('documents.stcw'),
+      goc: 'GOC', medical: t('documents.medical'), contract: t('documents.contract'),
+      certificate: t('documents.certificate'), cv: t('documents.cv'), other: t('documents.other'),
+    };
+    const docMatchLabel = {
+      matched: t('documents.matched'), review_required: t('documents.reviewRequired'),
+      conflict: t('documents.conflict'), pending_approval: t('documents.pending'),
+      unmatched: t('documents.unmatched'), duplicate: t('documents.duplicate'),
+    };
+    const docExpiryLabel = {
+      valid: t('documents.valid'), approaching: t('documents.approaching'), urgent: t('documents.urgent'),
+      expired: t('documents.expired'), no_date: t('documents.noDate'),
+    };
     const totalPages = Math.max(1, Math.ceil(docTotal / DOC_PAGE_SIZE));
 
     return (
@@ -2049,6 +2143,11 @@ function App() {
                 ⚠️ Aynı içerik nedeniyle eklenmedi: {lastBatchSummary.duplicateFiles.join(', ')}
               </div>
             )}
+            {lastBatchSummary.detail && (
+              <div style={{ gridColumn: '1 / -1', marginTop: '6px', fontSize: '12px', color: '#b91c1c', lineHeight: '1.5' }}>
+                ⚠️ {lastBatchSummary.detail}
+              </div>
+            )}
             <div className="upload-stat error">
               <strong>{lastBatchSummary.error}</strong><span>{t('common.error')}</span>
             </div>
@@ -2065,14 +2164,39 @@ function App() {
           >
             <Upload size={42} color="#ea580c" style={{marginBottom: "10px"}} />
             <h3 style={{color: "#0f172a"}}>{t('documents.dragDrop')}</h3>
-            <p>veya tıklayarak seçin — PDF, TXT</p>
+            <p>veya tıklayarak seçin — PDF, Word, Excel, JPEG, PNG, TXT (klasör sürüklenebilir)</p>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button className="secondary-button" type="button" style={{ padding: '8px 14px', fontSize: '13px' }} onClick={(e) => { e.stopPropagation(); folderInputRef.current?.click(); }}>
+                📁 Klasör Seç
+              </button>
+              <button className="secondary-button" type="button" style={{ padding: '8px 14px', fontSize: '13px' }} onClick={(e) => { e.stopPropagation(); convertInputRef.current?.click(); }}>
+                🔄 PDF'e Çevir
+              </button>
+            </div>
             <input 
               ref={fileInputRef} 
               type="file" 
               multiple 
-              accept=".pdf,.txt" 
+              accept=".pdf,.txt,.csv,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ods,.jpg,.jpeg,.jfif,.png,.webp,.bmp,.tif,.tiff" 
               style={{ display: "none" }} 
               onChange={handleFileInputChange} 
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              multiple
+              webkitdirectory=""
+              directory=""
+              style={{ display: "none" }}
+              onChange={handleFolderInputChange}
+            />
+            <input
+              ref={convertInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.txt,.csv,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ods,.jpg,.jpeg,.jfif,.png,.webp,.bmp,.tif,.tiff"
+              style={{ display: "none" }}
+              onChange={handleConvertFiles}
             />
           </div>
         ) : (
@@ -2143,13 +2267,13 @@ function App() {
                         </a>
                       </td>
                       <td>
-                        <span className={`badge badge-type-${doc.document_type}`}>{doc.document_type}</span>
+                        <span className={`badge badge-type-${doc.document_type}`}>{docTypeLabel[doc.document_type] || doc.document_type}</span>
                       </td>
                       <td>
-                        <span className={`badge badge-${doc.match_status}`}>{doc.match_status}</span>
+                        <span className={`badge badge-${doc.match_status}`}>{docMatchLabel[doc.match_status] || doc.match_status}</span>
                       </td>
                       <td>
-                        {doc.expiry_status ? <span className={`badge badge-${doc.expiry_status.replace(/_/g, "-")}`}>{doc.expiry_status}</span> : "—"}
+                        {doc.expiry_status ? <span className={`badge badge-${doc.expiry_status.replace(/_/g, "-")}`}>{docExpiryLabel[doc.expiry_status] || doc.expiry_status}</span> : "—"}
                       </td>
                       <td style={{ fontWeight: "600", color: "#0f172a" }}>
                         {matchedCrew ? `${matchedCrew.first_name} ${matchedCrew.last_name}` : "—"}
@@ -2436,7 +2560,7 @@ function App() {
             <div style={{ marginTop: "18px", padding: "20px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
                 <h3 style={{ margin: 0, color: "#0f172a" }}>{t('contracts.detail')} — {contract.contract_number}</h3>
-                <button className="secondary-button" style={{ padding: "6px 12px", fontSize: "13px" }} onClick={() => setSelectedContractId(null)}>Kapat</button>
+                <button className="secondary-button" style={{ padding: "6px 12px", fontSize: "13px" }} onClick={() => setSelectedContractId(null)}>{t('common.close')}</button>
               </div>
               <div className="detail-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
                 <div><span className="section-label">{t('crew.title')}</span><p style={{ margin: "4px 0 0 0", fontWeight: "600", color: "#0f172a", cursor: "pointer" }} onClick={() => contract.crew_member_id && openCrewDetail(contract.crew_member_id)}>{crewName} →</p></div>
@@ -2562,7 +2686,7 @@ function App() {
               <div style={{ marginTop: "20px", padding: "16px", border: "1px solid #e2e8f0", borderRadius: "12px", background: "#f8fafc" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                   <strong style={{ color: "#0f172a" }}>“{candidatesFor.position}” için uygun adaylar</strong>
-                  <button className="secondary-button" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => setCandidatesFor(null)}>Kapat</button>
+                  <button className="secondary-button" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => setCandidatesFor(null)}>{t('common.close')}</button>
                 </div>
                 {candidatesFor.results.length === 0 && <p style={{ color: "#64748b" }}>{t('crew.noResults')}</p>}
                 {candidatesFor.results.map((r) => (
@@ -3056,7 +3180,7 @@ function App() {
             )}
             {canWrite && (
               <button className="secondary-button" onClick={() => { setShowTemplates(!showTemplates); if (!showTemplates) loadJobTemplates(); }}>
-                <FileText size={16} /> {t('jobs.title')} ({jobTemplates.length})
+                <FileText size={16} /> {t('jobs.templates')} ({jobTemplates.length})
               </button>
             )}
             {canWrite && (
@@ -3066,7 +3190,7 @@ function App() {
             )}
             {canWrite && (
               <button className="primary-button" onClick={() => setShowJobForm(!showJobForm)}>
-                <Briefcase size={18} /> {t('jobs.addNew')}
+                <Briefcase size={18} /> {t('jobs.add')}
               </button>
             )}
           </div>
@@ -3079,7 +3203,7 @@ function App() {
           <div style={{ marginBottom: "20px", padding: "18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" }}>
               <p className="section-label" style={{ margin: 0 }}>{t('jobs.templates')} ({jobTemplates.length}) — {"{{position}}"}, {"{{vessel}}"}, {"{{salary}}"}, {"{{currency}}"}, {"{{contract_duration}}"}, {"{{join_date}}"}, {"{{deadline}}"}, {"{{contact}}"} {t('jobs.templateVariables')}</p>
-              <button className="secondary-button" style={{ padding: "6px 12px", fontSize: "13px" }} onClick={() => setShowTemplates(false)}>Kapat</button>
+              <button className="secondary-button" style={{ padding: "6px 12px", fontSize: "13px" }} onClick={() => setShowTemplates(false)}>{t('common.close')}</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
               {jobTemplates.map((template) => (
@@ -3091,7 +3215,7 @@ function App() {
                   <button className='secondary-button' style={{ padding: '6px 10px', fontSize: '12px', color: '#b91c1c' }} onClick={() => deleteTemplate(template.id)}>{t('common.delete')}</button>
                 </div>
               ))}
-              {jobTemplates.length === 0 && <p style={{ color: "#64748b", fontSize: "13px" }}>Henüz şablon yok — aşağıdan ekleyin.</p>}
+              {jobTemplates.length === 0 && <p style={{ color: "#64748b", fontSize: "13px" }}>{t('jobs.noTemplates')}</p>}
             </div>
             <form onSubmit={handleTemplateSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -3111,7 +3235,7 @@ function App() {
           <div style={{ marginBottom: "20px", padding: "18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
               <p className="section-label" style={{ margin: 0 }}>WhatsApp Gönderim Kuyruğu ({whatsappQueue.length})</p>
-              <button className="primary-button" style={{ padding: "8px 16px", fontSize: "13px" }} onClick={processWhatsappQueue}>Kuyruğu İşle</button>
+              <button className="primary-button" style={{ padding: "8px 16px", fontSize: "13px" }} onClick={processWhatsappQueue}>{t('jobs.processQueue')}</button>
             </div>
             <div className="table-wrapper">
               <table className="data-table" style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -3128,7 +3252,7 @@ function App() {
                       <td style={{ padding: "9px 8px", color: "#b91c1c", fontSize: "12px" }}>{m.last_error || "—"}</td>
                     </tr>
                   ))}
-                  {whatsappQueue.length === 0 && <tr><td colSpan={5} style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>Kuyruk boş.</td></tr>}
+                  {whatsappQueue.length === 0 && <tr><td colSpan={5} style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>{t('jobs.queueEmpty')}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -3254,10 +3378,10 @@ function App() {
                   {canWrite && (
                     <>
                       <button className="primary-button" style={{ padding: "8px 14px", fontSize: "13px", background: "#0284c7", border: "none" }} onClick={() => { setPublishOpen((p) => ({ ...p, [job.id]: !p[job.id] })); if (!publishOpen[job.id]) { loadPublications(job.id); if (!jobTemplates.length) loadJobTemplates(); } }}>
-                        <Send size={14} /> Yayınla
+                        <Send size={14} /> {t('jobs.publish')}
                       </button>
                       <button className="secondary-button" style={{ padding: "8px 14px", fontSize: "13px" }} onClick={() => generateJobImage(job)} title="Şablondan görsel üret">
-                        <ImageIcon size={14} /> Görsel Oluştur
+                        <ImageIcon size={14} /> {t('jobs.createImage')}
                       </button>
                       <button className="secondary-button" style={{ padding: "8px 14px", fontSize: "13px" }} onClick={() => setJobApplyOpen((p) => ({ ...p, [job.id]: !p[job.id] }))}>
                         {t('jobs.apply')}
@@ -3694,7 +3818,7 @@ function App() {
                 <label style={labelStyle}>{t('email.newEmail')}</label>
                 <input type="email" className="form-input" required style={inputStyle} value={accForm.new_email} onChange={(e) => setAccForm({ ...accForm, new_email: e.target.value })} placeholder="yeni@sirket.com" />
               </div>
-              <button className="primary-button" type="submit" style={{ width: '100%', padding: '12px' }}>{t('password.update')}</button>
+              <button className="primary-button" type="submit" style={{ width: '100%', padding: '12px' }}>{t('email.update')}</button>
             </form>
             <form onSubmit={handleChangePassword} style={cardStyle}>
               <h4 style={{ margin: '0 0 12px 0', color: '#0f172a' }}>{t('password.change')}</h4>
@@ -5142,7 +5266,7 @@ function App() {
                 <div style={{ position: "absolute", top: "46px", right: "0", width: "360px", maxHeight: "420px", overflowY: "auto", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", boxShadow: "0 20px 40px -12px rgba(15,23,42,0.25)", zIndex: 100, padding: "8px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px" }}>
                     <strong style={{ color: "#0f172a" }}>{t('nav.notifications')}</strong>
-                    <button className="secondary-button" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => { axios.post(`${API_URL}/api/notifications/generate`).then(loadNotifications); }}>Yenile</button>
+                    <button className="secondary-button" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => { axios.post(`${API_URL}/api/notifications/generate`).then(loadNotifications); }}>{t('common.refresh')}</button>
                   </div>
                   {notifications.length === 0 && <p style={{ padding: "16px", color: "#64748b", textAlign: "center" }}>Bildirim yok.</p>}
                   {notifications.map((n) => (

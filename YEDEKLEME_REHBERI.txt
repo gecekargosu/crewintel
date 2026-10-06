@@ -1,0 +1,155 @@
+═══════════════════════════════════════════════════════════
+        💾 CREWINTEL & UMAY - TAM YEDEKLEME REHBERİ 💾
+═══════════════════════════════════════════════════════════
+
+📋 LİSTE (sırayla yap):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 1: HAZIRLIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.1 PowerShell'i Yönetici olarak aç
+    - Windows tuşu → "powershell" yaz → Sağ tık → "Yönetici olarak çalıştır"
+
+1.2 Yedek klasörünü oluştur:
+    mkdir C:\Yedek
+    mkdir C:\Yedek\CREWINTEL
+    mkdir C:\Yedek\VERITABANI
+    mkdir C:\Yedek\COOKIES
+    mkdir C:\Yedek\MOBIL
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 2: VERİTABANI YEDEĞİ (EN KRİTİK)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+docker exec crewintel-postgres pg_dump -U crewintel crewintel > C:\Yedek\VERITABANI\crewintel_db.sql
+
+echo "DB yedeklendi!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 3: CREWINTEL PROJESİNİ YEDEKLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+xcopy /E /I /H /Y C:\CREWINTEL C:\Yedek\CREWINTEL\CREWINTEL
+
+echo "Proje yedeklendi!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 4: COOKİE DOSYALARINI YEDEKLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+copy C:\CREWINTEL\cookies\*.txt C:\Yedek\COOKIES\
+
+echo "Cookies yedeklendi!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 5: MOBİL APK YEDEĞİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+copy C:\CREWINTEL\mobile-app\app\build\outputs\apk\debug\app-debug.apk C:\Yedek\MOBIL\UMAY_Admin.apk
+
+echo "APK yedeklendi!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 6: GITHUB'A KONTROL ET (INTERNET VARSA)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+cd C:\CREWINTEL
+git status
+git push
+
+echo "GitHub guncellendi!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 7: YEDEKLEME LOGU OLUŞTUR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+echo ============================================ > C:\Yedek\YEDEKLEME_LOGU.txt
+echo   YEDEKLEME RAPORU - %date% %time% >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo ============================================ >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo. >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo [1] Veritabani: C:\Yedek\VERITABANI\crewintel_db.sql >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo [2] Proje:      C:\Yedek\CREWINTEL\CREWINTEL\ >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo [3] Cookies:    C:\Yedek\COOKIES\ >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo [4] Mobil APK:  C:\Yedek\MOBIL\UMAY_Admin.apk >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo [5] GitHub:     gecekargosu/crewintel >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo. >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo Notlar: >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo - Servise vermeden once Docker'i durdurun >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo - BitLocker varsa kapatmayi unutmayin >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo - Telefon yedegi: Google Drive > Ayarlar > Yedekle >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo. >> C:\Yedek\YEDEKLEME_LOGU.txt
+echo ============================================ >> C:\Yedek\YEDEKLEME_LOGU.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 8: YEDEKLERİ SIKIŞTIR (ZIP)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compress-Archive -Path "C:\Yedek\CREWINTEL" -DestinationPath "C:\Yedek\CREWINTEL_FULL.zip" -Force
+Compress-Archive -Path "C:\Yedek\VERITABANI" -DestinationPath "C:\Yedek\VERITABANI_FULL.zip" -Force
+Compress-Archive -Path "C:\Yedek\COOKIES" -DestinationPath "C:\Yedek\COOKIES_FULL.zip" -Force
+
+echo "ZIP dosyalari olusturuldu!" >> C:\Yedek\log.txt
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADIM 9: BOYUT KONTROLÜ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Get-ChildItem "C:\Yedek" -Recurse | Measure-Object -Property Length -Sum | Select-Object @{N='ToplamBoyutGB';E={[math]::Round($_.Sum/1GB,2)}}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ SERVİS ÖNCESİ KONTROL LİSTESİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+□ Docker'ı durdur (Docker Desktop > Quit)
+□ BitLocker şifrelemesini kapat (varsa)
+□ Windows PIN'ini bil (giriş için gerekli)
+□ Harici diski çıkar (varsa)
+□ UMA Admin'i telefondan kapat
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📱 TELEFON YEDEĞİ (Ayrı Yap)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Xiaomi Telefon:
+1. Ayarlar > Hesaplar > Xiaomi Cloud > Yedekle
+2. veya Ayarlar > Ek Ayarlar > Yedekleme > Yedekle
+
+Google Drive:
+1. Ayarlar > Google > Yedekleme
+2. "Şimdi Yedekle" tıkla
+
+Bu kadar! Servise güvenle götürebilirsin. 🚢
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 GERİ KURULUM (Servis Sonrası)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Docker Desktop kur
+2. cd C:\CREWINTEL
+3. docker compose up -d
+4. Veritabanını geri yükle:
+   docker exec -i crewintel-postgres psql -U crewintel crewintel < C:\Yedek\VERITABANI\crewintel_db.sql
+5. Mobile APK'yi telefona kur
+6. UMAY Admin'i aç > sunucu adresini gir > giriş yap
+7. Tüm veriler yerinde olacak! ✅
+
+
+═══════════════════════════════════════════════════════════
+        💾 HER ŞEY HAZIR - GÜVENLE SERVİSE VER 💾
+═══════════════════════════════════════════════════════════
+
+GitHub: https://github.com/gecekargosu/crewintel
+Son commit: 3a6ccd4c
+Durum: ✅ Tüm kritik güncellemeler push edildi

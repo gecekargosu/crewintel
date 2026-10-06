@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cengiz Kılıç — CV</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fff;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 28mm 22mm 24mm 22mm;
+  }
+
+  /* ── Header ── */
+  .header { margin-bottom: 18px; border-bottom: 2px solid #1a1a1a; padding-bottom: 14px; }
+  .header h1 { font-size: 22pt; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 2px; }
+  .header .subtitle { font-size: 10.5pt; color: #444; margin-bottom: 6px; font-weight: 400; }
+  .header .contact { font-size: 9.5pt; color: #333; }
+  .header .contact span { margin-right: 6px; }
+  .header .sep { color: #999; margin: 0 2px; }
+  .header .availability { font-size: 9.5pt; color: #555; margin-top: 4px; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 16px; }
+  .section-title {
+    font-size: 11.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #1a1a1a;
+    border-bottom: 1.5px solid #ccc;
+    padding-bottom: 3px;
+    margin-bottom: 8px;
+  }
+
+  /* ── Summary ── */
+  .summary p { font-size: 10.5pt; line-height: 1.6; color: #222; margin-bottom: 6px; }
+
+  /* ── Education ── */
+  .edu-item { margin-bottom: 10px; }
+  .edu-item .edu-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .edu-item .edu-header .school { font-weight: 700; font-size: 10.5pt; }
+  .edu-item .edu-header .date { font-size: 9.5pt; color: #555; white-space: nowrap; }
+  .edu-item .dept { font-size: 10pt; color: #333; margin-top: 1px; }
+  .edu-item .detail { font-size: 9.5pt; color: #555; margin-top: 2px; }
+
+  /* ── Skills ── */
+  .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .skill-group { margin-bottom: 4px; }
+  .skill-group .label { font-weight: 700; font-size: 10pt; color: #1a1a1a; margin-bottom: 2px; }
+  .skill-group .items { font-size: 9.8pt; color: #333; line-height: 1.55; }
+
+  /* ── Projects ── */
+  .project { margin-bottom: 14px; border-left: 3px solid #1a1a1a; padding-left: 10px; }
+  .project .proj-name { font-weight: 700; font-size: 10.5pt; }
+  .project .proj-desc { font-size: 9.8pt; color: #444; font-style: italic; margin-bottom: 3px; }
+  .project .tech { font-size: 9.5pt; color: #555; margin-bottom: 3px; }
+  .project ul { font-size: 9.8pt; padding-left: 16px; color: #222; }
+  .project li { margin-bottom: 2px; }
+
+  /* ── Experience ── */
+  .exp-item { margin-bottom: 12px; }
+  .exp-item .exp-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .exp-item .exp-header .title { font-weight: 700; font-size: 10.5pt; }
+  .exp-item .exp-header .date { font-size: 9.5pt; color: #555; white-space: nowrap; }
+  .exp-item .company { font-size: 10pt; color: #333; margin-top: 1px; }
+  .exp-item ul { font-size: 9.8pt; padding-left: 16px; color: #222; margin-top: 4px; }
+  .exp-item li { margin-bottom: 2px; }
+
+  /* ── Two-column layout for bottom ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+
+  /* ── Languages ── */
+  .lang-item { margin-bottom: 4px; }
+  .lang-item .lang-name { font-weight: 700; font-size: 10pt; }
+  .lang-item .lang-level { font-size: 9.5pt; color: #555; }
+
+  /* ── Qualities ── */
+  .qualities { font-size: 9.8pt; color: #333; line-height: 1.6; }
+  .qualities span { margin-right: 4px; }
+  .qualities .dot { color: #999; margin: 0 3px; }
+
+  /* ── Objective ── */
+  .objective p { font-size: 10pt; color: #222; line-height: 1.6; }
+
+  /* ── Print ── */
+  @media print {
+    body { padding: 20mm 20mm 18mm 20mm; }
+    .section { page-break-inside: avoid; }
+    .project { page-break-inside: avoid; }
+    .exp-item { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<div class="header">
+  <h1>Cengiz Kılıç</h1>
+  <div class="subtitle">Yapay Zeka &amp; Makine Öğrenmesi Lisans Öğrencisi · AI Otomasyon Geliştirici · Junior Software Developer</div>
+  <div class="contact">
+    <span>+90 532 327 61 21</span><span class="sep">|</span>
+    <span>cengizkilic1980@gmail.com</span><span class="sep">|</span>
+    <span>İzmir, Türkiye</span><span class="sep">|</span>
+    <span>linkedin.com/in/cengizkilic</span>
+  </div>
+  <div class="availability">Tam zamanlı · Uzaktan / Hibrit · Seyahat engeli yok</div>
+</div>
+
+<!-- ═══════════════════ PROFESYONEL ÖZET ═══════════════════ -->
+<div class="section summary">
+  <div class="section-title">Profesyonel Özet</div>
+  <p>20 yılı aşkın profesyonel deneyimini yapay zeka, yazılım geliştirme ve otomasyon alanına taşıyan bir geliştirici adayı. İstanbul Rumeli Üniversitesi Yapay Zeka ve Makine Öğrenmesi lisans programında eğitimine devam ediyor.</p>
+  <p>CrewIntel adlı tam yığın (full-stack) mürettebat yönetim sistemi geliştirerek Python FastAPI backend, PostgreSQL veritabanı, React frontend ve Android mobil uygulama oluşturdum. Sistemde Groq LLM entegrasyonu ile belge analizi ve yapay zeka destekli personel-iş eşleştirme motoru tasarladım. Docker ile deployment gerçekleştirdim.</p>
+  <p>n8n workflow otomasyonu, prompt engineering, AI agent tasarımı ve LLM uygulama geliştirme konularında aktif çalışmalar yürütüyorum. Girişimcilik geçmişim — ürün geliştirme, MVP süreçleri, müşteri analizi ve uluslararası iş geliştirme — yazılım geliştirme sürecine güçlü bir iş disiplini ve problem çözme yetkinliği katıyor.</p>
+</div>
+
+<!-- ═══════════════════ EĞİTİM ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Eğitim</div>
+  <div class="edu-item">
+    <div class="edu-header">
+      <span class="school">İstanbul Rumeli Üniversitesi — Mühendislik Fakültesi</span>
+      <span class="date">2025 – Devam Ediyor (Tahmini: 2029)</span>
+    </div>
+    <div class="dept">Yapay Zeka ve Makine Öğrenmesi — Lisans Programı</div>
+    <div class="detail">Bölüm Öğrenci Temsilcisi · Algoritmalar, veri yapıları, makine öğrenmesi, derin öğrenme, yazılım geliştirme temelleri ve yapay zeka uygulamaları</div>
+  </div>
+  <div class="edu-item">
+    <div class="edu-header">
+      <span class="school">Karadeniz Teknik Üniversitesi</span>
+      <span class="date">1999 – 2001 · Mezun</span>
+    </div>
+    <div class="dept">İnşaat Teknikerliği — Ön Lisans</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TEKNİK YETKİNLİKLER ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Teknik Yetkinlikler</div>
+  <div class="skills-grid">
+    <div class="skill-group">
+      <div class="label">AI &amp; Machine Learning</div>
+      <div class="items">LLM (Groq / llama-3.3-70b) · Prompt Engineering · AI Agents · AI Application Development · Document Analysis with LLM · AI-powered Matching Systems</div>
+    </div>
+    <div class="skill-group">
+      <div class="label">AI Automation &amp; Workflow</div>
+      <div class="items">n8n · API Integration · Workflow Automation · AI-assisted Automation · Multi-step Prompt Architectures</div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Backend &amp; Programming</div>
+      <div class="items">Python · FastAPI · SQLAlchemy · PostgreSQL · REST API · JWT Authentication · Pydantic · Alembic</div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Frontend &amp; Mobile</div>
+      <div class="items">HTML · CSS · JavaScript · React · Android (Java/Kotlin) · Retrofit</div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Developer Tools</div>
+      <div class="items">Git · GitHub · VS Code · Docker · Docker Compose · Linux · WSL</div>
+    </div>
+    <div class="skill-group">
+      <div class="label">AI Tools &amp; Others</div>
+      <div class="items">ChatGPT · Claude · Gemini · GitHub Copilot · Cursor · C (Basic) · Figma · LibreOffice</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PROJELER ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Projeler</div>
+
+  <!-- CREWINTEL -->
+  <div class="project">
+    <div class="proj-name">CrewIntel — Yapay Zeka Destekli Mürettebat Yönetim Sistemi</div>
+    <div class="proj-desc">Tam yığın (full-stack) crew management platformu · Python FastAPI + PostgreSQL + React + Android + LLM</div>
+    <ul>
+      <li><strong>Python FastAPI</strong> backend geliştirerek 20+ API endpoint'i, JWT kimlik doğrulama, CORS, rate limiting ve audit logging mimarisi kurdum.</li>
+      <li><strong>PostgreSQL</strong> veritabanı ile SQLAlchemy ORM kullanarak crew, document, ship, contract, assignment veri modelleri oluşturdum.</li>
+      <li><strong>Groq LLM API entegrasyonu</strong> ile PDF belgelerden personel bilgileri, sertifikalar ve deneyim çıkaran AI document analyzer modülü geliştirdim.</li>
+      <li><strong>AI-powered crew matcher</strong> — LLM ve algoritmik skorlama ile personel yeteneklerini, sertifikalarını ve deneyimlerini iş ilanlarıyla eşleştiren motor tasarladım.</li>
+      <li><strong>Anomaly detector</strong> — Belgelerde tutarsızlık tespiti yapan AI modülü oluşturdum.</li>
+      <li><strong>React + Vite frontend</strong> ve <strong>Android mobil uygulama</strong> (Java) geliştirerek admin paneli ve mobil erişim sağladım.</li>
+      <li><strong>Docker Compose</strong> ile multi-container deployment (PostgreSQL + Backend) yapılandırdım.</li>
+      <li>E-posta ve WhatsApp bildirim sistemi, maaş takibi, iş ilanı yönetimi, belge yükleme ve dinamik dashboard özelliklerini uyguladım.</li>
+    </ul>
+  </div>
+
+  <!-- Social Downloader -->
+  <div class="project">
+    <div class="proj-name">Social Media Downloader — Sosyal Medya Video İndirici API</div>
+    <div class="proj-desc">FastAPI backend · yt-dlp · Docker</div>
+    <ul>
+      <li>YouTube, Instagram, TikTok, Facebook ve Pinterest videolarını indiren <strong>FastAPI</strong> tabanlı REST API geliştirdim.</li>
+      <li><strong>yt-dlp</strong> entegrasyonu ile çoklu platform desteği, video bilgisi çıkarma ve dosya yönetimi sağladım.</li>
+      <li><strong>Docker</strong> ile konteynerize ederek taşınabilir deployment mimarisi kurdum.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════ GİRİŞİMCİLİK ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Girişimcilik Deneyimi</div>
+  <div class="exp-item">
+    <div class="exp-header">
+      <span class="title">NGD — New Generation Design · Kurucu &amp; Ürün Geliştiricisi</span>
+      <span class="date">2016 – 2022</span>
+    </div>
+    <div class="company">Termal yönetim, teknik tekstil ve savunma sanayii — Ar-Ge odaklı ürün geliştirme</div>
+    <ul>
+      <li>Şirketi sıfırdan kurdu; müşteri problemini tanımladı, çözüm hipotezi oluşturdu, prototip geliştirdi ve MVP'yi piyasaya çıkardı — modern bir start-up'ın tüm aşamalarını bizzat yönetti.</li>
+      <li>Müşteri ihtiyaç analizi, ürün-pazar uyumu araştırması ve ürün doğrulama süreçlerini yürüttü; B2B müşteriler için özel çözümler geliştirdi.</li>
+      <li>Kurumsal web sitesi, dijital pazarlama, ürün lansmanı ve e-ticaret süreçlerini uçtan uca yönetti.</li>
+      <li>Savunma sanayii için özel termal sistemler geliştirdi; Milli Savunma Bakanlığı ve Silahlı Kuvvetler'e teknik sunum yaptı.</li>
+      <li>Almanya, Fransa, İsveç, ABD ve Rusya dahil uluslararası tedarikçi ve ihracat süreçlerini koordine etti.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════ MESLEKİ GEÇMİŞ ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Mesleki Geçmiş</div>
+  <p style="font-size:10pt; color:#333; line-height:1.6; margin-bottom:4px;">Yurt içi ve yurt dışında yaklaşık 20 yıl boyunca teknik operasyon, proje koordinasyonu, ekip yönetimi ve kalite kontrol alanlarında görev aldı. Bu süre zarfında:</p>
+  <ul style="font-size:9.8pt; padding-left:16px; color:#222; margin-top:4px;">
+    <li>Farklı ülkelerde ve disiplinlerde saha deneyimi kazanarak değişen şartlara uyum sağlama ve sonuç odaklı hareket etme becerilerini geliştirdi.</li>
+    <li>Teknik operasyon ve proje yönetiminde yüksek sorumluluk gerektiren görevlerde analitik bakış açısı ve problem çözme yetkinliğini ortaya koydu.</li>
+    <li>Uluslararası projelerde müşteri ve tedarikçi iletişimi, kalite kontrol ve ekip koordinasyonu süreçlerini yürüttü.</li>
+    <li>Bu deneyimler, yazılım geliştirme sürecinde <strong>Agile thinking, technical problem solving, cross-functional collaboration ve project management</strong> gibi transferable skills olarak doğrudan katkı sağlamaktadır.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ NİTELİKLER & DİLLER ═══════════════════ -->
+<div class="two-col" style="margin-bottom:16px;">
+  <div class="section" style="margin-bottom:0;">
+    <div class="section-title">Nitelikler</div>
+    <div class="qualities">
+      Analitik düşünme<span class="dot">·</span>
+      Problem çözme<span class="dot">·</span>
+      Girişimci bakış açısı<span class="dot">·</span>
+      Takım çalışmasına yatkın<span class="dot">·</span>
+      Sonuç odaklı<span class="dot">·</span>
+      Hızlı öğrenme
+    </div>
+  </div>
+  <div class="section" style="margin-bottom:0;">
+    <div class="section-title">Yabancı Dil</div>
+    <div class="lang-item">
+      <span class="lang-name">Türkçe</span> — <span class="lang-level">Ana dil</span>
+    </div>
+    <div class="lang-item">
+      <span class="lang-name">İngilizce</span> — <span class="lang-level">B2 / Upper-Intermediate · Teknik doküman okuma, yazışma ve temel konuşma</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ KARİYER HEDEFİ ═══════════════════ -->
+<div class="section objective">
+  <div class="section-title">Kariyer Hedefi</div>
+  <p>Yapay zeka, LLM uygulamaları ve otomasyon odaklı yazılım geliştirme rollerinde kariyerini ilerletmeyi hedefleyen bir geliştirici. Mevcut full-stack proje deneyimini, AI/ML lisans eğitimiyle birleştirerek Junior AI Developer, Junior Backend Developer veya AI Automation Developer pozisyonlarında değer yaratmaya hazır.</p>
+</div>
+
+<!-- ═══════════════════ REFERANSLAR ═══════════════════ -->
+<div class="section">
+  <div class="section-title">Referanslar</div>
+  <p style="font-size:9.8pt; color:#555;">Talep edilmesi halinde profesyonel referanslarım paylaşılacaktır.</p>
+</div>
+
+</body>
+</html>

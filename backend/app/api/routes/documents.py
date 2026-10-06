@@ -24,7 +24,78 @@ router = APIRouter(prefix="/api/documents", tags=["Documents"])
 SAFE_MEDIA_TYPES = {
     ".pdf": "application/pdf",
     ".txt": "text/plain; charset=utf-8",
+    ".csv": "text/csv; charset=utf-8",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".jfif": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".bmp": "image/bmp",
+    ".tif": "image/tiff",
+    ".tiff": "image/tiff",
 }
+
+
+@router.post("/convert")
+async def convert_files_to_pdf(
+    files: list[UploadFile] = File(...),
+    current_user: Session = Depends(require_roles("admin", "hr")),
+):
+    """Dosyaları PDF'e çevirir (tek dosya: PDF, çok dosya: ZIP indir).
+
+    Desteklenen: DOC/DOCX/ODT/RTF, XLS/XLSX/ODS/CSV, JPEG/PNG/WebP/TIFF/BMP,
+    TXT. PDF'ler aynen paketlenir. LibreOffice + Pillow kullanır.
+    """
+    import io
+    import zipfile
+    from pathlib import Path as FsPath
+
+    from fastapi.responses import Response
+
+    from app.services.document_processing import convert_to_pdf
+
+    converted: list[tuple[str, bytes]] = []
+    errors: list[dict] = []
+
+    for upload in files:
+        content = await upload.read()
+        original = upload.filename or "document"
+        if not content:
+            errors.append({"filename": original, "reason": "empty file"})
+            continue
+        pdf_bytes, error = convert_to_pdf(original, content)
+        if pdf_bytes:
+            converted.append((str(FsPath(original).with_suffix(".pdf")), pdf_bytes))
+        else:
+            errors.append({"filename": original, "reason": error})
+
+    if not converted:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"message": "Hiçbir dosya çevrilemedi.", "errors": errors},
+        )
+
+    if len(converted) == 1 and not errors:
+        name, pdf_bytes = converted[0]
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{name}"'},
+        )
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, pdf_bytes in converted:
+            zf.writestr(name, pdf_bytes)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="converted_pdfs.zip"'},
+    )
 
 
 @router.post(

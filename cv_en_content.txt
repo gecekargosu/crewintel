@@ -1,0 +1,78 @@
+Cengiz Kılıç
+AI & Machine Learning Bachelor's Student  |  AI & Automation Enthusiast  |  Junior Software Developer Candidate
++90 532 327 61 21   |   cengizkilic1980@gmail.com   |   Izmir, Turkey   |   linkedin.com/in/cengizkilic   |   github.com/cengizkilic
+Available for full-time employment  •  Open to remote and hybrid roles  •  Open to travel
+
+PROFESSIONAL SUMMARY
+An AI & Machine Learning Bachelor's student at Istanbul Rumeli University, Faculty of Engineering, actively building toward a career in software and AI.
+Over 20 years in professional life across technical operations, project management, and entrepreneurship. I founded my own company, took products from idea to market, managed clients, and coordinated international trade. This background gave me technical problem solving, work discipline, customer-centric thinking, and real project experience. I am now bringing this foundation into software and AI.
+I use AI tools daily and actively experiment with prompt engineering, n8n automation, and AI agent design. I have no professional software experience yet — and I say that openly. What I bring is the drive to learn fast and a clear commitment to building a long-term career in this field.
+EDUCATION
+Istanbul Rumeli University	2025 – In Progress  (Expected: 2029)
+Faculty of Engineering
+Artificial Intelligence and Machine Learning — Bachelor's Degree (In Progress)
+Department Student Representative
+Algorithms, data structures, machine learning, deep learning, software development fundamentals, applied AI.
+Karadeniz Technical University	1999 – 2001  |  Graduated
+Civil Construction Technology — Associate Degree
+TECHNICAL SKILLS
+Artificial Intelligence
+ChatGPT  •  Claude  •  Gemini  •  Copilot  •  Cursor  •  Antigravity
+AI Automation & Workflow
+n8n  •  Prompt Engineering  •  LLM  •  AI Agent  •  Workflow Design  •  AI-assisted productivity
+Programming
+C (Beginner)  •  Python (Learning)  •  HTML (Basic)  •  CSS (Basic)  •  JavaScript (Basic)  •  PHP (Learning)
+Development Environment
+Git (Basic)  •  GitHub  •  VS Code  •  LibreOffice  •  Microsoft Office
+Design & Content
+Figma  •  Canva
+PERSONAL PROJECTS & LEARNING WORK
+No professional software experience yet. These are outcomes of self-directed learning.
+▸  AI-powered web projects — Interface design and development experiments with AI integration.
+▸  n8n automation experiments — Workflow designs connecting different APIs and services.
+▸  AI Agent design — Task-focused LLM agents and multi-step prompt architectures.
+▸  AI-powered business workflows and automation systems — Productivity-focused solutions using n8n, LLM and API integrations.
+▸  Comparing LLM models to develop solutions — Evaluating ChatGPT, Claude, Gemini and Copilot across use cases.
+▸  Website development — Static and dynamic site projects using HTML/CSS/JS.
+▸  Daily software practice — Coding exercises and AI tool productivity experiments.
+ENTREPRENEURIAL & TECHNOLOGY EXPERIENCE
+NGD — New Generation Design  |  Founder & Product Developer	2016 – 2022
+Thermal management systems, technical textiles, and defence — R&D-focused product development startup
+▸  Founded from scratch; identified customer problem, formed solution hypothesis, built prototype, and launched MVP — experienced every stage of a modern product startup lifecycle.
+▸  Managed customer needs analysis, product-market fit research, and product validation; developed bespoke B2B solutions.
+▸  Managed corporate website, digital marketing, product launches, advertising campaigns, and e-commerce processes end to end.
+▸  Developed specialist thermal systems for the defence sector; delivered technical presentations to the Ministry of National Defence and Armed Forces.
+▸  Coordinated import/export with domestic and international suppliers; managed export to Germany, France, Sweden, USA, and Russia, among other markets.
+▸  Gained broad national media coverage; organised product shoots and advertising films — product and brand perception management.
+PROFESSIONAL BACKGROUND (2002 – 2025)
+Over approximately 20 years I held roles in technical operations, project coordination, team management, and quality control across domestic and international projects. This experience gave me discipline, analytical perspective, and ground-level realism that I now bring into the software world.
+International field experience developed my ability to adapt to changing conditions, collaborate across disciplines, and deliver results under high responsibility — skills that translate directly into any professional environment.
+ACTIVE LEARNING
+Currently pursuing the following through self-directed study:
+•  Python
+•  Git & GitHub
+•  AI Agent design and development
+•  n8n workflow automation
+•  Backend development fundamentals
+•  AI application development
+PERSONAL QUALITIES
+•  Analytical thinking
+•  Fast learner
+•  Problem solving
+•  Curious, research-driven personality
+•  Team player
+•  Highly adaptable
+•  Strong work discipline
+•  Entrepreneurial mindset
+•  Deep interest in AI technologies
+•  Results-oriented approach
+INTERESTS
+Artificial intelligence, machine learning, LLM systems, AI agent design, backend development, automation, open source, robotics, computer systems, and software architecture.
+LANGUAGES
+Turkish — Native
+English — Professional Working Proficiency (B2) — Technical documentation, written communication, basic conversation
+CAREER OBJECTIVE
+I want to build a long-term career in software and AI. Yes, I'm new to this field — I'm not hiding that. But I bring 20 years of work discipline, entrepreneurial experience, and a problem-solving mindset, and I'm combining them with software and AI right now.
+My goal is to learn from experienced teams and contribute to real projects. More than just learning to write code, my aim is to take part in projects that solve real problems, integrate AI into business processes, and deliver high value in the long run.
+REFERENCES
+Professional references are available upon request.

@@ -110,7 +110,10 @@ def test_download_serves_extension_based_media_type(client):
 
     dl = client.get(f"/api/documents/{doc_id}/file")
     assert dl.status_code == 200
-    assert dl.headers["content-type"].startswith("text/plain")
+    # .txt yüklemesi arşivde PDF olarak saklanır (otomatik PDF dönüştürme);
+    # tip yine uzantıdan türetilir, client mime'ına güvenilmez.
+    assert dl.headers["content-type"].startswith("application/pdf")
+    assert dl.content.startswith(b"%PDF")
 
 
 # ── P2: Güçlü tanımlayıcı (pasaport) isimden üstün olmalı ────────────────────

@@ -64,6 +64,17 @@ WEIGHTS = {
     "dob_exact": 50,
     "phone_exact": 40,
     "filename_name": 25,
+    "filename_full": 50,
+    # Belge gövdesinde personelin tam adının geçmesi (isim çıkarımı gürültü
+    # olduğunda da çalışır: "La Autoridad" vb. sahte isimlerin yerine geçer).
+    # 90: tek başına auto-match eder — ancak karar motorundaki 15 puanlık
+    # marj kuralı sayesinde aynı belgede ADI GEÇEN İKİ personel varsa
+    # (crew list vb.) tie oluşur ve incelemeye düşer; çelişkide skor 60'a
+    # kısılır (auto-match imkânsız).
+    "text_name": 90,
+    # Ad ve soyad metinde ayrı ayrı geçiyor (bitişik değil): güvenli değil,
+    # inceleme eşiğini aşar ama auto-match etmez.
+    "text_name_parts": 45,
     "name_fuzzy": 15,
 }
 
@@ -226,6 +237,28 @@ class DocumentClassifier:
         return metadata.get("document_type") or "other"
 
 
+def crew_name_in_text(first_name: str | None, last_name: str | None, text_norm: str) -> bool:
+    """Personelin tam adı (normalize, sıralı) belge metninde geçiyor mu?
+
+    "AHMED MOHAMED RAMADAN AHMED" ↔ "AHMED MOHAMED RAMADAN AHMED" gibi;
+    aday ad ve soyad en az 2 token ve 6 karakter olmalı (tek kelimelik
+    gürültü eşleşmesini engeller). Ters sıra (soyad ad) da kabul edilir.
+    """
+    if not text_norm or not first_name or not last_name:
+        return False
+    full = normalize(f"{first_name} {last_name}")
+    tokens = [t for t in full.split() if t]
+    if len(tokens) < 2 or len(full) < 6:
+        return False
+    reversed_name = normalize(f"{last_name} {first_name}")
+    # text_norm kelime sınırı için boşluklarla sarılmıştır (" cetin " ∈
+    # " cetiner " DEĞİLDİR — "Mehmet Çetiner" yanlış eşleşmesini engeller).
+    return (
+        f" {full} " in text_norm
+        or (reversed_name != full and f" {reversed_name} " in text_norm)
+    )
+
+
 class CrewCandidateFinder:
     """DB'den aday personel listesi bulur.
 
@@ -233,7 +266,15 @@ class CrewCandidateFinder:
     (mevcut ölçekte kabul edilebilir; 5000+ için SQL isim filtreleme roadmap).
     """
 
-    def find(self, db: Session, entities: dict, first_name: str | None, last_name: str | None) -> list[CrewMember]:
+    def find(
+        self,
+        db: Session,
+        entities: dict,
+        first_name: str | None,
+        last_name: str | None,
+        filename: str = "",
+        text_norm: str = "",
+    ) -> list[CrewMember]:
         candidates: list[CrewMember] = []
         seen: set[int] = set()
 
@@ -284,16 +325,59 @@ class CrewCandidateFinder:
                 if normalize(crew.first_name) == nf and normalize(crew.last_name) == nl:
                     _add(crew)
 
-        # 3) Güvenli fuzzy adaylar: her iki alanda da yüksek benzerlik (>= 0.85).
-        #    Skorlayıcı bunlara düşük puan verir (name_fuzzy=15) — asla auto-match
-        #    edemez; yalnızca incelemeye düşer.
+        # 3) Güvenli fuzzy adaylar: ad ve soyad ortalaması yüksek benzerlik.
+        #    (Önce min(first,last) idi; tek kelimelik soyadlarda (ALI/ALY)
+        #    eşleşme kaçırıyordu — ortalama kurala geçildi.)
         if first_name and last_name and not candidates:
             nf, nl = normalize(first_name), normalize(last_name)
             for crew in db.query(CrewMember).all():
                 cf, cl = normalize(crew.first_name), normalize(crew.last_name)
                 first_ratio = SequenceMatcher(None, nf, cf).ratio()
                 last_ratio = SequenceMatcher(None, nl, cl).ratio()
-                if min(first_ratio, last_ratio) >= FUZZY_NAME_RATIO:
+                if (first_ratio + last_ratio) / 2 >= FUZZY_NAME_RATIO:
+                    _add(crew)
+
+        # 4) Dosya adı kapsama adayı: crew adının tokenları dosya adıyla
+        #    ≥%50 örtüşüyorsa (en az2 token) aday üret. GERMAN SKY gibi
+        #    dosya adında kısmi isim taşıyan arşivlerde esas aday yolu.
+        fn_tokens = set(normalize(Path(filename).stem).split()) if filename else set()
+        if fn_tokens and len(fn_tokens) >= 2:
+            for crew in db.query(CrewMember).all():
+                if crew.id in seen:
+                    continue
+                crew_tokens = set(normalize(f"{crew.first_name} {crew.last_name}").split())
+                crew_tokens = {t for t in crew_tokens if t}
+                if len(crew_tokens) < 2:
+                    continue
+                overlap = sum(
+                    1
+                    for t in crew_tokens
+                    if any(SequenceMatcher(None, t, f).ratio() >= 0.72 for f in fn_tokens)
+                )
+                if overlap >= 2 and overlap / len(crew_tokens) >= 0.5:
+                    _add(crew)
+
+        # 5) Metin içi tam isim: belge gövdesinde personelin adı geçiyorsa
+        #    (isim çıkarımı gürültü üretse bile) aday üret — GERMAN SKY
+        #    arşivinde "La Autoridad", "Med Cert" gibi sahte isimlerin
+        #    önüne geçen ana yol.
+        if text_norm:
+            for crew in db.query(CrewMember).all():
+                if crew.id in seen:
+                    continue
+                if crew_name_in_text(crew.first_name, crew.last_name, text_norm):
+                    _add(crew)
+                    continue
+                first_norm = normalize(crew.first_name)
+                last_norm = normalize(crew.last_name)
+                if (
+                    len(first_norm) >= 4
+                    and len(last_norm) >= 4
+                    and f" {first_norm} " in text_norm
+                    and f" {last_norm} " in text_norm
+                ):
+                    # Bitişik olmayan ad/soyad: aday üret ama skor yalnızca
+                    # text_name_parts (45) — incelemeye düşer, auto-match yok.
                     _add(crew)
 
         return candidates
@@ -313,6 +397,7 @@ class MatchScorer:
         first_name: str | None,
         last_name: str | None,
         filename: str,
+        text_norm: str = "",
     ) -> tuple[int, list[str], list[str]]:
         score = 0
         signals: list[str] = []
@@ -385,10 +470,46 @@ class MatchScorer:
 
         # Dosya adı sinyali (yalnızca yardımcı).
         filename_norm = normalize(Path(filename).stem)
+
+        # Metin içi isim sinyali: belge gövdesinde personelin adı geçiyor.
+        if crew_name_in_text(crew.first_name, crew.last_name, text_norm):
+            score += WEIGHTS["text_name"]
+            signals.append("text_name")
+        elif text_norm:
+            first_norm = normalize(crew.first_name)
+            last_norm = normalize(crew.last_name)
+            if (
+                len(first_norm) >= 4
+                and len(last_norm) >= 4
+                and f" {first_norm} " in text_norm
+                and f" {last_norm} " in text_norm
+            ):
+                score += WEIGHTS["text_name_parts"]
+                signals.append("text_name_parts")
         if first_name and last_name and filename_norm:
             if normalize(first_name) in filename_norm or normalize(last_name) in filename_norm:
                 score += WEIGHTS["filename_name"]
                 signals.append("filename_name")
+
+        # Dosya adı kapsama sinyali: crew adının ≥%50 token'ı dosya adında
+        # örtüşüyorsa inceleme eşiğini aşar (review_required); auto-match
+        # için yeterli değildir (90) — yanlış eşleşmede manuel onay kalır.
+        if filename_norm:
+            crew_tokens = [
+                t
+                for t in normalize(f"{crew.first_name} {crew.last_name}").split()
+                if t
+            ]
+            fn_tokens = filename_norm.split()
+            if len(crew_tokens) >= 2 and fn_tokens:
+                overlap = sum(
+                    1
+                    for t in crew_tokens
+                    if any(SequenceMatcher(None, t, f).ratio() >= 0.72 for f in fn_tokens)
+                )
+                if overlap >= 2 and overlap / len(crew_tokens) >= 0.5:
+                    score += WEIGHTS["filename_full"]
+                    signals.append("filename_full")
 
         # Telefon.
         doc_phone = entities.get("phone")
@@ -511,15 +632,18 @@ class MatchEngine:
             document.document_type = document_type
 
         first_name, last_name = extract_name(filename, text)
+        # Kelime sınırı araması için boşluklarla sarılır: crew_name_in_text ve
+        # ad/soyad parça kontrolü `f" {needle} " in text_norm` şeklinde arar.
+        text_norm = f" {normalize(text or '')} "
 
         crew_candidates = self.finder.find(
-            self.db, entities, first_name, last_name
+            self.db, entities, first_name, last_name, filename, text_norm
         )
 
         scored: list[Candidate] = []
         for crew in crew_candidates:
             score, signals, conflicts = self.scorer.score(
-                crew, entities, first_name, last_name, filename
+                crew, entities, first_name, last_name, filename, text_norm
             )
             if score == 0 and not conflicts:
                 continue

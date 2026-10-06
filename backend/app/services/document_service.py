@@ -1,3 +1,4 @@
+import hashlib
 import threading
 import uuid
 from datetime import date
@@ -12,6 +13,8 @@ from app.models.crew_member import CrewMember
 from app.models.document import Document
 from app.services.audit import log_event
 from app.services.document_processing import (
+    PDF_CONVERTIBLE_EXTENSIONS,
+    convert_to_pdf,
     document_expiry_status,
     extract_metadata,
     extract_name,
@@ -26,16 +29,35 @@ from app.services.match_engine import (
 )
 
 
-ALLOWED_UPLOAD_EXTENSIONS = {".pdf", ".txt"}
+ALLOWED_UPLOAD_EXTENSIONS = set(PDF_CONVERTIBLE_EXTENSIONS)
 MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB
+
+# Uzantı bazlı zorunlu dosya imzaları (magic bytes)
+_MAGIC_BY_SUFFIX: dict[str, tuple[bytes, ...]] = {
+    ".pdf": (b"%PDF",),
+    ".jpg": (b"\xff\xd8\xff",),
+    ".jpeg": (b"\xff\xd8\xff",),
+    ".jfif": (b"\xff\xd8\xff",),
+    ".png": (b"\x89PNG\r\n\x1a\n",),
+    ".bmp": (b"BM",),
+    ".tif": (b"II*\x00", b"MM\x00*"),
+    ".tiff": (b"II*\x00", b"MM\x00*"),
+    ".docx": (b"PK\x03\x04",),
+    ".xlsx": (b"PK\x03\x04",),
+    ".xlsm": (b"PK\x03\x04",),
+    ".odt": (b"PK\x03\x04",),
+    ".ods": (b"PK\x03\x04",),
+    ".doc": (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",),
+    ".xls": (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",),
+}
 
 
 def validate_upload(filename: str, content: bytes) -> None:
     """Backend-side upload validation: extension allowlist + content sniffing.
 
-    The frontend restricts uploads to PDF/TXT, but the API must not trust the
-    client: this rejects unsupported extensions and files whose content does
-    not match the declared format (e.g. HTML or executables renamed to .pdf).
+    PDF, TXT, DOC/DOCX, XLSX, resim (JPEG/PNG/WebP/TIFF/BMP) ve OpenOffice
+    formatları kabul edilir. API client'a güvenmez: uzantı ile içerik
+    uyuşmuyorsa (ör. HTML'in .pdf'e çevrilmesi) reddeder.
     """
     suffix = Path(filename).suffix.lower()
 
@@ -50,33 +72,64 @@ def validate_upload(filename: str, content: bytes) -> None:
     if suffix not in ALLOWED_UPLOAD_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"{filename}: desteklenmeyen dosya tipi. Sadece PDF ve TXT dosyaları kabul edilir.",
+            detail=(
+                f"{filename}: desteklenmeyen dosya tipi. "
+                "PDF, TXT, DOC/DOCX, XLS/XLSX, JPEG, PNG, WebP, TIFF, BMP kabul edilir."
+            ),
         )
 
-    # 3) PDF header kontrolü
-    if suffix == ".pdf" and not content.startswith(b"%PDF"):
+    # 3) Magic byte doğrulaması (uzantı ile içerik uyuşmalı)
+    expected_signatures = _MAGIC_BY_SUFFIX.get(suffix)
+    if expected_signatures and not any(content.startswith(sig) for sig in expected_signatures):
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"{filename}: dosya içeriği PDF formatıyla uyuşmuyor.",
+            detail=f"{filename}: dosya içeriği {suffix} formatıyla uyuşmuyor.",
         )
 
-    # 4) TXT binary kontrolü
-    if suffix == ".txt" and b"\x00" in content:
+    # 4) TXT/CSV binary kontrolü
+    if suffix in (".txt", ".csv") and b"\x00" in content:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"{filename}: dosya içeriği geçerli metin değil.",
         )
 
-    # 5) TXT'de garip karakter oranı yüksekse uyarı (kritik değil, sadece bilgi)
-    if suffix == ".txt":
-        try:
-            text_sample = content[:4096].decode("utf-8")
-            replacement_count = text_sample.count("\ufffd")
-            if len(text_sample) > 0 and replacement_count / len(text_sample) > 0.1:
-                # %10'dan fazla garip karakter — muhtemelen yanlış encoding
-                pass  # Şimdilik sadece log'la, reddetme — yine de çalışsın
-        except Exception:
-            pass
+    # 5) WEBP ek kontrolü: RIFF....WEBP
+    if suffix == ".webp" and not (content.startswith(b"RIFF") and content[8:12] == b"WEBP"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"{filename}: dosya içeriği WebP formatıyla uyuşmuyor.",
+        )
+
+
+def store_document_file(storage_path: str, original_filename: str, content: bytes) -> tuple[str, str, str]:
+    """Belgeyi arşive kaydeder.
+
+    PDF olmayan her dosya (doc/docx/xlsx/resim/txt) PDF'e çevrilip
+    **PDF olarak saklanır**; kayıtlar arşiv tek format olur (madde:
+    "pdf converter"). Checksum her zaman ORİJİNAL içerikten üretilir
+    ki duplicate tespiti dosyanın kendisini yapsın.
+
+    Returns:
+        (storage_path, stored_filename, original_checksum)
+    """
+    original_checksum = hashlib.sha256(content).hexdigest()
+    suffix = Path(original_filename).suffix.lower()
+
+    stored_content = content
+    store_name = original_filename
+
+    if suffix != ".pdf":
+        pdf_bytes, _error = convert_to_pdf(original_filename, content)
+        if pdf_bytes:
+            stored_content = pdf_bytes
+            store_name = str(Path(original_filename).with_suffix(".pdf").name)
+
+    path, stored_name, _stored_checksum = store_file(
+        storage_path,
+        store_name,
+        stored_content,
+    )
+    return path, stored_name, original_checksum
 
 
 # -- Asenkron batch isleme kayit defteri ------------------------------------
@@ -223,7 +276,7 @@ class DocumentService:
 
                 validate_upload(original_filename, content)
 
-                path, stored_name, checksum = store_file(
+                path, stored_name, checksum = store_document_file(
                     self.settings.storage_path,
                     original_filename,
                     content,
@@ -267,7 +320,7 @@ class DocumentService:
                     original_filename=original_filename,
                     stored_filename=stored_name,
                     storage_path=path,
-                    mime_type=upload.content_type,
+                    mime_type="application/pdf" if stored_name.lower().endswith(".pdf") else upload.content_type,
                     file_size=len(content),
                     checksum=checksum,
                     document_type=metadata["document_type"],
@@ -396,11 +449,11 @@ class DocumentService:
                 except HTTPException:
                     batch["failed"] += 1
                     batch.setdefault("failed_details", []).append(
-                        {"filename": original_filename, "reason": "unsupported file type (only PDF and TXT)"}
+                        {"filename": original_filename, "reason": "unsupported file type or content mismatch"}
                     )
                     continue
 
-                path, stored_name, checksum = store_file(
+                path, stored_name, checksum = store_document_file(
                     self.settings.storage_path,
                     original_filename,
                     content,
@@ -444,7 +497,7 @@ class DocumentService:
                     original_filename=original_filename,
                     stored_filename=stored_name,
                     storage_path=path,
-                    mime_type=upload.content_type,
+                    mime_type="application/pdf" if stored_name.lower().endswith(".pdf") else upload.content_type,
                     file_size=len(content),
                     checksum=checksum,
                     document_type=metadata["document_type"],
