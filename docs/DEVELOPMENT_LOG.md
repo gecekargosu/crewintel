@@ -728,3 +728,4 @@ Do not start yet:
 | 2026-10-06 | Deneme verileri silindi, GERMAN SKY gerçek verisi: 22 personel + MV GERMAN SKY gemisi + ck arşivi 221 dosya yüklendi | DATA |
 | 2026-10-06 | Doğrulama: pytest **282 passed/2 skipped**, oxlint 0 hata, backend+frontend image rebuild + healthy | QA |
 | 2026-10-06 | Upload limiti 20/25MB → **100MB** (validate, settings, compose, env, installer, nginx hepsi eşit) + yanlış adlandırılmış ama geçerli içerikte uzantı düzeltmesi → 3 kalıcı reddedilen dosya da yüklendi (biri 165 puanla eşleşti); pytest 284 passed | UPLOAD |
+| 2026-10-06 | `docs/ARCHITECTURE.md` baştan yazıldı (servisler, yükleme hattı, match sinyal tablosu, limit eşitliği) + kök `README.md` ve `CLAUDE.md` (AI giriş rehberi) eklendi; Umay PDF Reader GitHub'a açıldı → github.com/gecekargosu/umay-pdf-reader | DOCS |
