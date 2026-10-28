@@ -2,6 +2,7 @@
 job_images; job_postings detay alanları; crew_members.job_seeking."""
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "20260818_0009"

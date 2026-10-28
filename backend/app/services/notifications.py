@@ -212,6 +212,19 @@ class NotificationService:
         today = date.today()
         created = 0
 
+        def _portal_user_id(crew_id: int) -> int | None:
+            """Personelin mobil portal hesabı (varsa) — bildirim yalnızca ona gider."""
+            row = (
+                self.db.query(User.id)
+                .filter(
+                    User.crew_member_id == crew_id,
+                    User.role == "crew",
+                    User.is_active.is_(True),
+                )
+                .first()
+            )
+            return row[0] if row else None
+
         def _exists(title: str, entity_type: str, entity_id: int | None) -> bool:
             return (
                 self.db.query(Notification)
@@ -243,8 +256,14 @@ class NotificationService:
             else:
                 continue
             if not _exists(title, "document", doc.id):
-                self.create(title=title, message=message, channel="system",
-                            entity_type="document", entity_id=doc.id, link=f"/documents?doc={doc.id}")
+                # user_id=None olsaydı bu uyarı TÜM personele "genel bildirim"
+                # olarak görünür, başka personelin belge durumu sızardı.
+                self.create(
+                    title=title, message=message, channel="system",
+                    user_id=_portal_user_id(crew.id),
+                    entity_type="document", entity_id=doc.id,
+                    link=f"/documents?doc={doc.id}",
+                )
                 created += 1
 
         # Biten kontratlar (7 gün)
@@ -258,8 +277,11 @@ class NotificationService:
         for contract, crew in contracts:
             title = f"{crew.first_name} {crew.last_name} — kontrat {contract.end_date} bitiyor"
             if not _exists(title, "contract", contract.id):
-                self.create(title=title, message=contract.contract_number, channel="system",
-                            entity_type="contract", entity_id=contract.id)
+                self.create(
+                    title=title, message=contract.contract_number, channel="system",
+                    user_id=_portal_user_id(crew.id),
+                    entity_type="contract", entity_id=contract.id,
+                )
                 created += 1
 
         # Onay bekleyen belgeler (admin'e)

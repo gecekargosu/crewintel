@@ -13,7 +13,9 @@ from app.models.job import (
     WhatsAppMessage,
 )
 from app.models.message import Conversation, Message
+from app.models.note import Note
 from app.models.notification import Notification
+from app.models.payment import Payment
 from app.models.setting import AppSetting
 from app.models.ship import Ship
 from app.models.ship_position import ShipPosition
@@ -23,6 +25,6 @@ from app.models.user_device import UserDevice
 __all__ = [
     "AppSetting", "AuditLog", "Contract", "Conversation", "CrewMember", "Document",
     "DocumentMatch", "JobApplication", "JobImage", "JobPosting", "JobPublication",
-    "JobTemplate", "Message", "Notification", "Ship", "ShipCrewAssignment",
-    "ShipPosition", "User", "UserDevice", "WhatsAppMessage",
+    "JobTemplate", "Message", "Note", "Notification", "Payment", "Ship",
+    "ShipCrewAssignment", "ShipPosition", "User", "UserDevice", "WhatsAppMessage",
 ]

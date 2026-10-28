@@ -61,6 +61,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="documents"
+        options={{
+          title: t('nav.documents'),
+          headerShown: false,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 22, color }}>📄</Text>,
+        }}
+      />
+      <Tabs.Screen
         name="messages"
         options={{
           title: t('nav.messages'),

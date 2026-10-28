@@ -1,9 +1,9 @@
 """Phase 4B: notifications, user<->crew link, availability, document archive, ship positions."""
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import inspect
 
+from alembic import op
 
 revision = "20260818_0006"
 down_revision = "20260817_0005"

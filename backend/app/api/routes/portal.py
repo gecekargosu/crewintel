@@ -15,7 +15,8 @@ from app.models.crew_member import CrewMember
 from app.models.document import Document
 from app.models.user import User
 from app.services.audit import log_event
-from app.services.document_processing import extract_metadata, extract_text, store_file
+from app.services.document_processing import extract_metadata, extract_text
+from app.services.document_service import store_document_file, validate_upload
 
 router = APIRouter(prefix="/api/portal", tags=["Portal"])
 
@@ -214,17 +215,19 @@ async def upload_document(
     crew = _require_crew_user(current_user, db)
     settings = get_settings()
 
-    allowed = {".pdf": "application/pdf", ".txt": "text/plain"}
-    suffix = file.filename.lower().rsplit(".", 1)[-1] if "." in file.filename else ""
-    if f".{suffix}" not in allowed:
-        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Sadece PDF veya TXT yükleyebilirsiniz.")
+    if not file.filename:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dosya adı gerekli.")
     content = await file.read()
     if len(content) > settings.max_upload_size_mb * 1024 * 1024:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Dosya boyutu çok büyük.")
     if not content:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Boş dosya yüklenemez.")
 
-    path, stored_name, checksum = store_file(settings.storage_path, file.filename, content)
+    # Personel de yönetici ile aynı formatları yükleyebilir (PDF, DOCX, XLSX,
+    # resim…). Uzantı/içerik uyuşmazlığında uzantı düzeltilir.
+    filename = validate_upload(file.filename, content)
+
+    path, stored_name, checksum = store_document_file(settings.storage_path, filename, content)
 
     # Aynı belge (aynı içerik) ikinci kez yüklenirse DB'deki checksum unique
     # kısıtı IntegrityError üretip uç 500 dönüyordu. Burada anlaşılır bir
@@ -245,19 +248,22 @@ async def upload_document(
             ),
         )
 
-    text = extract_text(file.filename, content) or ""
-    metadata = extract_metadata(file.filename, text)
+    text = extract_text(filename, content) or ""
+    metadata = extract_metadata(filename, text)
     doc_type = metadata.get("document_type") or "other"
 
     document = Document(
         crew_member_id=crew.id,
-        original_filename=file.filename,
+        original_filename=filename,
         stored_filename=stored_name,
         storage_path=path,
-        mime_type=allowed[f".{suffix}"],
+        mime_type="application/pdf" if stored_name.lower().endswith(".pdf") else file.content_type,
         file_size=len(content),
         checksum=checksum,
         document_type=doc_type,
+        document_number=(
+            metadata.get("passport_number") or metadata.get("seaman_book_number")
+        ),
         match_status="pending_approval",
         match_confidence=0,
         extracted_text=text[:20000] or None,
@@ -266,7 +272,7 @@ async def upload_document(
     db.add(document)
     db.flush()
     log_event(db, "crew_document_uploaded", "document", document.id,
-              f"{crew.first_name} {crew.last_name} belge yükledi (onay bekliyor): {file.filename}",
+              f"{crew.first_name} {crew.last_name} belge yükledi (onay bekliyor): {filename}",
               user_email=current_user.email)
     db.commit()
     return {"id": document.id, "document_type": doc_type, "status": "pending_approval",
@@ -745,7 +751,41 @@ def portal_notifications(
     if unread_only:
         query = query.filter(Notification.read_at.is_(None))
     rows = query.order_by(Notification.created_at.desc()).limit(100).all()
-    return [_serialize_portal_notification(n) for n in rows]
+
+    # Eski kayıtlarda belge/kontrat uyarıları user_id olmadan (genel) üretilmişti.
+    # Bu kayıtlar başka personelin belge durumunu gösterdiği için portaldan
+    # çıkarılır; yalnızca kendi belge/kontratına ait olanlar gösterilir.
+    own_document_ids: set[int] = set()
+    own_contract_ids: set[int] = set()
+    if current_user.crew_member_id:
+        from app.models.contract import Contract
+        from app.models.document import Document
+
+        own_document_ids = {
+            row[0]
+            for row in db.query(Document.id).filter(
+                Document.crew_member_id == current_user.crew_member_id
+            )
+        }
+        own_contract_ids = {
+            row[0]
+            for row in db.query(Contract.id).filter(
+                Contract.crew_member_id == current_user.crew_member_id
+            )
+        }
+
+    def _visible(notification) -> bool:
+        if notification.user_id is not None:
+            return True
+        if notification.entity_type == "document":
+            return notification.entity_id is None or notification.entity_id in own_document_ids
+        if notification.entity_type == "contract":
+            return notification.entity_id is None or notification.entity_id in own_contract_ids
+        return True
+
+    return [
+        _serialize_portal_notification(n) for n in rows if _visible(n)
+    ]
 
 
 @router.post("/notifications/{notification_id}/read", status_code=status.HTTP_204_NO_CONTENT)

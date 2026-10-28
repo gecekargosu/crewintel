@@ -10,6 +10,7 @@ const ar: Translations = {
     applications: 'الطلبات',
     messages: 'الرسائل',
     profile: 'الملف الشخصي',
+    documents: 'المستندات',
   },
 
   auth: {
@@ -30,11 +31,16 @@ const ar: Translations = {
     hasAccount: 'لديك حساب بالفعل؟',
     loginLink: 'تسجيل الدخول',
     pendingApproval: 'في انتظار الموافقة',
-    pendingDescription: 'تم تسجيلك بنجاح.\n\nحسابك في انتظار موافقة المدير. ستتلقى إشعاراً بالبريد الإلكتروني عند الموافقة.',
+    pendingDescription: 'تم إتمام تسجيلك بنجاح.\n\nحسابك بانتظار موافقة المدير. بعد الموافقة يمكنك تسجيل الدخول ببريدك الإلكتروني وكلمة المرور.',
     pendingSteps: '1. انتظر موافقة المدير\n2. تحقق من بريدك الإلكتروني\n3. سجّل الدخول بعد الموافقة',
     backToLogin: 'العودة لتسجيل الدخول',
     logout: 'تسجيل الخروج',
     logoutConfirm: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+  
+    staffOnlyTitle: 'هذا التطبيق مخصص لأفراد الطاقم',
+    staffOnlyHint: 'يجب على حسابات المدير/الموارد البشرية استخدام لوحة سطح المكتب (CREWINTEL على الكمبيوتر). سجّل الدخول بحساب البحّار.',
+  
+    forgotHint: 'هل نسيت كلمة المرور؟ اطلب من مديرك إعادة تعيينها من لوحة الشركة.',
   },
 
   home: {
@@ -112,6 +118,9 @@ const ar: Translations = {
     typePlaceholder: 'اكتب رسالتك...',
     noMessages: 'لا توجد رسائل بعد. أرسل أول رسالة.',
     conversation: 'المحادثة',
+  
+    userFallback: 'مستخدم',
+    noMessage: 'لا توجد رسالة',
   },
 
   profile: {
@@ -142,6 +151,16 @@ const ar: Translations = {
     activeDuty: 'في الخدمة',
     logoutButton: 'تسجيل الخروج',
     language: 'اللغة',
+  
+    availableNow: 'متاح',
+    availableSoon: 'متاح قريباً',
+    jobPassive: 'غير متاح',
+  
+    contactTitle: 'بيانات التواصل',
+    contactUpdated: 'تم تحديث بيانات التواصل.',
+  
+    onLeave: 'في إجازة',
+    notAvailable: 'غير متاح',
   },
 
   common: {
@@ -191,6 +210,40 @@ const ar: Translations = {
     hoursAgo: 'منذ {hours} ساعات',
     minutesAgo: 'منذ {minutes} دقائق',
     justNow: 'الآن',
+  },
+  documentsTab: {
+    title: 'مستنداتي',
+    subtitle: 'ارفع المستندات وتابع تواريخ الانتهاء',
+    uploadTitle: 'رفع مستند جديد',
+    uploadHint: 'اختر ملف PDF أو Word أو Excel أو صورة. يُرسل المستند لموافقة المسؤول وتُقرأ التواريخ تلقائياً.',
+    uploadButton: 'اختيار ورفع',
+    uploadDone: 'تم رفع المستند',
+    uploadDoneHint: 'تم إرسال المستند لموافقة المسؤول.',
+    uploadError: 'تعذر رفع المستند.',
+    loadError: 'تعذر تحميل المستندات.',
+    empty: 'لم يتم رفع أي مستند بعد.',
+    issueDate: 'تاريخ الإصدار',
+    expiryDate: 'صالح حتى',
+    status: 'الحالة',
+  
+    statusExpired: 'منتهي الصلاحية',
+    statusUrgent: 'عاجل',
+    statusApproaching: 'قارب الانتهاء',
+    statusValid: 'ساري',
+    statusPendingApproval: 'بانتظار الموافقة',
+    statusPending: 'قيد المراجعة',
+    statusProcessing: 'قيد المعالجة',
+    statusNoDate: 'بدون تاريخ',
+    statusUnknown: 'غير معروف',
+    typePassport: 'جواز سفر',
+    typeSeamanBook: 'دفتر البحّار',
+    typeStcw: 'STCW',
+    typeGoc: 'GOC',
+    typeMedical: 'شهادة طبية',
+    typeContract: 'عقد',
+    typeCv: 'السيرة الذاتية',
+    typeOther: 'مستند آخر',
+    detailsTitle: 'بيانات المستند',
   },
 };
 

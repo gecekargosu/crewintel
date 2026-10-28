@@ -60,6 +60,9 @@ const tr = {
   },
   // Navigation
   nav: {
+    notes: 'Notlar',
+    payroll: 'Maaş',
+    ai: 'Yapay Zekâ',
     dashboard: 'Panel',
     crew: 'Personel',
     vessels: 'Gemiler',
@@ -255,6 +258,8 @@ const tr = {
   },
   // Documents
   documents: {
+    selectFolder: 'Klasör Seç',
+    unsupportedFormat: '{{count}} dosya reddedildi — desteklenmeyen format.',
     missingDocuments: 'Eksik Belgeler',
     title: 'Belgeler',
     subtitle: 'Yüklenen personel belgeleri',
@@ -663,7 +668,7 @@ const tr = {
     emailPerson: 'Bu personele e-posta gönder',
     reviewing: 'İnceleniyor...',
     noPendingReview: 'İnceleme bekleyen belge yok.',
-    dropHint: 'veya tıklayarak seçin — PDF, TXT',
+    dropHint: 'veya tıklayın / klasör seçin — PDF, Word, Excel, resim (OCR ile okunur)',
     phShipType: 'Örn: Bulk Carrier',
     phFlag: 'Örn: Panama',
     manualAssignment: 'Manuel Atama Yap',
@@ -710,6 +715,7 @@ const tr = {
     matchingDone: 'Harika İş Çıkardın!',
     noPendingLeft: 'Eşleşme bekleyen hiçbir belge kalmadı.',
     emailWillSend: '1 personele e-posta gönderilecek.',
+    emailWillSendMany: '{{count}} personele e-posta gönderilecek.',
     phNotificationMessage: 'Örn: Medical belgeniz yenilenmeli',
     goBack: 'Önceki sayfaya dön',
     portalErrorTitle: 'Portalınız açılamadı',
@@ -726,6 +732,51 @@ const tr = {
     queueProcessed: 'Kuyruk işlendi.',
   },
 
+  notesPage: {
+    title: 'Notlar',
+    subtitle: 'Operasyon notları — yalnızca kendi hesabınızda görünür.',
+    noteTitle: 'Not başlığı',
+    priority: 'Öncelik',
+    relatedCrew: 'İlgili personel',
+    deleteConfirm: 'Bu not silinsin mi?',
+    markDone: 'Tamamlandı',
+    reopen: 'Yeniden aç',
+    priorities: {
+      low: 'Düşük',
+      normal: 'Normal',
+      high: 'Yüksek',
+      urgent: 'Acil',
+    },
+  },
+  payroll: {
+    title: 'Maaş ve Ödemeler',
+    subtitle: 'Personel ödemelerini kaydedin; toplamlar para birimine göre hesaplanır.',
+    amount: 'Tutar',
+    currency: 'Para birimi',
+    type: 'Ödeme tipi',
+    paymentDate: 'Ödeme tarihi',
+    description: 'Açıklama',
+    addPayment: 'Ödeme Ekle',
+    deleteConfirm: 'Bu ödeme kaydı silinsin mi?',
+    types: {
+      salary: 'Maaş',
+      bonus: 'Prim',
+      advance: 'Avans',
+      other: 'Diğer',
+    },
+  },
+  aiPage: {
+    title: 'Yapay Zekâ',
+    subtitle: 'Belge metnini özetleyin veya tutarsızlıkları bulun.',
+    notConfigured: 'Yapay zekâ yapılandırılmadı',
+    notConfiguredHelp: 'Bu özellik isteğe bağlıdır. Anahtar eklenene kadar programın diğer tüm bölümleri normal çalışır.',
+    optionalNote: 'Anahtar yalnızca sunucuda (.env) tutulur; tarayıcıya gönderilmez.',
+    textLabel: 'Belge metni',
+    textPlaceholder: 'Analiz edilecek metni buraya yapıştırın…',
+    summarize: 'Özetle',
+    anomalies: 'Tutarsızlıkları bul',
+    summary: 'Özet',
+  },
 };
 
 export default tr;

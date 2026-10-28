@@ -5,6 +5,7 @@ Tüm eklemeler nullable/default'ludur — mevcut üretim verisi etkilenmez.
 """
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "20260818_0010"

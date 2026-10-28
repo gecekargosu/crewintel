@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -15,6 +14,8 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { jobsAPI } from '../../services/api';
 import { useI18n } from '../../context/I18nContext';
+import { formatDuration } from '../../utils/format';
+import { showAlert, showConfirm } from '../../utils/dialogs';
 
 export default function JobDetailScreen() {
   const router = useRouter();
@@ -42,28 +43,26 @@ export default function JobDetailScreen() {
     }
   };
 
-  const handleApply = async () => {
-    Alert.alert(
+  const submitApplication = async () => {
+    setApplying(true);
+    try {
+      await jobsAPI.apply(Number(id));
+      setApplied(true);
+      showAlert(t('common.success'), t('jobs.applied'));
+    } catch (error: any) {
+      showAlert(t('common.error'), error.message || t('errors.unknown'));
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const handleApply = () => {
+    showConfirm(
       t('jobs.confirmApply'),
       t('jobs.confirmApplyMessage'),
-      [
-        { text: 'İptal', style: 'cancel' },
-        {
-          text: 'Başvur',
-          onPress: async () => {
-            setApplying(true);
-            try {
-              await jobsAPI.apply(Number(id));
-              setApplied(true);
-              Alert.alert(t('common.success'), t('jobs.applied'));
-            } catch (error: any) {
-              Alert.alert(t('common.error'), error.message || t('errors.unknown'));
-            } finally {
-              setApplying(false);
-            }
-          },
-        },
-      ]
+      submitApplication,
+      t('jobs.apply'),
+      t('common.cancel'),
     );
   };
 
@@ -134,7 +133,7 @@ export default function JobDetailScreen() {
           {job.contract_duration && (
             <View style={styles.detailRow}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>{t('jobs.duration')}</Text>
-              <Text style={[styles.detailValue, { color: colors.text }]}>{job.contract_duration} ay</Text>
+              <Text style={[styles.detailValue, { color: colors.text }]}>{formatDuration(job.contract_duration, t('common.months'))}</Text>
             </View>
           )}
 

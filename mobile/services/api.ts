@@ -1,44 +1,77 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 // API kökü. Fiziksel cihaz/emülatör için EXPO_PUBLIC_API_URL ile LAN adresi
 // verilebilir (ör. http://192.168.1.20:8000); varsayılan yerel geliştirme.
 const API_BASE = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
+/**
+ * anahtar/değer deposu.
+ *
+ * `expo-secure-store` yalnızca iOS/Android'de çalışır; web'de
+ * "setValueWithKeyAsync is not a function" hatası verip girişi tamamen
+ * engelliyordu. Web'de AsyncStorage (localStorage) kullanılır; telefonlarda
+ * token yine şifreli SecureStore'da tutulur.
+ */
+const isWeb = Platform.OS === 'web';
+
+const storage = {
+  get: (key: string) =>
+    isWeb ? AsyncStorage.getItem(key) : SecureStore.getItemAsync(key),
+  set: async (key: string, value: string) => {
+    if (isWeb) {
+      await AsyncStorage.setItem(key, value);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
+  },
+  remove: async (key: string) => {
+    if (isWeb) {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await SecureStore.deleteItemAsync(key);
+    }
+  },
+};
+
 // Token management
 export async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync('auth_token');
+  return storage.get('auth_token');
 }
 
 export async function setToken(token: string): Promise<void> {
-  await SecureStore.setItemAsync('auth_token', token);
+  await storage.set('auth_token', token);
 }
 
 export async function removeToken(): Promise<void> {
-  await SecureStore.deleteItemAsync('auth_token');
+  await storage.remove('auth_token');
 }
 
 export async function getUserRole(): Promise<string | null> {
-  return SecureStore.getItemAsync('user_role');
+  return storage.get('user_role');
 }
 
 export async function setUserRole(role: string): Promise<void> {
-  await SecureStore.setItemAsync('user_role', role);
+  await storage.set('user_role', role);
 }
 
 export async function getUserEmail(): Promise<string | null> {
-  return SecureStore.getItemAsync('user_email');
+  return storage.get('user_email');
 }
 
 export async function setUserEmail(email: string): Promise<void> {
-  await SecureStore.setItemAsync('user_email', email);
+  await storage.set('user_email', email);
 }
 
 export async function clearAuth(): Promise<void> {
-  await SecureStore.deleteItemAsync('auth_token');
-  await SecureStore.deleteItemAsync('user_role');
-  await SecureStore.deleteItemAsync('user_email');
-  await SecureStore.deleteItemAsync('user_name');
-  await SecureStore.deleteItemAsync('user_id');
+  await Promise.all([
+    storage.remove('auth_token'),
+    storage.remove('user_role'),
+    storage.remove('user_email'),
+    storage.remove('user_name'),
+    storage.remove('user_id'),
+  ]);
 }
 
 function buildQuery(params?: Record<string, string | number | boolean | undefined>): string {
@@ -94,10 +127,12 @@ async function apiCall(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const detail = errorData.detail;
+    // 422 doğrulama hatalarında hangi alanın sorunlu olduğunu da göster:
+    // "Field required" tek başına kullanıcıya hiçbir şey anlatmıyordu.
     const message = typeof detail === 'string'
       ? detail
       : Array.isArray(detail) && detail[0]?.msg
-        ? detail[0].msg
+        ? `${(detail[0].loc || []).slice(-1)[0] ?? ''}: ${detail[0].msg}`.replace(/^:\s*/, '')
         : `İşlem başarısız (${response.status})`;
     throw new Error(message);
   }

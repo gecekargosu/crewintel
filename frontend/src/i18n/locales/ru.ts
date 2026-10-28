@@ -60,6 +60,9 @@ const ru = {
   },
   // Navigation
   nav: {
+    notes: 'Заметки',
+    payroll: 'Зарплата',
+    ai: 'ИИ',
     dashboard: 'Панель',
     crew: 'Экипаж',
     vessels: 'Суда',
@@ -255,6 +258,8 @@ const ru = {
   },
   // Documents
   documents: {
+    selectFolder: 'Выбрать папку',
+    unsupportedFormat: '{{count}} файл(ов) отклонено — неподдерживаемый формат.',
     missingDocuments: 'Недостающие документы',
     title: 'Документы',
     subtitle: 'Загруженные документы экипажа',
@@ -663,7 +668,7 @@ const ru = {
     emailPerson: 'Отправить письмо этому сотруднику',
     reviewing: 'Проверка...',
     noPendingReview: 'Нет документов на проверку.',
-    dropHint: 'или нажмите для выбора — PDF, TXT',
+    dropHint: 'или нажмите / выберите папку — PDF, Word, Excel, изображения (OCR)',
     phShipType: 'напр. Bulk Carrier',
     phFlag: 'напр. Panama',
     manualAssignment: 'Создать назначение вручную',
@@ -710,6 +715,7 @@ const ru = {
     matchingDone: 'Отличная работа!',
     noPendingLeft: 'Не осталось документов, ожидающих сопоставления.',
     emailWillSend: 'Письмо будет отправлено 1 сотруднику.',
+    emailWillSendMany: 'Письмо будет отправлено {{count}} сотрудникам.',
     phNotificationMessage: 'напр. Ваш медицинский сертификат нужно продлить',
     goBack: 'Вернуться на предыдущую страницу',
     portalErrorTitle: 'Не удалось открыть портал',
@@ -726,6 +732,51 @@ const ru = {
     queueProcessed: 'Очередь обработана.',
   },
 
+  notesPage: {
+    title: 'Заметки',
+    subtitle: 'Рабочие заметки — видны только в вашей учётной записи.',
+    noteTitle: 'Заголовок заметки',
+    priority: 'Приоритет',
+    relatedCrew: 'Связанный сотрудник',
+    deleteConfirm: 'Удалить эту заметку?',
+    markDone: 'Выполнено',
+    reopen: 'Открыть снова',
+    priorities: {
+      low: 'Низкий',
+      normal: 'Обычный',
+      high: 'Высокий',
+      urgent: 'Срочный',
+    },
+  },
+  payroll: {
+    title: 'Зарплата и выплаты',
+    subtitle: 'Учёт выплат персоналу; итоги группируются по валюте.',
+    amount: 'Сумма',
+    currency: 'Валюта',
+    type: 'Тип выплаты',
+    paymentDate: 'Дата выплаты',
+    description: 'Описание',
+    addPayment: 'Добавить выплату',
+    deleteConfirm: 'Удалить эту выплату?',
+    types: {
+      salary: 'Зарплата',
+      bonus: 'Премия',
+      advance: 'Аванс',
+      other: 'Другое',
+    },
+  },
+  aiPage: {
+    title: 'Искусственный интеллект',
+    subtitle: 'Краткое содержание текста документа и поиск несоответствий.',
+    notConfigured: 'ИИ не настроен',
+    notConfiguredHelp: 'Функция необязательна. Без ключа все остальные разделы программы работают как обычно.',
+    optionalNote: 'Ключ хранится только на сервере (.env) и не передаётся в браузер.',
+    textLabel: 'Текст документа',
+    textPlaceholder: 'Вставьте текст для анализа…',
+    summarize: 'Кратко изложить',
+    anomalies: 'Найти несоответствия',
+    summary: 'Сводка',
+  },
 };
 
 export default ru;

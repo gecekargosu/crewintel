@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useI18n } from '../../context/I18nContext';
+import { formatDuration } from '../../utils/format';
 import Badge from '../ui/Badge';
 
 interface Job {
@@ -12,7 +13,7 @@ interface Job {
   salary_min?: number;
   salary_max?: number;
   salary_currency?: string;
-  contract_duration?: number;
+  contract_duration?: number | string;
   match_score?: number;
   status?: string;
 }
@@ -89,7 +90,7 @@ export default function RecommendedJobCard({ jobs, onViewAll, onJobPress }: Reco
 
             {job.contract_duration && (
               <Text style={[styles.jobDuration, { color: colors.textSecondary }]}>
-                📅 {job.contract_duration} {t('common.months')}
+                📅 {formatDuration(job.contract_duration, t('common.months'))}
               </Text>
             )}
           </TouchableOpacity>

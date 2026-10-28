@@ -31,8 +31,16 @@ export default function RegisterScreen() {
   const [success, setSuccess] = useState(false);
 
   const handleRegister = async () => {
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !phone || !password) {
       setError(t('validation.required'));
+      return;
+    }
+
+    // Backend telefonu zorunlu tutuyor (min 7 karakter). Formda istege bagli
+    // gorunuyordu; bos gonderim "Field required" gibi belirsiz bir 422
+    // hatasiyla sonuclaniyordu.
+    if (phone.replace(/\D/g, '').length < 7) {
+      setError(t('validation.invalidPhone'));
       return;
     }
 
@@ -55,7 +63,7 @@ export default function RegisterScreen() {
         password,
         first_name: firstName,
         last_name: lastName,
-        phone: phone || undefined,
+        phone,
       });
       setSuccess(true);
     } catch (err: any) {
@@ -148,7 +156,7 @@ export default function RegisterScreen() {
           />
 
           <Input
-            label={t('auth.phone')}
+            label={`${t('auth.phone')} *`}
             value={phone}
             onChangeText={setPhone}
             placeholder="+90 5XX XXX XXXX"

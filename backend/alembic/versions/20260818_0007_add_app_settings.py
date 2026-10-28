@@ -1,6 +1,7 @@
 """0007 — app_settings tablosu (UI'dan düzenlenebilir SMTP / WhatsApp hedef ayarları)."""
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "20260818_0007"

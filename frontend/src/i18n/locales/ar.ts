@@ -60,6 +60,9 @@ const ar = {
   },
   // Navigation
   nav: {
+    notes: 'الملاحظات',
+    payroll: 'الرواتب',
+    ai: 'الذكاء الاصطناعي',
     dashboard: 'لوحة التحكم',
     crew: 'طاقم العمل',
     vessels: 'السفن',
@@ -255,6 +258,8 @@ const ar = {
   },
   // Documents
   documents: {
+    selectFolder: 'اختيار مجلد',
+    unsupportedFormat: 'تم رفض {{count}} ملف — صيغة غير مدعومة.',
     missingDocuments: 'المستندات الناقصة',
     title: 'المستندات',
     subtitle: 'مستندات الطاقم المرفوعة',
@@ -663,7 +668,7 @@ const ar = {
     emailPerson: 'إرسال بريد إلكتروني لهذا الشخص',
     reviewing: 'جارٍ المراجعة...',
     noPendingReview: 'لا توجد مستندات بانتظار المراجعة.',
-    dropHint: 'أو انقر للاختيار — PDF, TXT',
+    dropHint: 'أو انقر / اختر مجلداً — PDF وWord وExcel والصور (تُقرأ بـ OCR)',
     phShipType: 'مثال: Bulk Carrier',
     phFlag: 'مثال: Panama',
     manualAssignment: 'إنشاء تعيين يدوي',
@@ -710,6 +715,7 @@ const ar = {
     matchingDone: 'عمل رائع!',
     noPendingLeft: 'لم يتبق أي مستند بانتظار المطابقة.',
     emailWillSend: 'سيتم إرسال بريد إلكتروني إلى فرد واحد.',
+    emailWillSendMany: 'سيتم إرسال بريد إلكتروني إلى {{count}} من أفراد الطاقم.',
     phNotificationMessage: 'مثال: يجب تجديد شهادتك الطبية',
     goBack: 'العودة إلى الصفحة السابقة',
     portalErrorTitle: 'تعذر فتح بوابتك',
@@ -726,6 +732,51 @@ const ar = {
     queueProcessed: 'تمت معالجة القائمة.',
   },
 
+  notesPage: {
+    title: 'الملاحظات',
+    subtitle: 'ملاحظات تشغيلية — تظهر في حسابك فقط.',
+    noteTitle: 'عنوان الملاحظة',
+    priority: 'الأولوية',
+    relatedCrew: 'الموظف المرتبط',
+    deleteConfirm: 'هل تريد حذف هذه الملاحظة؟',
+    markDone: 'تم',
+    reopen: 'إعادة الفتح',
+    priorities: {
+      low: 'منخفضة',
+      normal: 'عادية',
+      high: 'مرتفعة',
+      urgent: 'عاجلة',
+    },
+  },
+  payroll: {
+    title: 'الرواتب والمدفوعات',
+    subtitle: 'تسجيل مدفوعات الموظفين؛ تُجمع الإجماليات حسب العملة.',
+    amount: 'المبلغ',
+    currency: 'العملة',
+    type: 'نوع الدفع',
+    paymentDate: 'تاريخ الدفع',
+    description: 'الوصف',
+    addPayment: 'إضافة دفعة',
+    deleteConfirm: 'هل تريد حذف هذه الدفعة؟',
+    types: {
+      salary: 'راتب',
+      bonus: 'مكافأة',
+      advance: 'سلفة',
+      other: 'أخرى',
+    },
+  },
+  aiPage: {
+    title: 'الذكاء الاصطناعي',
+    subtitle: 'تلخيص نص المستند أو كشف التناقضات.',
+    notConfigured: 'لم يتم إعداد الذكاء الاصطناعي',
+    notConfiguredHelp: 'هذه الميزة اختيارية. جميع أجزاء البرنامج الأخرى تعمل بشكل طبيعي بدون مفتاح.',
+    optionalNote: 'يبقى المفتاح على الخادم (.env) ولا يُرسل إلى المتصفح.',
+    textLabel: 'نص المستند',
+    textPlaceholder: 'الصق النص المراد تحليله هنا…',
+    summarize: 'تلخيص',
+    anomalies: 'اكتشاف التناقضات',
+    summary: 'الملخص',
+  },
 };
 
 export default ar;

@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import AiPanel from "./components/AiPanel";
 import LanguageSelector from "./components/LanguageSelector";
+import NotesPage from "./components/NotesPage";
+import PayrollPage from "./components/PayrollPage";
 import PortalPage from "./components/PortalPage";
 import { API_URL } from "./config";
 import { apiErrorMessage } from "./utils/apiError";
@@ -35,10 +38,22 @@ import {
   Phone,
   Send,
   Clock,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Wallet,
+  StickyNote,
+  Sparkles
 } from "lucide-react";
 import "./App.css";
 
+
+// Belge yüklemede kabul edilen formatlar (backend ALLOWED_UPLOAD_EXTENSIONS ile aynı).
+// PDF/TXT dışındaki dosyalar sunucuda PDF'e çevrilir; resimler OCR ile okunur.
+const ALLOWED_UPLOAD_EXTENSIONS = [
+  ".pdf", ".txt", ".csv",
+  ".doc", ".docx", ".odt", ".rtf",
+  ".xls", ".xlsx", ".ods",
+  ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".bmp", ".tif", ".tiff",
+];
 
 // ==========================================
 // BOŞ FORM ŞABLONLARI
@@ -232,6 +247,7 @@ function App() {
   const [candidateData, setCandidateData] = useState(null); // seçili belgenin adayları
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
 
   // Phase 4B — Operasyon merkezi / bildirim / uygunluk / kadro
   const [opsSummary, setOpsSummary] = useState(null);
@@ -402,13 +418,16 @@ function App() {
     };
   }, []);
 
+  // Oturum açıldığında (veya localStorage'dan geri yüklendiğinde) verileri
+  // yükle. Giriş akışı setAuth ile bu etkiyi tetiklediği için handleLogin
+  // içinde ayrıca loadData() çağrılmaz — aynı veri iki kez çekilmez.
   useEffect(() => {
     if (auth) {
       loadData();
       loadOpsSummary();
       loadNotifications();
     }
-  }, []);
+  }, [auth]);
 
   async function loadData() {
     setCrewLoading(true);
@@ -872,10 +891,9 @@ function App() {
     setStagedFiles((prev) => {
       const existingKeys = new Set(prev.map((file) => `${file.name}_${file.size}`));
       // Sadece PDF ve TXT dosyalarını kabul et (drag-and-drop'ta da).
-      const ALLOWED_EXT = [".pdf", ".txt"];
       const filtered = newFiles.filter((file) => {
         const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-        return ALLOWED_EXT.includes(ext);
+        return ALLOWED_UPLOAD_EXTENSIONS.includes(ext);
       });
       const rejected = newFiles.length - filtered.length;
       if (rejected > 0) {
@@ -883,7 +901,7 @@ function App() {
         // Geçersiz dosyalar hakkında bilgilendir.
         setLastBatchSummary({
           total: 0, matched: 0, pending: 0, duplicate: 0, error: rejected,
-          detail: `${rejected} file(s) rejected — only PDF and TXT files are supported.`,
+          detail: t('documents.unsupportedFormat', { count: rejected }),
         });
       }
       const deduped = filtered.filter((file) => !existingKeys.has(`${file.name}_${file.size}`));
@@ -916,10 +934,63 @@ function App() {
     setDragActive(false);
   }
 
-  function handleDrop(event) {
+  /** Bir dosya/klasör girdisini (webkit entry) özyinelemeli olarak dosyalara açar.
+   *  Klasör sürükle-bırak desteği için gerekli: `dataTransfer.files` klasör
+   *  bırakıldığında boş gelirdi. */
+  function readEntry(entry) {
+    return new Promise((resolve) => {
+      if (!entry) return resolve([]);
+
+      if (entry.isFile) {
+        entry.file((file) => resolve([file]), () => resolve([]));
+        return;
+      }
+
+      if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const collected = [];
+        const readBatch = () => {
+          reader.readEntries(async (entries) => {
+            if (!entries.length) {
+              const nested = await Promise.all(collected.map((child) => readEntry(child)));
+              resolve(nested.flat());
+              return;
+            }
+            collected.push(...entries);
+            readBatch();
+          }, () => resolve([]));
+        };
+        readBatch();
+        return;
+      }
+
+      resolve([]);
+    });
+  }
+
+  async function handleDrop(event) {
     event.preventDefault();
     setDragActive(false);
+
+    const entries = Array.from(event.dataTransfer.items || [])
+      .map((item) => (item.webkitGetAsEntry ? item.webkitGetAsEntry() : null))
+      .filter(Boolean);
+
+    if (entries.length) {
+      const nested = await Promise.all(entries.map((entry) => readEntry(entry)));
+      const files = nested.flat();
+      if (files.length) {
+        addStagedFiles(files);
+        return;
+      }
+    }
+
     addStagedFiles(Array.from(event.dataTransfer.files));
+  }
+
+  function handleFolderInputChange(event) {
+    addStagedFiles(Array.from(event.target.files));
+    event.target.value = "";
   }
 
   function fileKey(file) {
@@ -1091,7 +1162,6 @@ function App() {
       localStorage.setItem("crewintel_auth", JSON.stringify(authData));
       setAuth(authData);
       setLoginForm({ email: "", password: "" });
-      loadData();
     } catch (err) {
       const detail = err.response?.data?.detail;
       // 422: alan doğrulama hatası (ör. geçersiz e-posta biçimi). Kullanıcıya
@@ -1919,6 +1989,11 @@ function App() {
             <div className="upload-stat error">
               <strong>{lastBatchSummary.error}</strong><span>{t('common.error')}</span>
             </div>
+            {lastBatchSummary.detail && (
+              <p style={{ width: "100%", margin: "8px 0 0 0", color: "#b91c1c", fontSize: "13px" }}>
+                {lastBatchSummary.detail}
+              </p>
+            )}
           </div>
         )}
         
@@ -1937,10 +2012,30 @@ function App() {
               ref={fileInputRef} 
               type="file" 
               multiple 
-              accept=".pdf,.txt" 
+              accept={ALLOWED_UPLOAD_EXTENSIONS.join(",")}
               style={{ display: "none" }} 
               onChange={handleFileInputChange} 
             />
+            <input
+              ref={folderInputRef}
+              type="file"
+              multiple
+              webkitdirectory=""
+              directory=""
+              style={{ display: "none" }}
+              onChange={handleFolderInputChange}
+            />
+            <button
+              type="button"
+              className="secondary-button"
+              style={{ marginTop: "12px" }}
+              onClick={(event) => {
+                event.stopPropagation();
+                folderInputRef.current?.click();
+              }}
+            >
+              📁 {t('documents.selectFolder')}
+            </button>
           </div>
         ) : (
           <div className="upload-zone" style={{ opacity: 0.6, cursor: "not-allowed" }}>
@@ -2675,7 +2770,7 @@ function App() {
   async function processWhatsappQueue() {
     setJobMsg(null);
     try {
-      const res = await axios.post(`${API_URL}/api/whatsapp/process`);
+      await axios.post(`${API_URL}/api/whatsapp/process`);
       setJobMsg({ type: "success", text: t("ui.queueProcessed") });
       await loadWhatsappQueue();
     } catch (err) { setJobMsg({ type: "error", text: apiErrorMessage(err, t, 'errors.generic') }); }
@@ -3795,6 +3890,9 @@ function App() {
     if (activePage === "documents") return renderDocumentsList();
     if (activePage === "eligibility") return renderEligibility();
     if (activePage === "jobs") return renderJobs();
+    if (activePage === "payroll") return <PayrollPage crewList={crew} canWrite={canWrite} />;
+    if (activePage === "notes") return <NotesPage crewList={crew} />;
+    if (activePage === "ai") return <AiPanel />;
     if (activePage === "communication") return renderCommunication();
     if (activePage === "crew-detail") return renderCrewDetail();
     if (activePage === "ship-detail") return renderShipDetail();
@@ -4000,6 +4098,9 @@ function App() {
     ["documents", Folder, t('nav.documents')],
     ["eligibility", Target, t('crew.eligibility')],
     ["jobs", Briefcase, t('nav.jobs')],
+    ["payroll", Wallet, t('nav.payroll')],
+    ["notes", StickyNote, t('nav.notes')],
+    ["ai", Sparkles, t('nav.ai')],
     ["communication", MessageCircle, t('messages.title')],
     ["settings", Settings, t('nav.settings')]
     ];
@@ -4763,8 +4864,8 @@ function App() {
             </h2>
             <p style={{ color: "#64748b", marginBottom: "18px", fontSize: "14px" }}>
               {emailModal.crewIds.length === 1
-                ? "{t('ui.emailWillSend')}"
-                : `${emailModal.crewIds.length} personele e-posta gönderilecek.`}
+                ? t('ui.emailWillSend')
+                : t('ui.emailWillSendMany', { count: emailModal.crewIds.length })}
             </p>
             {emailMsg && (
               <p style={{ margin: "0 0 12px 0", padding: "10px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", background: emailMsg.type === "success" ? "#f0fdf4" : "#fef2f2", color: emailMsg.type === "success" ? "#15803d" : "#b91c1c" }}>{emailMsg.text}</p>

@@ -30,9 +30,26 @@ from app.services.match_engine import MatchEngine
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
 
 
+# Arşiv PDF'e normalize edildiği için çoğu dosya .pdf'tir; yine de eski
+# kayıtlar (dönüştürme öncesi yüklenenler) için diğer tipler korunur.
 SAFE_MEDIA_TYPES = {
     ".pdf": "application/pdf",
     ".txt": "text/plain; charset=utf-8",
+    ".csv": "text/csv; charset=utf-8",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".jfif": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".bmp": "image/bmp",
+    ".tif": "image/tiff",
+    ".tiff": "image/tiff",
+    ".odt": "application/vnd.oasis.opendocument.text",
+    ".ods": "application/vnd.oasis.opendocument.spreadsheet",
 }
 
 

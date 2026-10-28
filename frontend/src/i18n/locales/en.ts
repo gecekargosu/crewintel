@@ -60,6 +60,9 @@ const en = {
   },
   // Navigation
   nav: {
+    notes: 'Notes',
+    payroll: 'Payroll',
+    ai: 'AI',
     dashboard: 'Dashboard',
     crew: 'Crew',
     vessels: 'Vessels',
@@ -255,6 +258,8 @@ const en = {
   },
   // Documents
   documents: {
+    selectFolder: 'Select folder',
+    unsupportedFormat: '{{count}} file(s) rejected — unsupported format.',
     missingDocuments: 'Missing Documents',
     title: 'Documents',
     subtitle: 'Uploaded crew documents',
@@ -663,7 +668,7 @@ const en = {
     emailPerson: 'Send e-mail to this person',
     reviewing: 'Reviewing...',
     noPendingReview: 'No documents awaiting review.',
-    dropHint: 'or click to select — PDF, TXT',
+    dropHint: 'or click / choose a folder — PDF, Word, Excel, images (read with OCR)',
     phShipType: 'e.g. Bulk Carrier',
     phFlag: 'e.g. Panama',
     manualAssignment: 'Create manual assignment',
@@ -710,6 +715,7 @@ const en = {
     matchingDone: 'Great job!',
     noPendingLeft: 'No documents are waiting to be matched.',
     emailWillSend: 'An e-mail will be sent to 1 crew member.',
+    emailWillSendMany: 'An e-mail will be sent to {{count}} crew members.',
     phNotificationMessage: 'e.g. Your medical certificate must be renewed',
     goBack: 'Back to previous page',
     portalErrorTitle: 'Your portal could not be opened',
@@ -726,6 +732,51 @@ const en = {
     queueProcessed: 'Queue processed.',
   },
 
+  notesPage: {
+    title: 'Notes',
+    subtitle: 'Operational notes — visible only to your own account.',
+    noteTitle: 'Note title',
+    priority: 'Priority',
+    relatedCrew: 'Related crew member',
+    deleteConfirm: 'Delete this note?',
+    markDone: 'Mark done',
+    reopen: 'Reopen',
+    priorities: {
+      low: 'Low',
+      normal: 'Normal',
+      high: 'High',
+      urgent: 'Urgent',
+    },
+  },
+  payroll: {
+    title: 'Payroll and payments',
+    subtitle: 'Record crew payments; totals are grouped by currency.',
+    amount: 'Amount',
+    currency: 'Currency',
+    type: 'Payment type',
+    paymentDate: 'Payment date',
+    description: 'Description',
+    addPayment: 'Add payment',
+    deleteConfirm: 'Delete this payment record?',
+    types: {
+      salary: 'Salary',
+      bonus: 'Bonus',
+      advance: 'Advance',
+      other: 'Other',
+    },
+  },
+  aiPage: {
+    title: 'Artificial intelligence',
+    subtitle: 'Summarise document text or detect inconsistencies.',
+    notConfigured: 'AI is not configured',
+    notConfiguredHelp: 'This feature is optional. Every other part of the program keeps working until a key is added.',
+    optionalNote: 'The key stays on the server (.env) and is never sent to the browser.',
+    textLabel: 'Document text',
+    textPlaceholder: 'Paste the text to analyse here…',
+    summarize: 'Summarise',
+    anomalies: 'Find inconsistencies',
+    summary: 'Summary',
+  },
 };
 
 export default en;

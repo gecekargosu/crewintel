@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.routes.ai import router as ai_router
 from app.api.routes.assignments import router as assignment_router
 from app.api.routes.audit_logs import router as audit_log_router
 from app.api.routes.auth import router as auth_router
@@ -21,8 +22,10 @@ from app.api.routes.jobs import (
     whatsapp_router,
 )
 from app.api.routes.messages import router as messages_router
+from app.api.routes.notes import router as notes_router
 from app.api.routes.notifications import router as notifications_router
 from app.api.routes.portal import router as portal_router
+from app.api.routes.salary import router as salary_router
 from app.api.routes.settings import router as settings_router
 from app.api.routes.ships import router as ship_router
 from app.core.config import get_settings
@@ -40,7 +43,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    # PATCH eksikti: /api/portal/job-seeking, /api/messages/{id}/read gibi
+    # uçlar tarayıcıdan çağrıldığında preflight 400 dönüyordu.
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -62,6 +67,9 @@ app.include_router(jobs_router)
 app.include_router(templates_router)
 app.include_router(whatsapp_router)
 app.include_router(webhook_router)
+app.include_router(notes_router)
+app.include_router(salary_router)
+app.include_router(ai_router)
 
 
 @app.get("/")

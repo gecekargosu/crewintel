@@ -31,6 +31,7 @@ export interface Translations {
     home: string;
     jobs: string;
     applications: string;
+    documents: string;
     messages: string;
     profile: string;
   };
@@ -59,6 +60,11 @@ export interface Translations {
     backToLogin: string;
     logout: string;
     logoutConfirm: string;
+
+    staffOnlyTitle: string;
+    staffOnlyHint: string;
+
+    forgotHint: string;
   };
 
   // Home
@@ -140,6 +146,9 @@ export interface Translations {
     typePlaceholder: string;
     noMessages: string;
     conversation: string;
+
+    userFallback: string;
+    noMessage: string;
   };
 
   // Profile
@@ -171,6 +180,16 @@ export interface Translations {
     activeDuty: string;
     logoutButton: string;
     language: string;
+
+    availableNow: string;
+    availableSoon: string;
+    jobPassive: string;
+
+    contactTitle: string;
+    contactUpdated: string;
+
+    onLeave: string;
+    notAvailable: string;
   };
 
   // Common
@@ -224,5 +243,41 @@ export interface Translations {
     hoursAgo: string;
     minutesAgo: string;
     justNow: string;
+  };
+
+  // Crew documents tab
+  documentsTab: {
+    title: string;
+    subtitle: string;
+    uploadTitle: string;
+    uploadHint: string;
+    uploadButton: string;
+    uploadDone: string;
+    uploadDoneHint: string;
+    uploadError: string;
+    loadError: string;
+    empty: string;
+    issueDate: string;
+    expiryDate: string;
+    status: string;
+
+    statusExpired: string;
+    statusUrgent: string;
+    statusApproaching: string;
+    statusValid: string;
+    statusPendingApproval: string;
+    statusPending: string;
+    statusProcessing: string;
+    statusNoDate: string;
+    statusUnknown: string;
+    typePassport: string;
+    typeSeamanBook: string;
+    typeStcw: string;
+    typeGoc: string;
+    typeMedical: string;
+    typeContract: string;
+    typeCv: string;
+    typeOther: string;
+    detailsTitle: string;
   };
 }

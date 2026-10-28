@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useI18n } from '../../context/I18nContext';
+import { availabilityBadge } from '../../utils/availability';
 import Badge from '../ui/Badge';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -75,17 +76,8 @@ export default function HeroBanner({
     };
   }, []);
 
-  const getAvailabilityLabel = () => {
-    switch (availabilityStatus) {
-      case 'AVAILABLE_NOW': return { label: t('profile.activeDuty'), variant: 'success' as const };
-      case 'AVAILABLE_SOON': return { label: 'Yakında Müsait', variant: 'warning' as const };
-      case 'CURRENTLY_EMPLOYED': return { label: t('profile.activeDuty'), variant: 'info' as const };
-      case 'LOOKING': return { label: t('profile.jobSeeking'), variant: 'success' as const };
-      default: return { label: t('profile.notDefined'), variant: 'neutral' as const };
-    }
-  };
+  const availability = availabilityBadge(t, availabilityStatus);
 
-  const availability = getAvailabilityLabel();
 
   return (
     <View style={styles.container}>

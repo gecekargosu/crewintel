@@ -1,9 +1,9 @@
 """Create the initial crew members table without replacing an existing table."""
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import inspect
 
+from alembic import op
 
 revision = "20260809_0001"
 down_revision = None

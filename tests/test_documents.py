@@ -16,6 +16,30 @@ def test_document_upload_matches_strong_identifier_and_creates_audit_log(client)
     assert document["crew_member_id"] == crew["id"]
     assert document["match_status"] == "matched"
     assert document["document_type"] == "passport"
+    # Okunan pasaport numarası belge kaydına da yazılmalı (liste/detayda görünür).
+    assert document["document_number"] == "U1234567"
+
+
+def test_match_confidence_never_exceeds_100(client):
+    # Pasaport + isim + doğum tarihi aynı anda eşleşince ham skor 100'ü aşıyor;
+    # arayüzde "%215" gibi görünmemesi için 0-100 aralığına sıkıştırılmalı.
+    crew = create_crew(client, date_of_birth="1980-04-12")
+    content = (
+        b"STCW CERTIFICATE OF PROFICIENCY\n"
+        b"Name: Ahmet Yilmaz\n"
+        b"Passport Number: U1234567\n"
+        b"Date of Birth: 12.04.1980\n"
+        b"Date of Issue: 15.02.2024\n"
+        b"Valid Until: 14.02.2029\n"
+    )
+    response = client.post(
+        "/api/documents/upload",
+        files=[("files", ("stcw_ahmet_yilmaz.txt", content, "text/plain"))],
+    )
+    assert response.status_code == 201
+    document = response.json()[0]
+    assert document["crew_member_id"] == crew["id"]
+    assert 0 <= document["match_confidence"] <= 100
 
 
 from pathlib import Path
@@ -100,7 +124,10 @@ def test_batch_upload_with_empty_second_file_cleans_up_disk(client):
 # ── P3: İndirme medya tipi uzantıdan türetilmeli (client mime'ına güvenilmemeli) ──
 
 def test_download_serves_extension_based_media_type(client):
-    # Client yanlış mime gönderse bile servis uzantıdan güvenli tip kullanmalı
+    # Client yanlış mime gönderse bile servis saklanan dosyanın uzantısından
+    # güvenli tip türetmeli. PDF dışı belgeler arşive PDF olarak yazıldığı için
+    # (store_document_file) dönen tip application/pdf olur ve içerik %PDF ile
+    # başlar — asla client'ın gönderdiği text/html servis edilmez.
     r = client.post(
         "/api/documents/upload",
         files=[("files", ("mime_test.txt", b"PASSPORT\nName: Mime Test", "text/html"))],
@@ -110,7 +137,8 @@ def test_download_serves_extension_based_media_type(client):
 
     dl = client.get(f"/api/documents/{doc_id}/file")
     assert dl.status_code == 200
-    assert dl.headers["content-type"].startswith("text/plain")
+    assert dl.headers["content-type"].startswith("application/pdf")
+    assert dl.content.startswith(b"%PDF")
 
 
 # ── P2: Güçlü tanımlayıcı (pasaport) isimden üstün olmalı ────────────────────

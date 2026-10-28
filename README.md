@@ -46,14 +46,19 @@ docker compose exec -T backend python -m app.db.demo   # isteğe bağlı örnek 
   sağlık raporları, deniz hizmeti, dil ve iletişim bilgileri.
 - **Gemiler & atamalar**: gemi kadrosu, pozisyon, tarih aralığı, çakışma kontrolü.
 - **Kontratlar**: başlangıç/bitiş, süresi yaklaşanlar için uyarı.
-- **Belge yönetimi**: PDF / TXT yükleme (en fazla 25 MB), PDF'ten metin çıkarma,
-  otomatik belge türü tahmini, arşivleme ve son kullanma tarihi takibi.
+- **Belge yönetimi**: PDF, Word (DOCX), Excel (XLSX), TXT ve resim (JPG/PNG)
+  yükleme (en fazla 25 MB). Metin çıkarma + OCR (Türkçe/Rusça/Arapça/İngilizce),
+  otomatik belge türü tahmini, pasaport MRZ okuma (doğum/bitiş tarihi, uyruk,
+  belge numarası — belgenin dili ne olursa olsun), arşivleme ve süre takibi.
 - **Eşleştirme motoru**: kimlik numarası + isim + dosya adı + metin sinyalleri
   ile belgeyi personele bağlar; düşük güvenli eşleşmeler onay bekler.
 - **İş ilanları & portal**: ilan aç, başvuru topla, personel kendi belgelerini
   ve kontratını görsün.
+- **Mobil uygulama (personel)**: giriş, belge yükleme, ilanlar/başvurular,
+  bildirimler, iletişim bilgisi düzenleme, dil seçimi. Yalnızca **personel
+  (crew)** hesapları içindir; yönetici/İK hesapları masaüstü panelini kullanır.
 - **İletişim**: personelle mesajlaşma, e-posta gönderme.
-- **4 dil**: Türkçe, İngilizce, Rusça, Arapça.
+- **4 dil**: Türkçe, İngilizce, Rusça, Arapça (masaüstü + mobil).
 - **Rol bazlı yetki**: admin / hr / viewer / crew.
 
 ---
@@ -106,7 +111,8 @@ python -m pytest ../tests -q
 | [KURULUM/00-BASLA-BURADAN.md](KURULUM/00-BASLA-BURADAN.md) | Sıfırdan kurulum rehberi (hiç bilmeyenler için) |
 | [KURULUM/04-SORUN-GIDERME.md](KURULUM/04-SORUN-GIDERME.md) | Sık karşılaşılan sorunlar ve çözümleri |
 | [KURULUM/05-YEDEKLEME-VE-GUNCELLEME.md](KURULUM/05-YEDEKLEME-VE-GUNCELLEME.md) | Yedekleme, geri yükleme, güncelleme |
-| [docs/HATA_ANALIZI_2026-10-28.md](docs/HATA_ANALIZI_2026-10-28.md) | Kullanıcı senaryosu testi + hata/düzeltme raporu |
+| [docs/HATA_ANALIZI_2026-10-29.md](docs/HATA_ANALIZI_2026-10-29.md) | **Son** kullanıcı senaryosu testi + hata/düzeltme raporu (masaüstü + mobil) |
+| [docs/HATA_ANALIZI_2026-10-28.md](docs/HATA_ANALIZI_2026-10-28.md) | Önceki tur hata/düzeltme raporu |
 | [docs/GITHUB_DURUM_VE_YAPILACAKLAR.md](docs/GITHUB_DURUM_VE_YAPILACAKLAR.md) | Depo durumu ve yayın öncesi yapılacaklar |
 
 ## Sorun giderme
@@ -121,7 +127,8 @@ Kısa cevaplar:
 | Sayfa açılmıyor | İlk derleme sürüyor (5–15 dk) → `docker compose ps` kontrol et |
 | Giriş yapamıyorum | `.env` içindeki `ADMIN_EMAIL` / `ADMIN_PASSWORD` |
 | Port dolu (5173/8000/5433) | O portu kullanan programı kapat → `baslat.bat` |
-| Belge yüklenmiyor | En fazla 25 MB; yalnızca PDF ve TXT |
+| Belge yüklenmiyor | En fazla 25 MB; PDF, DOCX, XLSX, TXT veya resim olmalı |
+| Mobilde "bu uygulama personel içindir" diyor | Mobil yalnızca personel hesapları içindir; yönetici girişini masaüstünde yapın |
 
 ---
 

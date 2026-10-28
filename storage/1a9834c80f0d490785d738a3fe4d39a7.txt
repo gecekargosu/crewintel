@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Ayşe Öztürk
-Belge Tipi: STCW
-Belge No: TR-177691
-Geçerlilik Tarihi: 2026-03-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

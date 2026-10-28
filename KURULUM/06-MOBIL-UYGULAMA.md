@@ -87,15 +87,24 @@ eas build -p android --profile preview
 
 ## Mobil uygulamada neler var?
 
+> **Önemli:** Mobil uygulama **yalnızca personel (crew) hesapları** içindir.
+> Yönetici/İK hesabıyla giriş denenirse uygulama "Bu uygulama personel içindir"
+> uyarısı verir ve oturum açmaz. Yönetici işlemleri masaüstü panelinden yapılır.
+
 | Sekme | İçerik |
 |---|---|
 | **Ana Sayfa** | Özet kartlar, süresi yaklaşan belgeler, kısayollar |
-| **İşler** | Açık ilanlar, filtreleme, başvuru |
+| **İlanlar** | Açık ilanlar, ilan detayı, başvuru |
 | **Başvurular** | Yaptığın başvuruların durumu |
+| **Belgeler** | Kendi belgelerin; PDF/Word/Excel/fotoğraf yükleme (yönetici onayına gider) |
 | **Mesajlar** | Şirketle yazışma |
-| **Profil** | Kendi belgelerin, kontratın, gemin, dil seçimi |
+| **Profil** | Kendi bilgilerin, belgelerin, kontratın, gemin, iletişim bilgisi düzenleme, dil seçimi |
 
 Dil değiştirme: **Profil → Dil** (Türkçe / İngilizce / Rusça / Arapça).
+
+Personel hesabı nasıl açılır? Masaüstünde **Ayarlar → Kullanıcılar → Yeni
+Kullanıcı**: rol `crew`, ilgili personel seçilir. Şifresini unutan personel için
+`KURULUM/07-SIFRE-VE-HESAP.md`.
 
 ---
 
@@ -105,7 +114,9 @@ Dil değiştirme: **Profil → Dil** (Türkçe / İngilizce / Rusça / Arapça).
 |---|---|
 | "Network request failed" | `EXPO_PUBLIC_API_URL` yanlış; IP'yi kontrol et, telefonla aynı Wi-Fi'de ol, güvenlik duvarını aç. |
 | QR okutuldu ama uygulama açılmıyor | Telefon ve bilgisayar farklı ağda. `--tunnel` ile dene. |
-| Giriş yapamıyorum | Masaüstü programda çalışan hesabı kullan; personel hesabı gerekiyorsa yönetici oluşturmalı. |
+| Giriş yapamıyorum | Personel (crew) hesabı gerekir; yönetici hesabı mobilde çalışmaz. Hesap yoksa masaüstünden oluştur. |
+| "Bu uygulama personel içindir" uyarısı | Yönetici/İK hesabıyla giriş denendi. Personel hesabıyla giriş yapın. |
+| Belgeler boş görünüyor | Sayfayı aşağı çekip yenileyin (uygulama sekmeye dönüldüğünde kendisi de tazeler). |
 | Beyaz ekran | `npx expo start --clear` ile önbelleği temizle. |
 | Değişiklikler görünmüyor | Terminalde `r` tuşuna bas (reload). |
 

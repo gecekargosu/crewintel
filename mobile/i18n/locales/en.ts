@@ -10,6 +10,7 @@ const en: Translations = {
     applications: 'Applications',
     messages: 'Messages',
     profile: 'Profile',
+    documents: 'Documents',
   },
 
   auth: {
@@ -30,11 +31,16 @@ const en: Translations = {
     hasAccount: 'Already have an account?',
     loginLink: 'Sign In',
     pendingApproval: 'Account Pending Approval',
-    pendingDescription: 'Your registration has been completed successfully.\n\nYour account is awaiting admin approval. You will be notified by email once approved.',
+    pendingDescription: 'Your registration has been completed successfully.\n\nYour account is awaiting admin approval. Once approved, you can sign in with your e-mail and password.',
     pendingSteps: '1. Wait for admin approval\n2. Check your email for confirmation\n3. Sign in after approval',
     backToLogin: 'Back to Sign In',
     logout: 'Sign Out',
     logoutConfirm: 'Are you sure you want to sign out?',
+  
+    staffOnlyTitle: 'This app is for crew members',
+    staffOnlyHint: 'Admin/HR accounts must use the desktop panel (CREWINTEL on the computer). Please sign in with your crew account.',
+  
+    forgotHint: 'Forgot your password? Ask your manager to reset it from the company panel.',
   },
 
   home: {
@@ -112,6 +118,9 @@ const en: Translations = {
     typePlaceholder: 'Type your message...',
     noMessages: 'No messages yet. Send the first message.',
     conversation: 'Conversation',
+  
+    userFallback: 'User',
+    noMessage: 'No message',
   },
 
   profile: {
@@ -142,6 +151,16 @@ const en: Translations = {
     activeDuty: 'Currently Employed',
     logoutButton: 'Sign Out',
     language: 'Language',
+  
+    availableNow: 'Available',
+    availableSoon: 'Available soon',
+    jobPassive: 'Passive',
+  
+    contactTitle: 'My contact details',
+    contactUpdated: 'Your contact details were updated.',
+  
+    onLeave: 'On leave',
+    notAvailable: 'Not available',
   },
 
   common: {
@@ -191,6 +210,40 @@ const en: Translations = {
     hoursAgo: '{hours} hours ago',
     minutesAgo: '{minutes} minutes ago',
     justNow: 'Just now',
+  },
+  documentsTab: {
+    title: 'My documents',
+    subtitle: 'Upload documents, track expiry',
+    uploadTitle: 'Upload a new document',
+    uploadHint: 'Pick a PDF, Word, Excel file or a photo. Uploads go to admin approval; dates are read automatically.',
+    uploadButton: 'Pick and upload',
+    uploadDone: 'Document uploaded',
+    uploadDoneHint: 'Your document was sent for admin approval.',
+    uploadError: 'Document could not be uploaded.',
+    loadError: 'Documents could not be loaded.',
+    empty: 'No documents uploaded yet.',
+    issueDate: 'Issued',
+    expiryDate: 'Valid until',
+    status: 'Status',
+  
+    statusExpired: 'Expired',
+    statusUrgent: 'Urgent',
+    statusApproaching: 'Expiring soon',
+    statusValid: 'Valid',
+    statusPendingApproval: 'Awaiting approval',
+    statusPending: 'Under review',
+    statusProcessing: 'Processing',
+    statusNoDate: 'No date',
+    statusUnknown: 'Unknown',
+    typePassport: 'Passport',
+    typeSeamanBook: "Seaman's Book",
+    typeStcw: 'STCW',
+    typeGoc: 'GOC',
+    typeMedical: 'Medical Certificate',
+    typeContract: 'Contract',
+    typeCv: 'CV',
+    typeOther: 'Other Document',
+    detailsTitle: 'Document details',
   },
 };
 

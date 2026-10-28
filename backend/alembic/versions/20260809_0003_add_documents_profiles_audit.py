@@ -1,8 +1,8 @@
 """Add document archive, audit trail, and CV profile fields."""
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260809_0003"
 down_revision = "20260809_0002"

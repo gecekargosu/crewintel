@@ -10,6 +10,7 @@ const tr: Translations = {
     applications: 'Başvurular',
     messages: 'Mesajlar',
     profile: 'Profil',
+    documents: 'Belgeler',
   },
 
   auth: {
@@ -30,11 +31,16 @@ const tr: Translations = {
     hasAccount: 'Zaten hesabınız var mı?',
     loginLink: 'Giriş Yap',
     pendingApproval: 'Hesap Onay Bekliyor',
-    pendingDescription: 'Kayıt işleminiz başarıyla tamamlandı.\n\nHesabınız admin onayı bekliyor. Onaylandığında e-posta ile bilgilendirileceksiniz.',
+    pendingDescription: 'Kayıt işleminiz başarıyla tamamlandı.\n\nHesabınız yönetici onayı bekliyor. Onaylandıktan sonra e-posta ve şifrenizle giriş yapabilirsiniz.',
     pendingSteps: '1. Admin onayını bekleyin\n2. Onay e-postasını kontrol edin\n3. Onaylandıktan sonra giriş yapın',
     backToLogin: 'Giriş Sayfasına Dön',
     logout: 'Çıkış Yap',
     logoutConfirm: 'Çıkış yapmak istediğinize emin misiniz?',
+  
+    staffOnlyTitle: 'Bu uygulama personel içindir',
+    staffOnlyHint: 'Yönetici/İK hesapları masaüstü panelini kullanmalıdır (bilgisayardaki CREWINTEL). Personel hesabınızla giriş yapın.',
+  
+    forgotHint: 'Şifrenizi unuttuysanız yöneticinizden (şirket paneli) yeni şifre isteyin.',
   },
 
   home: {
@@ -112,6 +118,9 @@ const tr: Translations = {
     typePlaceholder: 'Mesajınızı yazın...',
     noMessages: 'Henüz mesaj yok. İlk mesajı siz gönderin.',
     conversation: 'Konuşma',
+  
+    userFallback: 'Kullanıcı',
+    noMessage: 'Mesaj yok',
   },
 
   profile: {
@@ -142,6 +151,16 @@ const tr: Translations = {
     activeDuty: 'Aktif Görevde',
     logoutButton: 'Çıkış Yap',
     language: 'Dil',
+  
+    availableNow: 'Müsait',
+    availableSoon: 'Yakında müsait',
+    jobPassive: 'Pasif',
+  
+    contactTitle: 'İletişim Bilgilerim',
+    contactUpdated: 'İletişim bilgileriniz güncellendi.',
+  
+    onLeave: 'İzinde',
+    notAvailable: 'Müsait değil',
   },
 
   common: {
@@ -191,6 +210,40 @@ const tr: Translations = {
     hoursAgo: '{hours} saat önce',
     minutesAgo: '{minutes} dakika önce',
     justNow: 'Az önce',
+  },
+  documentsTab: {
+    title: 'Belgelerim',
+    subtitle: 'Belge yükle, süresi dolanları gör',
+    uploadTitle: 'Yeni belge yükle',
+    uploadHint: 'PDF, Word, Excel veya fotoğraf seçebilirsiniz. Yüklenen belge yönetici onayına gider; tarihler otomatik okunur.',
+    uploadButton: 'Belge Seç ve Yükle',
+    uploadDone: 'Belge yüklendi',
+    uploadDoneHint: 'Belgeniz yönetici onayına gönderildi.',
+    uploadError: 'Belge yüklenemedi.',
+    loadError: 'Belgeler yüklenemedi.',
+    empty: 'Henüz belge yüklenmemiş.',
+    issueDate: 'Düzenlenme',
+    expiryDate: 'Son geçerlilik',
+    status: 'Durum',
+  
+    statusExpired: 'Süresi doldu',
+    statusUrgent: 'Acil',
+    statusApproaching: 'Yaklaşıyor',
+    statusValid: 'Geçerli',
+    statusPendingApproval: 'Onay bekliyor',
+    statusPending: 'İnceleme',
+    statusProcessing: 'İşleniyor',
+    statusNoDate: 'Tarih yok',
+    statusUnknown: 'Bilinmiyor',
+    typePassport: 'Pasaport',
+    typeSeamanBook: 'Gemi Adamı Cüzdanı',
+    typeStcw: 'STCW',
+    typeGoc: 'GOC',
+    typeMedical: 'Sağlık Raporu',
+    typeContract: 'Kontrat',
+    typeCv: 'CV',
+    typeOther: 'Diğer Belge',
+    detailsTitle: 'Belge Bilgileri',
   },
 };
 

@@ -559,21 +559,24 @@ class MatchEngine:
 
         # Kararı uygula.
         status = DECISION_TO_STATUS.get(result.decision, "pending")
+        # Güven skoru arayüzde yüzde olarak gösterilir; birden fazla sinyal
+        # (pasaport + isim + doğum tarihi) toplandığı için ham skor 100'ü
+        # aşabiliyordu ("%215" gibi). 0-100 aralığına sıkıştırılır; ham skor
+        # audit/DocumentMatch kaydında korunur.
+        raw_score = result.best_candidate.score if result.best_candidate else 0
+        confidence = max(0, min(100, int(raw_score)))
+
         if result.decision == AUTO_MATCH and result.best_candidate:
             document.crew_member_id = result.best_candidate.crew_id
             document.match_status = "matched"
-            document.match_confidence = result.best_candidate.score
+            document.match_confidence = confidence
         elif result.decision == UNMATCHED:
             document.match_status = "unmatched"
-            document.match_confidence = (
-                result.best_candidate.score if result.best_candidate else 0
-            )
+            document.match_confidence = confidence
         else:
             # REVIEW / CONFLICT: bağlama, incelemeye bırak.
             document.match_status = status
-            document.match_confidence = (
-                result.best_candidate.score if result.best_candidate else 0
-            )
+            document.match_confidence = confidence
 
         self._log_match(document, result)
 

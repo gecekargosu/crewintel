@@ -26,6 +26,9 @@
 | **Belgeler** | Yüklenen belgeler, eşleştirme, süre durumu |
 | **Uygunluk (Eligibility)** | Hangi personel hangi gemi/pozisyon için uygun |
 | **İş İlanları** | İlan aç, başvuru topla, duyur |
+| **Maaş** | Personel ödemeleri (maaş/prim/avans), para birimine göre toplamlar |
+| **Notlar** | Kendi operasyon notların (yalnızca sende görünür) |
+| **Yapay Zekâ** | (İsteğe bağlı) belge özeti ve tutarsızlık kontrolü |
 | **İletişim** | Personelle mesajlaşma, e-posta gönderme |
 | **Ayarlar** | Şirket adı, logo, e-posta/şifre değiştirme |
 
@@ -38,22 +41,26 @@
 3. **Personel** → **Yeni Personel** → bir personel ekle.
 4. **Kontratlar** → o personel için kontrat oluştur (başlangıç/bitiş tarihi).
 5. **Atamalar** → personeli gemiye ata.
-6. **Belgeler** → **Belge Yükle** → pasaport/sertifika dosyası (PDF veya TXT)
-   seç. Program belgeyi okuyup türünü tahmin eder; **onayla** dediğinde
-   personele bağlanır.
+6. **Belgeler** → **Belge Yükle** → pasaport/sertifika dosyası seç. Program
+   belgeyi okuyup türünü tahmin eder; **onayla** dediğinde personele bağlanır.
+   Toplu yükleme için **Klasör Seç** ile bütün bir arşiv klasörünü ekleyebilirsin.
 7. **Panel** → sayıların güncellendiğini kontrol et.
 
 ### Belge yükleme kuralları
 
-- Dosya boyutu en fazla **25 MB**.
-- Desteklenen türler: **PDF** ve **TXT**. (Telefonla taranan belgeleri
-  genellikle PDF olarak kaydedebilirsin.)
+- Dosya boyutu en fazla **100 MB** (tek dosya).
+- Desteklenen türler: **PDF, TXT, CSV, DOC/DOCX, ODT, RTF, XLS/XLSX, ODS,
+  JPG/JPEG, PNG, WebP, BMP, TIFF**. PDF dışındaki her dosya arşivde **PDF**
+  olarak saklanır.
+- Fotoğraf veya taranmış PDF'ler **OCR** ile okunur (Türkçe, İngilizce,
+  Rusça, Arapça, Almanca, Fransızca).
 - Yüklenen dosyalar bilgisayarındaki `storage` klasöründe durur.
 - Personelin kendi yüklediği belgeler **"onay bekliyor"** durumunda gelir;
   yönetici onaylayana kadar geçerli sayılmaz.
 
-> Taranmış (resim) PDF'lerde metin okunamayabilir. Bu durumda belge türünü
-> listeden elle seçebilirsin.
+> Taranmış bir belgede OCR metni okuyamazsa program belge türünü `other`
+> olarak bırakır ve eşleştirme için **İnceleme** kuyruğuna atar; yanlış
+> personele bağlamaz.
 
 ---
 

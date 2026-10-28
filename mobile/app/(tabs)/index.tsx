@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
@@ -59,9 +59,13 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  // Sekmeye her donuste tazele: oturum kapatilip yeniden girildiginde
+  // ekranlarda eski (bos) veri kalmasi engellenir.
+  useFocusEffect(
+    useCallback(() => {
+      if (user) loadData();
+    }, [user?.id]),
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

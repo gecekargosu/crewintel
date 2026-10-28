@@ -1,9 +1,9 @@
 """Add auth fields (password_hash, audit user identity) and crew identifier indexes."""
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import inspect
 
+from alembic import op
 
 revision = "20260817_0004"
 down_revision = "20260809_0003"

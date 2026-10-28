@@ -1,6 +1,7 @@
 """0008 — job_postings + job_applications (iş ilanı / başvuru havuzu)."""
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "20260818_0008"

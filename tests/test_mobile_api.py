@@ -202,9 +202,12 @@ def test_crew_documents_list_and_download_own(client):
     assert docs[0]["document_type"] == "cv"
     assert docs[0]["status"] == "pending_approval"
 
+    # Personelin yüklediği PDF dışı belge arşivde PDF'e çevrilir; indirme
+    # çalışır ve içerik geçerli bir PDF olur.
     download = crew.get(f"/api/portal/documents/{document_id}/file")
     assert download.status_code == 200
-    assert b"CV icerik" in download.content
+    assert download.headers["content-type"].startswith("application/pdf")
+    assert download.content.startswith(b"%PDF")
 
 
 def test_crew_cannot_download_other_crew_document(client):
@@ -341,3 +344,42 @@ def test_deactivate_me_blocks_login(client, no_auth_client):
         "email": CREW_EMAIL, "password": CREW_PASSWORD,
     })
     assert login.status_code == 403
+
+
+# ── Bildirim gizliliği ────────────────────────────────
+
+def test_portal_hides_other_crews_document_alert(client, db_session):
+    """Başka personelin belgesi için üretilmiş genel uyarı portaldan gizlenmeli.
+
+    Eski kayıtlarda belge uyarıları user_id olmadan (genel) oluşturulmuştu;
+    bu durumda her personel diğerlerinin belge durumunu görüyordu.
+    """
+    from app.models.document import Document
+    from app.models.notification import Notification
+
+    other_crew_id, _ = _make_crew(client, email="owner@test.example", first="Other", last="Crew")
+    _make_crew(client, email=CREW_EMAIL)
+
+    other_doc = Document(
+        crew_member_id=other_crew_id, document_type="medical",
+        original_filename="other_medical.txt",
+        stored_filename="other_medical.txt", storage_path="/tmp/other_medical.txt",
+        file_size=10, checksum="other-medical-checksum",
+        match_status="matched",
+    )
+    db_session.add(other_doc)
+    db_session.commit()
+
+    db_session.add(Notification(
+        user_id=None, title="Other Crew — medical süresi DOLDU", channel="system",
+        status="sent", entity_type="document", entity_id=other_doc.id,
+    ))
+    db_session.add(Notification(
+        user_id=None, title="Genel duyuru", channel="system", status="sent",
+    ))
+    db_session.commit()
+
+    crew = _crew_client(client)
+    titles = [n["title"] for n in crew.get("/api/portal/notifications").json()]
+    assert "Other Crew — medical süresi DOLDU" not in titles
+    assert "Genel duyuru" in titles

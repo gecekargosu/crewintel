@@ -878,3 +878,37 @@ http://localhost:5502/ — ✅
 - Transition zone blur/wave effects (CSS ile)
 - Video background (hero için)
 
+
+---
+
+## 2026-10-29 — Masaüstü + mobil hata analizi ve düzeltmeler
+
+**Kapsam:** gerçek veritabanı kopyasıyla masaüstü paneli (13 bölüm) ve mobil
+uygulama (personel rolü) uçtan uca denendi; bulunan 19 hata düzeltildi.
+
+**Backend**
+- `services/mrz.py` (yeni): ICAO 9303 TD3/TD2 MRZ çözümleyici, kontrol basamağı
+  doğrulaması; doğum/bitiş tarihi, uyruk, belge numarası, ad-soyad.
+- `document_processing.py`: MRZ entegrasyonu (etiketli alan yoksa devreye girer),
+  ad-soyad için MRZ yedeği, yeni bitiş tarihi etiketleri (IT/ES/NL/ZH/RU).
+- `document_service.py` + `portal.py`: okunan pasaport/gemiadamı numarası artık
+  `document_number` alanına yazılıyor.
+- `services/notifications.py` + `portal.py`: belge/kontrat uyarıları personelin
+  kendi hesabına gidiyor; eski genel kayıtlar portaldan filtreleniyor.
+
+**Masaüstü**
+- Toplu e-posta metnindeki ham `{t(...)}` düzeltildi, çoklu alıcı anahtarı eklendi.
+- Açılış verisi `auth` değişimine bağlandı (bayat veri giderildi).
+- `oxlint`: 0 uyarı / 0 hata; `vite build` başarılı.
+
+**Mobil**
+- Personel olmayan hesapların girişi engellendi (403 fırtınası bitti).
+- Web'de çalışmayan `Alert.alert` yerine platformdan bağımsız dialoglar.
+- Müsaitlik eşlemesi, 4 dilli etiketler, dil seçici, iletişim bilgisi düzenleme.
+- Kayıt formunda zorunlu telefon doğrulaması; 422 hatalarında alan adı.
+- Sekme odaklanmasında veri tazeleme; sözleşme süresi gösterimi düzeltildi.
+
+**Testler:** `pytest` tümü geçti; `tests/test_mrz.py` (5) ve
+`tests/test_mobile_api.py` bildirim gizliliği testi eklendi.
+
+**Rapor:** `docs/HATA_ANALIZI_2026-10-29.md`

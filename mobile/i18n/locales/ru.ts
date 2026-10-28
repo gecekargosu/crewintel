@@ -10,6 +10,7 @@ const ru: Translations = {
     applications: 'Заявки',
     messages: 'Сообщения',
     profile: 'Профиль',
+    documents: 'Документы',
   },
 
   auth: {
@@ -30,11 +31,16 @@ const ru: Translations = {
     hasAccount: 'Уже есть аккаунт?',
     loginLink: 'Войти',
     pendingApproval: 'Одобрение аккаунта',
-    pendingDescription: 'Ваша регистрация успешно завершена.\n\nВаш аккаунт ожидает одобрения администратора. Вы получите уведомление по электронной почте после одобрения.',
+    pendingDescription: 'Ваша регистрация успешно завершена.\n\nАккаунт ожидает одобрения администратора. После одобрения вы сможете войти, используя свою электронную почту и пароль.',
     pendingSteps: '1. Дождитесь одобрения администратора\n2. Проверьте электронную почту\n3. Войдите после одобрения',
     backToLogin: 'Вернуться к входу',
     logout: 'Выйти',
     logoutConfirm: 'Вы уверены, что хотите выйти?',
+  
+    staffOnlyTitle: 'Это приложение для членов экипажа',
+    staffOnlyHint: 'Учётные записи администратора/HR должны использовать настольную панель (CREWINTEL на компьютере). Войдите под учётной записью моряка.',
+  
+    forgotHint: 'Забыли пароль? Попросите менеджера сбросить его в панели компании.',
   },
 
   home: {
@@ -112,6 +118,9 @@ const ru: Translations = {
     typePlaceholder: 'Введите сообщение...',
     noMessages: 'Пока нет сообщений. Напишите первым.',
     conversation: 'Диалог',
+  
+    userFallback: 'Пользователь',
+    noMessage: 'Нет сообщения',
   },
 
   profile: {
@@ -142,6 +151,16 @@ const ru: Translations = {
     activeDuty: 'На борту',
     logoutButton: 'Выйти',
     language: 'Язык',
+  
+    availableNow: 'Свободен',
+    availableSoon: 'Скоро свободен',
+    jobPassive: 'Не ищет работу',
+  
+    contactTitle: 'Мои контактные данные',
+    contactUpdated: 'Контактные данные обновлены.',
+  
+    onLeave: 'В отпуске',
+    notAvailable: 'Недоступен',
   },
 
   common: {
@@ -191,6 +210,40 @@ const ru: Translations = {
     hoursAgo: '{hours} ч. назад',
     minutesAgo: '{minutes} мин. назад',
     justNow: 'Только что',
+  },
+  documentsTab: {
+    title: 'Мои документы',
+    subtitle: 'Загружайте документы и следите за сроками',
+    uploadTitle: 'Загрузить новый документ',
+    uploadHint: 'Выберите PDF, Word, Excel или фото. Документ уходит на утверждение администратору; даты считываются автоматически.',
+    uploadButton: 'Выбрать и загрузить',
+    uploadDone: 'Документ загружен',
+    uploadDoneHint: 'Документ отправлен на утверждение администратору.',
+    uploadError: 'Не удалось загрузить документ.',
+    loadError: 'Не удалось загрузить документы.',
+    empty: 'Документы ещё не загружены.',
+    issueDate: 'Выдан',
+    expiryDate: 'Действителен до',
+    status: 'Статус',
+  
+    statusExpired: 'Истёк',
+    statusUrgent: 'Срочно',
+    statusApproaching: 'Истекает',
+    statusValid: 'Действителен',
+    statusPendingApproval: 'Ожидает одобрения',
+    statusPending: 'На проверке',
+    statusProcessing: 'Обработка',
+    statusNoDate: 'Без даты',
+    statusUnknown: 'Неизвестно',
+    typePassport: 'Паспорт',
+    typeSeamanBook: 'Паспорт моряка',
+    typeStcw: 'STCW',
+    typeGoc: 'GOC',
+    typeMedical: 'Медицинский сертификат',
+    typeContract: 'Контракт',
+    typeCv: 'Резюме',
+    typeOther: 'Другой документ',
+    detailsTitle: 'Сведения о документе',
   },
 };
 

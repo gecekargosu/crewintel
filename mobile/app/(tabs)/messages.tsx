@@ -16,7 +16,7 @@ import { useI18n } from '../../context/I18nContext';
 export default function MessagesScreen() {
   const router = useRouter();
   const { colors, CREWINTEL } = useTheme();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -55,14 +55,16 @@ export default function MessagesScreen() {
       <View style={styles.conversationContent}>
         <View style={styles.conversationHeader}>
           <Text style={[styles.participantName, { color: colors.text }]} numberOfLines={1}>
-            {item.participant_name || 'Kullanıcı'}
+            {item.participant_name || t('messages.userFallback')}
           </Text>
           <Text style={[styles.timeText, { color: colors.textSecondary }]}>
-            {item.last_message_time ? new Date(item.last_message_time).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''}
+            {item.last_message_time
+              ? new Date(item.last_message_time).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })
+              : ''}
           </Text>
         </View>
         <Text style={[styles.lastMessage, { color: colors.textSecondary }]} numberOfLines={1}>
-          {item.last_message || 'Mesaj yok'}
+          {item.last_message || t('messages.noMessage')}
         </Text>
       </View>
       {item.unread_count > 0 && (

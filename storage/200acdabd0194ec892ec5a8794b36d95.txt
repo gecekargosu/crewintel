@@ -1,8 +1,0 @@
-PERSONEL BİLGİLERİ
-------------------
-Adı Soyadı: Deniz Yıldırım
-Belge Tipi: SEAMAN_BOOK
-Belge No: TR-683597
-Geçerlilik Tarihi: 2028-03-15
-
-* Bu dosya CREWINTEL (STEP 7B) test otomasyonu için otomatik üretilmiştir.

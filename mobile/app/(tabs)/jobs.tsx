@@ -13,6 +13,7 @@ import Header from '../../components/ui/Header';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { jobsAPI } from '../../services/api';
+import { formatDuration } from '../../utils/format';
 import { useI18n } from '../../context/I18nContext';
 
 export default function JobsScreen() {
@@ -87,7 +88,7 @@ export default function JobsScreen() {
         {item.contract_duration && (
           <View style={styles.contractInfo}>
             <Text style={[styles.contractText, { color: colors.tint }]}>
-              📅 {item.contract_duration} ay
+              📅 {formatDuration(item.contract_duration, t('common.months'))}
             </Text>
           </View>
         )}

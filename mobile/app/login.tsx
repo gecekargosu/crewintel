@@ -99,6 +99,8 @@ export default function LoginScreen() {
             style={styles.loginButton}
           />
 
+          <Text style={styles.forgotHint}>{t('auth.forgotHint')}</Text>
+
           <TouchableOpacity
             onPress={() => router.push('/register')}
             style={styles.registerLink}
@@ -181,6 +183,13 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: 8,
+  },
+  forgotHint: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 17,
   },
   registerLink: {
     flexDirection: 'row',

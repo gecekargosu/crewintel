@@ -123,3 +123,6 @@ _arsiv/
 
 # Ajan/IDE yapılandırmaları
 .claude/
+
+# Gecici test klasorleri
+tmp_belge_test/

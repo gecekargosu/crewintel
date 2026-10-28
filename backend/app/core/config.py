@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     smtp_tls: bool = True
     whatsapp_api_token: str | None = None
     whatsapp_phone_id: str | None = None
+    # ── Optional AI (OpenAI-uyumlu sağlayıcı) ───────────────────────────────
+    # Boşsa /api/ai uçları 503 döner; uygulamanın diğer bölümleri etkilenmez.
+    ai_api_key: str | None = None
+    ai_base_url: str = "https://api.groq.com/openai/v1"
+    ai_model: str = "llama-3.3-70b-versatile"
 
     @property
     def cors_origin_list(self) -> list[str]:

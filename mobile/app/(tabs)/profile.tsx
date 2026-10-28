@@ -1,34 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ui/Header';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 import { crewAPI } from '../../services/api';
 import { useI18n } from '../../context/I18nContext';
+import { showAlert, showConfirm } from '../../utils/dialogs';
+import { documentTypeLabel } from '../../utils/documentTypes';
+import { availabilityBadge } from '../../utils/availability';
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../../i18n/types';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { colors, CREWINTEL } = useTheme();
   const { user, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, language, changeLanguage } = useI18n();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [contact, setContact] = useState({ phone: '', email: '' });
+  const [savingContact, setSavingContact] = useState(false);
 
   const loadProfile = async () => {
     try {
       const data = await crewAPI.meFull();
       setProfile(data);
+      setContact({ phone: data?.phone || '', email: data?.email || '' });
     } catch (error) {
       console.log('Profile load error:', error);
     } finally {
@@ -36,48 +43,72 @@ export default function ProfileScreen() {
     }
   };
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  /** Personel kendi telefon/e-posta bilgisini güncelleyebilir (portal ucu). */
+  const saveContact = async () => {
+    setSavingContact(true);
+    try {
+      const updated = await crewAPI.updateProfile({
+        phone: contact.phone || undefined,
+        email: contact.email || undefined,
+      });
+      setProfile((prev: any) => ({ ...prev, ...(updated || {}) }));
+      showAlert(t('common.success'), t('profile.contactUpdated'));
+    } catch (error: any) {
+      showAlert(t('common.error'), error?.message || t('errors.unknown'));
+    } finally {
+      setSavingContact(false);
+    }
+  };
 
-  const handleLogout = async () => {
-    Alert.alert(
+  useFocusEffect(
+    useCallback(() => {
+      if (user) loadProfile();
+    }, [user?.id]),
+  );
+
+  const handleLogout = () => {
+    showConfirm(
       t('auth.logout'),
       t('auth.logoutConfirm'),
-      [
-        { text: 'İptal', style: 'cancel' },
-        {
-          text: 'Çıkış Yap',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          },
-        },
-      ]
+      async () => {
+        await logout();
+        router.replace('/login');
+      },
+      t('auth.logout'),
+      t('common.cancel'),
     );
   };
+
+  const notDefined = t('profile.notDefined');
 
   const getInfoItems = () => {
     if (!profile) return [];
     return [
-      { label: 'Pozisyon', value: profile.position || 'Tanımlanmamış' },
-      { label: 'Uyruk', value: profile.nationality || 'Tanımlanmamış' },
-      { label: 'Telefon', value: profile.phone || 'Tanımlanmamış' },
-      { label: 'E-posta', value: profile.email || user?.email },
-      { label: 'Doğum Tarihi', value: profile.date_of_birth || 'Tanımlanmamış' },
-      { label: 'Adres', value: profile.address || 'Tanımlanmamış' },
+      { label: t('profile.position'), value: profile.position || notDefined },
+      { label: t('profile.nationality'), value: profile.nationality || notDefined },
+      { label: t('profile.telephone'), value: profile.phone || notDefined },
+      { label: t('profile.email'), value: profile.email || user?.email },
+      { label: t('profile.dateOfBirth'), value: profile.date_of_birth || notDefined },
+      { label: t('profile.address'), value: profile.address || notDefined },
     ];
   };
 
-  const getAvailabilityLabel = () => {
-    switch (profile?.availability_status) {
-      case 'AVAILABLE_NOW': return { label: 'Müsait', variant: 'success' as const };
-      case 'AVAILABLE_SOON': return { label: 'Yakında Müsait', variant: 'warning' as const };
-      case 'CURRENTLY_EMPLOYED': return { label: 'Aktif Görevde', variant: 'info' as const };
-      case 'LOOKING': return { label: 'İş Arıyor', variant: 'success' as const };
-      default: return { label: 'Tanımlanmamış', variant: 'neutral' as const };
-    }
+  /**
+   * Backend `availability` alanını "available" / "available_soon" /
+   * "employed" gibi küçük harfli gönderir; api.ts bunu büyük harfe çevirir.
+   * Eski eşleme yalnızca "AVAILABLE_NOW" beklediği için müsait personel bile
+   * "Tanımlanmamış" görünüyordu.
+   */
+  const getAvailabilityLabel = () => availabilityBadge(t, profile?.availability_status);
+
+  /** Belge rozeti: tarih varsa "geçerli" demek yanlıştı; geçmiş tarih de
+   * "Geçerli" görünüyordu. Bugünle karşılaştırılır. */
+  const documentBadge = (doc: any) => {
+    if (!doc.expiry_date) return { label: t('profile.noDate'), variant: 'neutral' as const };
+    const days = Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / 86_400_000);
+    if (days < 0) return { label: t('profile.expired'), variant: 'danger' as const };
+    if (days <= 30) return { label: t('profile.expiringSoon'), variant: 'warning' as const };
+    return { label: t('profile.valid'), variant: 'success' as const };
   };
 
   return (
@@ -140,7 +171,9 @@ export default function ProfileScreen() {
             {profile.sea_service_years && (
               <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('profile.seaService')}</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{profile.sea_service_years} yıl</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>
+                  {profile.sea_service_years} {t('profile.years')}
+                </Text>
               </View>
             )}
           </Card>
@@ -152,39 +185,91 @@ export default function ProfileScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.documents')}</Text>
             <Badge text={`${profile?.documents?.length || 0}`} variant="info" />
           </View>
-          {profile?.documents?.slice(0, 3).map((doc: any, idx: number) => (
-            <View key={idx} style={[styles.docItem, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.docType, { color: colors.text }]}>{doc.document_type}</Text>
-              <Badge
-                text={doc.expiry_date ? 'Geçerli' : 'Tarihsiz'}
-                variant={doc.expiry_date ? 'success' : 'neutral'}
-                size="sm"
-              />
-            </View>
-          ))}
+          {profile?.documents?.slice(0, 5).map((doc: any, idx: number) => {
+            const badge = documentBadge(doc);
+            return (
+              <View key={idx} style={[styles.docItem, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.docType, { color: colors.text }]}>{documentTypeLabel(t, doc.document_type)}</Text>
+                <Badge text={badge.label} variant={badge.variant} size="sm" />
+              </View>
+            );
+          })}
         </Card>
 
         {/* Preferences */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.preferences')}</Text>
           <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Tercih Edilen Rank</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('profile.preferredRank')}</Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>
-              {profile?.preferred_rank || 'Tanımlanmamış'}
+              {profile?.preferred_rank || notDefined}
             </Text>
           </View>
           <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Tercih Edilen Gemi</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('profile.preferredVessel')}</Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>
-              {profile?.preferred_vessel_type || 'Tanımlanmamış'}
+              {profile?.preferred_vessel_type || notDefined}
             </Text>
           </View>
           <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>İş Durumu</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('profile.jobStatus')}</Text>
             <Badge
-              text={profile?.job_seeking ? 'İş Arıyorum' : 'Pasif'}
+              text={profile?.job_seeking ? t('profile.jobSeeking') : t('profile.jobPassive')}
               variant={profile?.job_seeking ? 'success' : 'neutral'}
             />
+          </View>
+        </Card>
+
+        {/* İletişim bilgisi güncelleme — personel kendi telefon/e-postasını düzeltir */}
+        <Card style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.contactTitle')}</Text>
+          <Input
+            label={t('profile.telephone')}
+            value={contact.phone}
+            onChangeText={(phone) => setContact((prev) => ({ ...prev, phone }))}
+            placeholder="+90 5xx xxx xx xx"
+            keyboardType="phone-pad"
+          />
+          <Input
+            label={t('profile.email')}
+            value={contact.email}
+            onChangeText={(email) => setContact((prev) => ({ ...prev, email }))}
+            placeholder="ornek@email.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Button
+            title={savingContact ? t('common.loading') : t('common.save')}
+            onPress={saveContact}
+            loading={savingContact}
+            disabled={savingContact}
+          />
+        </Card>
+
+        {/* Dil seçimi — Rusça/Arapça personel için */}
+        <Card style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.language')}</Text>
+          <View style={styles.languageRow}>
+            {(SUPPORTED_LANGUAGES ?? []).map((option) => {
+              const active = language === option.code;
+              return (
+                <TouchableOpacity
+                  key={option.code}
+                  onPress={() => changeLanguage(option.code as SupportedLanguage)}
+                  style={[
+                    styles.languageChip,
+                    {
+                      borderColor: active ? CREWINTEL.orange : colors.border,
+                      backgroundColor: active ? '#FFF7ED' : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 13, color: colors.text }}>
+                    {option.flag} {option.nativeName}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </Card>
 
@@ -285,6 +370,17 @@ const styles = StyleSheet.create({
   docType: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  languageRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  languageChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   logoutSection: {
     marginTop: 20,
