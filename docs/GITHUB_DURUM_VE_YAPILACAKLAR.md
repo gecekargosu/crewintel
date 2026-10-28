@@ -167,3 +167,40 @@ Bir sorun çıkarsa `eski-surum` dalına dönerek geri alabilirsin.
   (143 MB) bu yüzden asla eklenmemeli.
 - Depo açıklaması ve konu etiketleri (`topics`) eklenebilir:
   `fastapi`, `react`, `expo`, `postgresql`, `maritime`, `crew-management`.
+
+---
+
+## 7. 28.10.2026 — Yükleme sonucu (gerçek durum)
+
+Yerel depo ile GitHub `master` karşılaştırıldığında ortaya çıkan tablo:
+
+| | Yerel (bu laptop) | GitHub `master` |
+|---|---|---|
+| Commit | 1 ileride / **69 geride** | 2026-10-06'da güncellenmiş |
+| Backend | Tam uygulama (auth, jobs, mesajlar, portal, eşleştirme) | `backend/ai/*` modülleri **fazladan** var |
+| Mobil | `mobile/` (Expo, güncel sürüm) | `mobile-app/` (eski Kotlin sürümü) |
+| KURULUM | Var (7 rehber + 8 .bat) | **Yok** |
+| Kişisel CV (.docx) | Yok | **Var** |
+
+Bu yüzden `master`'ın üzerine zorla yazılmadı (uzaktaki `backend/ai` dosyaları
+kaybolurdu). Yerine, çalışan sürüm ayrı bir dal olarak yüklendi:
+
+**Dal:** `temiz-surum-2026-10-28` — 349 dosya, `KURULUM/` dahil, CV/APK yok.
+
+İndirme adresi (dal seçili):
+<https://github.com/gecekargosu/crewintel/tree/temiz-surum-2026-10-28>
+
+### Sırada ne var? (senin kararın)
+
+1. **En kolay:** Yukarıdaki bağlantıdan `Code → Download ZIP` ile indirilir,
+   `KURULUM\kur.bat` ile kurulur. Depo ana sayfasında eski sürüm görünmeye
+   devam eder.
+2. **Kalıcı çözüm:** GitHub → Settings → Branches → **Default branch** olarak
+   `temiz-surum-2026-10-28` seçilir. Depoyu açan herkes doğru sürümü görür.
+3. **Tam temizlik:** Yeni ve boş bir depo açılır (ör. `crewintel-v2`), bu dal
+   oraya yüklenir; eski depo arşivlenir. Böylece `backend/ai` gibi eski
+   dosyalar da taşınmaz.
+
+> Not: `master` dalındaki `backend/ai/` klasörü bu laptopta bulunmuyor.
+> Silinmesini istemiyorsan 2. seçenekte dosyalar korunur (yalnızca görünen dal
+> değişir), 3. seçenekte tamamen yeni bir depo başlar.
