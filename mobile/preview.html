@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CREWINTEL Mobile — Premium Home</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0A1628; min-height: 100vh; }
+    .app { max-width: 420px; margin: 0 auto; min-height: 100vh; background: #F5F5F7; position: relative; }
+    
+    /* Language Selector */
+    .lang-bar { background: #1A2A44; padding: 12px 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 200; }
+    .lang-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .lang-btn:hover { border-color: #E8731A; color: #fff; }
+    .lang-btn.active { background: #E8731A; color: #fff; border-color: #E8731A; }
+    
+    /* Hero Section */
+    .hero {
+      position: relative;
+      height: 380px;
+      background: linear-gradient(135deg, #0A1628 0%, #1A2A44 50%, #0A1628 100%);
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 70%, rgba(232, 115, 26, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 30%, rgba(232, 115, 26, 0.1) 0%, transparent 50%);
+      animation: heroPulse 12s ease-in-out infinite;
+    }
+    @keyframes heroPulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 22, 40, 0.45);
+    }
+    .hero-waves {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      overflow: hidden;
+    }
+    .wave {
+      position: absolute;
+      bottom: 0;
+      left: -50%;
+      right: -50%;
+      height: 100px;
+      background: rgba(232, 115, 26, 0.08);
+      border-radius: 50%;
+      animation: waveMove 10s ease-in-out infinite;
+    }
+    .wave:nth-child(2) {
+      height: 80px;
+      background: rgba(232, 115, 26, 0.05);
+      animation-delay: -3s;
+      animation-duration: 12s;
+    }
+    .wave:nth-child(3) {
+      height: 60px;
+      background: rgba(255, 255, 255, 0.03);
+      animation-delay: -6s;
+      animation-duration: 14s;
+    }
+    @keyframes waveMove {
+      0%, 100% { transform: translateX(0) rotate(-3deg); }
+      50% { transform: translateX(5%) rotate(3deg); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      padding: 70px 24px 24px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .hero-greeting {
+      font-size: 15px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    .hero-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+    .hero-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.5;
+      margin-bottom: 20px;
+      max-width: 320px;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+    .hero-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-success { background: rgba(52, 199, 89, 0.2); color: #34C759; }
+    .badge-info { background: rgba(90, 200, 250, 0.2); color: #5AC8FA; }
+    .stat-badge {
+      background: rgba(255,255,255,0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 600;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #E8731A;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      animation: fadeInUp 0.6s ease-out 0.4s both;
+      width: fit-content;
+    }
+    .hero-cta:hover { transform: translateY(-2px); opacity: 0.9; }
+    .hero-arrow { font-size: 18px; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      margin-top: -30px;
+      position: relative;
+      z-index: 20;
+    }
+    .stat-card {
+      flex: 1;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stat-icon { font-size: 20px; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 800; color: #E8731A; }
+    .stat-label { font-size: 11px; color: #8E8E93; margin-top: 4px; }
+    
+    /* Cards */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      margin: 16px 16px 0;
+      padding: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0A1628;
+    }
+    .see-all {
+      font-size: 13px;
+      color: #E8731A;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    /* Document Alerts */
+    .alert-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F5F5F7;
+    }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .urgency-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+    }
+    .urgency-dot.red { background: #FF3B30; }
+    .urgency-dot.orange { background: #FF9500; }
+    .alert-text { font-size: 14px; color: #0A1628; }
+    
+    /* Job Cards */
+    .job-list { display: flex; flex-direction: column; gap: 12px; }
+    .job-card {
+      border: 1px solid #E8E8ED;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .job-card:hover { border-color: #E8731A; }
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .job-title { font-size: 15px; font-weight: 700; color: #0A1628; }
+    .job-vessel { font-size: 13px; color: #8E8E93; margin-bottom: 8px; }
+    .job-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .job-detail { font-size: 12px; color: #8E8E93; }
+    .job-salary { font-size: 13px; font-weight: 700; color: #E8731A; }
+    .job-duration { font-size: 12px; color: #8E8E93; margin-top: 4px; }
+    
+    /* Quick Actions */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .action-btn {
+      background: #F5F5F7;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .action-btn:hover { background: #E8E8ED; }
+    .action-icon-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(232, 115, 26, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+    .action-icon { font-size: 24px; }
+    .action-label { font-size: 13px; font-weight: 600; color: #0A1628; }
+    
+    /* Notifications */
+    .notif-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F5F5F7;
+    }
+    .notif-text { flex: 1; font-size: 13px; color: #0A1628; }
+    .unread-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: #E8731A;
+      margin-left: 8px;
+    }
+    
+    /* Tab Bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      background: #0A1628;
+      display: flex;
+      padding: 8px 0 20px;
+      z-index: 100;
+    }
+    .tab-item {
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .tab-item.active { opacity: 1; }
+    .tab-icon { font-size: 22px; }
+    .tab-label { font-size: 11px; font-weight: 600; color: #AEAEB2; margin-top: 2px; }
+    .tab-item.active .tab-label { color: #E8731A; }
+    
+    .footer { height: 90px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Language Selector -->
+    <div class="lang-bar">
+      <button class="lang-btn active" onclick="setLang('tr')">🇹🇷 Türkçe</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+      <button class="lang-btn" onclick="setLang('ru')">🇷🇺 Русский</button>
+      <button class="lang-btn" onclick="setLang('ar')">🇸🇦 العربية</button>
+    </div>
+    
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-greeting" data-i18n="greeting">Merhaba, Cengiz</div>
+        <div class="hero-title" data-i18n="heroTitle">Denizcilik Kariyeriniz,<br>Tek Bir Platformda.</div>
+        <div class="hero-subtitle" data-i18n="heroSubtitle">İş ilanları, başvurular, belgeler ve kariyeriniz için ihtiyacınız olan her şey CREWINTEL'de.</div>
+        <div class="hero-status">
+          <span class="badge badge-success" data-i18n="statusActive">Aktif Görevde</span>
+          <span class="stat-badge">📄 7</span>
+          <span class="stat-badge">📋 2</span>
+        </div>
+        <button class="hero-cta" data-i18n="heroCta">İlanları Keşfet <span class="hero-arrow">→</span></button>
+      </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📄</div>
+        <div class="stat-value">7</div>
+        <div class="stat-label" data-i18n="documents">Belge</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">2</div>
+        <div class="stat-label" data-i18n="contracts">Kontrat</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔔</div>
+        <div class="stat-value">3</div>
+        <div class="stat-label" data-i18n="notifications">Bildirim</div>
+      </div>
+    </div>
+    
+    <!-- Document Alerts -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:8px;background:#FF950015;display:flex;align-items:center;justify-content:center">⚠️</div>
+          <span class="card-title" data-i18n="expiringDocuments">Belge Uyarıları</span>
+        </div>
+        <span class="badge badge-warning">2</span>
+      </div>
+      <div class="alert-item">
+        <div class="alert-left">
+          <div class="urgency-dot orange"></div>
+          <span class="alert-text">STCW Certificate</span>
+        </div>
+        <span class="badge badge-warning">18d</span>
+      </div>
+      <div class="alert-item">
+        <div class="alert-left">
+          <div class="urgency-dot orange"></div>
+          <span class="alert-text">Medical Certificate</span>
+        </div>
+        <span class="badge badge-warning">12d</span>
+      </div>
+    </div>
+    
+    <!-- Recommended Jobs -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="recommendedJobs">Önerilen İşler</span>
+        <span class="see-all" data-i18n="seeAll">Tümünü Gör</span>
+      </div>
+      <div class="job-list">
+        <div class="job-card">
+          <div class="job-header">
+            <span class="job-title">Chief Officer</span>
+            <span class="badge badge-success">%94</span>
+          </div>
+          <div class="job-vessel">🚢 Chemical Tanker</div>
+          <div class="job-details">
+            <span class="job-detail">📍 Rotterdam</span>
+            <span class="job-salary">💰 4,500 - 5,500 USD</span>
+          </div>
+          <div class="job-duration">📅 6 ay</div>
+        </div>
+        <div class="job-card">
+          <div class="job-header">
+            <span class="job-title">2nd Engineer</span>
+            <span class="badge badge-success">%87</span>
+          </div>
+          <div class="job-vessel">🚢 Container</div>
+          <div class="job-details">
+            <span class="job-detail">📍 Istanbul</span>
+            <span class="job-salary">💰 3,800 - 4,200 USD</span>
+          </div>
+          <div class="job-duration">📅 4 ay</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card">
+      <span class="card-title" data-i18n="quickActions" style="display:block;margin-bottom:14px">Hızlı İşlemler</span>
+      <div class="actions-grid">
+        <div class="action-btn">
+          <div class="action-icon-container"><span class="action-icon">💼</span></div>
+          <span class="action-label" data-i18n="navJobs">İlanlar</span>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon-container"><span class="action-icon">📄</span></div>
+          <span class="action-label" data-i18n="profileDocs">Belgelerim</span>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon-container"><span class="action-icon">📋</span></div>
+          <span class="action-label" data-i18n="navApps">Başvurularım</span>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon-container"><span class="action-icon">💬</span></div>
+          <span class="action-label" data-i18n="navMsgs">Mesajlar</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notifications -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="recentNotifications">Son Bildirimler</span>
+        <span class="see-all" data-i18n="seeAll">Tümünü Gör</span>
+      </div>
+      <div class="notif-item">
+        <span class="notif-text">Medical belgenizin süresi 12 gün sonra doluyor</span>
+        <div class="unread-dot"></div>
+      </div>
+      <div class="notif-item">
+        <span class="notif-text">STCW belgenizin süresi 18 gün sonra doluyor</span>
+        <div class="unread-dot"></div>
+      </div>
+      <div class="notif-item">
+        <span class="notif-text">Yeni Chief Officer ilanı yayınlandı</span>
+      </div>
+    </div>
+    
+    <div class="footer"></div>
+    
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item active"><div class="tab-icon">🏠</div><div class="tab-label" data-i18n="tabHome">Ana Sayfa</div></div>
+      <div class="tab-item"><div class="tab-icon">💼</div><div class="tab-label" data-i18n="tabJobs">İlanlar</div></div>
+      <div class="tab-item"><div class="tab-icon">📋</div><div class="tab-label" data-i18n="tabApps">Başvurular</div></div>
+      <div class="tab-item"><div class="tab-icon">💬</div><div class="tab-label" data-i18n="tabMsgs">Mesajlar</div></div>
+      <div class="tab-item"><div class="tab-icon">👤</div><div class="tab-label" data-i18n="tabProfile">Profil</div></div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      tr: {
+        greeting: 'Merhaba, Cengiz',
+        heroTitle: 'Denizcilik Kariyeriniz,<br>Tek Bir Platformda.',
+        heroSubtitle: 'İş ilanları, başvurular, belgeler ve kariyeriniz için ihtiyacınız olan her şey CREWINTEL\'de.',
+        heroCta: 'İlanları Keşfet →',
+        statusActive: 'Aktif Görevde',
+        documents: 'Belge',
+        contracts: 'Kontrat',
+        notifications: 'Bildirim',
+        expiringDocuments: 'Belge Uyarıları',
+        recommendedJobs: 'Önerilen İşler',
+        seeAll: 'Tümünü Gör',
+        quickActions: 'Hızlı İşlemler',
+        recentNotifications: 'Son Bildirimler',
+        navJobs: 'İlanlar',
+        profileDocs: 'Belgelerim',
+        navApps: 'Başvurularım',
+        navMsgs: 'Mesajlar',
+        tabHome: 'Ana Sayfa',
+        tabJobs: 'İlanlar',
+        tabApps: 'Başvurular',
+        tabMsgs: 'Mesajlar',
+        tabProfile: 'Profil',
+      },
+      en: {
+        greeting: 'Hello, Cengiz',
+        heroTitle: 'Your Maritime Career,<br>One Platform.',
+        heroSubtitle: 'Job listings, applications, documents and everything you need for your career — all in CREWINTEL.',
+        heroCta: 'Explore Jobs →',
+        statusActive: 'Currently Employed',
+        documents: 'Documents',
+        contracts: 'Contracts',
+        notifications: 'Notifications',
+        expiringDocuments: 'Document Alerts',
+        recommendedJobs: 'Recommended Jobs',
+        seeAll: 'View All',
+        quickActions: 'Quick Actions',
+        recentNotifications: 'Recent Notifications',
+        navJobs: 'Jobs',
+        profileDocs: 'My Documents',
+        navApps: 'Applications',
+        navMsgs: 'Messages',
+        tabHome: 'Home',
+        tabJobs: 'Jobs',
+        tabApps: 'Applications',
+        tabMsgs: 'Messages',
+        tabProfile: 'Profile',
+      },
+      ru: {
+        greeting: 'Здравствуйте, Cengiz',
+        heroTitle: 'Ваша морская карьера —<br>на одной платформе.',
+        heroSubtitle: 'Вакансии, заявки, документы и всё, что нужно для вашей карьеры — всё в CREWINTEL.',
+        heroCta: 'Смотреть вакансии →',
+        statusActive: 'На борту',
+        documents: 'Документы',
+        contracts: 'Контракты',
+        notifications: 'Уведомления',
+        expiringDocuments: 'Предупреждения',
+        recommendedJobs: 'Рекомендованные вакансии',
+        seeAll: 'Смотреть все',
+        quickActions: 'Быстрые действия',
+        recentNotifications: 'Последние уведомления',
+        navJobs: 'Вакансии',
+        profileDocs: 'Мои документы',
+        navApps: 'Заявки',
+        navMsgs: 'Сообщения',
+        tabHome: 'Главная',
+        tabJobs: 'Вакансии',
+        tabApps: 'Заявки',
+        tabMsgs: 'Сообщения',
+        tabProfile: 'Профиль',
+      },
+      ar: {
+        greeting: 'مرحباً، Cengiz',
+        heroTitle: 'مسيرتك البحرية،<br>في منصة واحدة.',
+        heroSubtitle: 'الوظائف، الطلبات، المستندات وكل ما تحتاجه لمسيرتك المهنية — كل ذلك في CREWINTEL.',
+        heroCta: 'استعرض الوظائف →',
+        statusActive: 'في الخدمة',
+        documents: 'المستندات',
+        contracts: 'العقود',
+        notifications: 'الإشعارات',
+        expiringDocuments: 'تنبيهات المستندات',
+        recommendedJobs: 'الوظائف المقترحة',
+        seeAll: 'عرض الكل',
+        quickActions: 'إجراءات سريعة',
+        recentNotifications: 'آخر الإشعارات',
+        navJobs: 'الوظائف',
+        profileDocs: 'مستنداتي',
+        navApps: 'الطلبات',
+        navMsgs: 'الرسائل',
+        tabHome: 'الرئيسية',
+        tabJobs: 'الوظائف',
+        tabApps: 'الطلبات',
+        tabMsgs: 'الرسائل',
+        tabProfile: 'الملف الشخصي',
+      },
+    };
+
+    let currentLang = 'tr';
+    
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(lang === 'tr' ? 'Türkçe' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : 'العربية')) {
+          btn.classList.add('active');
+        }
+      });
+      
+      const t = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerHTML = t[key];
+      });
+      
+      // RTL for Arabic
+      document.querySelector('.app').style.direction = lang === 'ar' ? 'rtl' : 'ltr';
+      document.querySelector('.app').style.textAlign = lang === 'ar' ? 'right' : 'left';
+      
+      // Update hero title line breaks
+      const heroTitle = document.querySelector('.hero-title');
+      if (heroTitle) {
+        heroTitle.innerHTML = t.heroTitle;
+      }
+    }
+  </script>
+</body>
+</html>
