@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CREWINTEL — PRODUCTION OVERRIDE
+#
+# Usage:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Security model:
+#   - PostgreSQL is NOT published to the host (no port mapping).
+#   - Backend is NOT published to the host; reachable only inside the Docker
+#     network through the frontend's nginx proxy.
+#   - Only the frontend (nginx, :80) is exposed.
+#   - The SPA calls the API same-origin (/api/* → nginx → backend), so a
+#     permissive CORS list is not needed. Set CORS_ORIGINS to your real domain.
+#
+# TLS (HTTPS) prerequisites — NOT handled here:
+#   - Point `www.freebuff.com` → this host and `api.freebuff.com` (optional;
+#     the nginx proxy makes a single origin work) via DNS.
+#   - Terminate TLS with a reverse proxy in front of :80, or mount certs and
+#     add a 443 listener. Let's Encrypt (certbot) is compatible with the nginx
+#     proxy_pass layout above.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    ports: []
+    restart: always
+
+  backend:
+    ports: []
+    restart: always
+    environment:
+      APP_ENVIRONMENT: production
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://www.freebuff.com,https://freebuff.com}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in production}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL must be set in production}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in production}
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ""
+    restart: always
+    ports:
+      - "80:80"

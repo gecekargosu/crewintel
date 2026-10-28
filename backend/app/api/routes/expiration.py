@@ -1,11 +1,12 @@
 ﻿from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.api.deps import require_staff_read
 from app.db.database import get_db
 from app.models.document import Document
-from app.services.expiration_service import ExpirationService
+from app.models.user import User
 from app.schemas.document import DocumentResponse
-
+from app.services.expiration_service import ExpirationService
 
 router = APIRouter(
     prefix="/api/expiration",
@@ -26,6 +27,7 @@ def serialize_documents(
 @router.get("/summary")
 def expiration_summary(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
     return service.get_summary()
@@ -37,6 +39,7 @@ def expiration_summary(
 )
 def expired_documents(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
 
@@ -52,6 +55,7 @@ def expired_documents(
 )
 def urgent_documents(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
 
@@ -67,6 +71,7 @@ def urgent_documents(
 )
 def approaching_documents(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
 
@@ -82,6 +87,7 @@ def approaching_documents(
 )
 def valid_documents(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
 
@@ -97,6 +103,7 @@ def valid_documents(
 )
 def documents_without_expiry(
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
 ):
     service = ExpirationService(db)
 

@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api.deps import require_roles, require_staff_read
 from app.api.routes.crew import get_crew_member_or_404
 from app.api.routes.ships import get_ship_or_404
 from app.db.database import get_db
 from app.models.contract import Contract
+from app.models.user import User
 from app.schemas.contract import ContractCreate, ContractResponse, ContractUpdate
 from app.services.audit import log_event
-
 
 router = APIRouter(prefix="/api/contracts", tags=["Contracts"])
 
@@ -31,14 +32,18 @@ def validate_contract_dates(contract: Contract) -> None:
 
 
 @router.post("/", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
-def create_contract(contract_data: ContractCreate, db: Session = Depends(get_db)):
+def create_contract(
+    contract_data: ContractCreate,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_roles("admin", "hr")),
+):
     validate_references(contract_data.ship_id, contract_data.crew_member_id, db)
     contract = Contract(**contract_data.model_dump())
     try:
         db.add(contract)
         db.flush()
         log_event(db, "contract_created", "contract", contract.id,
-                  f"Contract created: {contract.contract_number}")
+                  f"Contract created: {contract.contract_number}", user_email=actor.email)
         db.commit()
         db.refresh(contract)
     except IntegrityError as error:
@@ -48,17 +53,29 @@ def create_contract(contract_data: ContractCreate, db: Session = Depends(get_db)
 
 
 @router.get("/", response_model=list[ContractResponse])
-def list_contracts(db: Session = Depends(get_db)):
+def list_contracts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
+):
     return db.query(Contract).order_by(Contract.id).all()
 
 
 @router.get("/{contract_id}", response_model=ContractResponse)
-def get_contract(contract_id: int, db: Session = Depends(get_db)):
+def get_contract(
+    contract_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_read),
+):
     return get_contract_or_404(contract_id, db)
 
 
 @router.put("/{contract_id}", response_model=ContractResponse)
-def update_contract(contract_id: int, contract_data: ContractUpdate, db: Session = Depends(get_db)):
+def update_contract(
+    contract_id: int,
+    contract_data: ContractUpdate,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_roles("admin", "hr")),
+):
     contract = get_contract_or_404(contract_id, db)
     updates = contract_data.model_dump(exclude_unset=True)
     effective_ship_id = updates.get("ship_id", contract.ship_id)
@@ -69,7 +86,7 @@ def update_contract(contract_id: int, contract_data: ContractUpdate, db: Session
     validate_contract_dates(contract)
     try:
         log_event(db, "contract_updated", "contract", contract.id,
-                  f"Contract updated: {contract.contract_number}")
+                  f"Contract updated: {contract.contract_number}", user_email=actor.email)
         db.commit()
         db.refresh(contract)
     except IntegrityError as error:
@@ -79,11 +96,15 @@ def update_contract(contract_id: int, contract_data: ContractUpdate, db: Session
 
 
 @router.delete("/{contract_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_contract(contract_id: int, db: Session = Depends(get_db)):
+def delete_contract(
+    contract_id: int,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_roles("admin", "hr")),
+):
     contract = get_contract_or_404(contract_id, db)
     contract_id_val = contract.id
     number = contract.contract_number
     db.delete(contract)
     log_event(db, "contract_deleted", "contract", contract_id_val,
-              f"Contract deleted: {number}")
+              f"Contract deleted: {number}", user_email=actor.email)
     db.commit()

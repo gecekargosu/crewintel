@@ -41,3 +41,85 @@ frontend/.vite/
 # Temporary
 *.tmp
 *.temp
+
+# CREWINTEL runtime data (uploaded documents)
+storage/
+
+# Recovery/handoff snapshots and stale backups
+CREWINTEL_HANDOFF_*/
+_RECOVERY_*/
+.freebuff/
+backend/app/services/document_processing.py.*
+backend/app/services/document_processing.HEAD.py
+backend/reprocess_documents.py
+frontend/src/App *.jsx
+frontend/src/App *.css
+
+e ps
+*.txt-e
+
+# Local scratch files
+duplicate_test*.txt
+
+# ── GitHub temizliği (2026-10-28) ────────────────────────────────────────────
+# Mobil uygulama bağımlılıkları ve derleme çıktıları
+mobile/node_modules/
+mobile/dist/
+mobile/.expo/
+mobile/web-build/
+
+# Üretilen kurulum dosyaları ve arşivler
+*.apk
+*.aab
+*.zip
+*.7z
+installer/*.apk
+
+# Kişisel / geçici belgeler (depoya girmemeli)
+*.docx
+*.pdf
+*.png
+!docs/**/*.png
+!frontend/src/assets/*.png
+!frontend/public/*.png
+!mobile/assets/**/*.png
+screen.png
+phone_screen.png
+ui_dump.xml
+CV_*.txt
+cv_*.txt
+YAZILIM_*.docx
+
+# Eski sürümler / karışık dosya adları
+mobile-app/
+social-downloader/
+backend;C/
+tests;C/
+e ps
+*.sql
+sorun-raporu.txt
+
+# ── Depo temizliği (2026-10-28, ikinci tur) ─────────────────────────────────
+# Projeyle ilgisi olmayan büyük klasörler (yerelde kalır, depoya girmez)
+cooper_cms/
+NGD_MONTFORT_DESIGN_PACKAGE/
+backups/
+ai/
+database/
+deployment/
+
+# Geçici analiz / test çıktıları
+CREWINTEL_*.txt
+backend/audit_results.txt
+backend/e2e_results.txt
+opencode.json
+frontend/login-preview.html
+
+# Tek seferlik bakım betikleri
+scripts/_*.py
+
+# Arşiv klasörü (eski kopyalar buraya taşınır)
+_arsiv/
+
+# Ajan/IDE yapılandırmaları
+.claude/

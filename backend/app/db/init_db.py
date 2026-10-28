@@ -1,5 +1,4 @@
 from app.db.database import Base, engine
-from app.models import CrewMember
 
 
 def init_db():

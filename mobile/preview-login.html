@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CREWINTEL Mobile — Animated Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #050d18; min-height: 100vh; overflow: hidden; }
+    .app { max-width: 420px; margin: 0 auto; min-height: 100vh; position: relative; overflow: hidden; }
+    
+    /* === MARITIME BACKGROUND === */
+    .maritime-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #0A1628 0%, #0D1B2E 30%, #122240 60%, #0A1628 100%);
+    }
+    
+    /* Stars */
+    .stars {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 50%;
+      animation: twinkle 3s ease-in-out infinite;
+    }
+    .star:nth-child(1) { top: 8%; left: 15%; animation-delay: 0s; }
+    .star:nth-child(2) { top: 12%; left: 45%; animation-delay: 0.5s; }
+    .star:nth-child(3) { top: 6%; left: 72%; animation-delay: 1s; }
+    .star:nth-child(4) { top: 15%; left: 88%; animation-delay: 1.5s; }
+    .star:nth-child(5) { top: 10%; left: 30%; animation-delay: 2s; }
+    .star:nth-child(6) { top: 18%; left: 60%; animation-delay: 0.3s; }
+    .star:nth-child(7) { top: 5%; left: 52%; animation-delay: 1.2s; }
+    .star:nth-child(8) { top: 20%; left: 20%; animation-delay: 0.8s; }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    /* Moon */
+    .moon {
+      position: absolute;
+      top: 6%;
+      right: 15%;
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle at 35% 35%, #fff 0%, #e8e8ed 40%, #d1d1d6 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 40px rgba(255,255,255,0.3), 0 0 80px rgba(255,255,255,0.1);
+      animation: moonGlow 8s ease-in-out infinite;
+    }
+    @keyframes moonGlow {
+      0%, 100% { box-shadow: 0 0 40px rgba(255,255,255,0.3), 0 0 80px rgba(255,255,255,0.1); }
+      50% { box-shadow: 0 0 60px rgba(255,255,255,0.4), 0 0 100px rgba(255,255,255,0.15); }
+    }
+    
+    /* Horizon line */
+    .horizon {
+      position: absolute;
+      bottom: 38%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.1) 80%, transparent 100%);
+    }
+    
+    /* === SHIP === */
+    .ship-container {
+      position: absolute;
+      bottom: 40%;
+      left: 0;
+      right: 0;
+      height: 120px;
+      animation: shipFloat 12s ease-in-out infinite;
+    }
+    @keyframes shipFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-4px) rotate(0.3deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(4px) rotate(-0.3deg); }
+    }
+    
+    .ship {
+      position: absolute;
+      bottom: 0;
+      animation: shipMove 25s linear infinite;
+    }
+    @keyframes shipMove {
+      0% { left: -200px; }
+      100% { left: calc(100% + 200px); }
+    }
+    
+    /* Ship Hull */
+    .ship-hull {
+      width: 180px;
+      height: 40px;
+      background: linear-gradient(180deg, #2a3a5c 0%, #1a2a4c 100%);
+      border-radius: 0 0 8px 8px;
+      position: relative;
+    }
+    .ship-hull::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 20px;
+      right: 20px;
+      height: 20px;
+      background: linear-gradient(180deg, #3a4a6c 0%, #2a3a5c 100%);
+      border-radius: 4px 4px 0 0;
+    }
+    
+    /* Ship Bridge */
+    .ship-bridge {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 35px;
+      background: linear-gradient(180deg, #4a5a7c 0%, #3a4a6c 100%);
+      border-radius: 4px 4px 0 0;
+    }
+    .ship-bridge::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 15px;
+      background: linear-gradient(180deg, #5a6a8c 0%, #4a5a7c 100%);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    /* Ship Windows */
+    .ship-windows {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+    }
+    .ship-window {
+      width: 6px;
+      height: 6px;
+      background: #FFE066;
+      border-radius: 1px;
+      box-shadow: 0 0 8px rgba(255,224,102,0.6);
+      animation: windowFlicker 4s ease-in-out infinite;
+    }
+    .ship-window:nth-child(2) { animation-delay: 0.5s; }
+    .ship-window:nth-child(3) { animation-delay: 1s; }
+    @keyframes windowFlicker {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+    
+    /* Ship Light */
+    .ship-light {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: #FF3B30;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(255,59,48,0.8), 0 0 24px rgba(255,59,48,0.4);
+      animation: lightBlink 2s ease-in-out infinite;
+    }
+    @keyframes lightBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    /* === WAVES === */
+    .waves-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38%;
+      overflow: hidden;
+    }
+    
+    .wave {
+      position: absolute;
+      width: 200%;
+      left: -50%;
+      height: 100%;
+      background: repeat-x;
+      animation: waveMove linear infinite;
+    }
+    
+    .wave-1 {
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%230A1628' fill-opacity='0.9' d='M0,64L48,58.7C96,53,192,43,288,48C384,53,480,75,576,80C672,85,768,75,864,64C960,53,1056,43,1152,48C1248,53,1344,75,1392,85.3L1440,96L1440,120L0,120Z'/%3E%3C/svg%3E") bottom/1440px 120px repeat-x;
+      animation-duration: 18s;
+      opacity: 0.9;
+    }
+    
+    .wave-2 {
+      bottom: -10px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%230D1B2E' fill-opacity='0.8' d='M0,96L48,90.7C96,85,192,75,288,69.3C384,64,480,64,576,69.3C672,75,768,85,864,90.7C960,96,1056,96,1152,90.7C1248,85,1344,75,1392,69.3L1440,64L1440,120L0,120Z'/%3E%3C/svg%3E") bottom/1440px 120px repeat-x;
+      animation-duration: 14s;
+      animation-direction: reverse;
+      opacity: 0.8;
+    }
+    
+    .wave-3 {
+      bottom: -20px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23122240' fill-opacity='0.7' d='M0,32L48,37.3C96,43,192,53,288,58.7C384,64,480,64,576,53.3C672,43,768,21,864,16C960,11,1056,21,1152,32C1248,43,1344,53,1392,58.7L1440,64L1440,120L0,120Z'/%3E%3C/svg%3E") bottom/1440px 120px repeat-x;
+      animation-duration: 20s;
+      opacity: 0.7;
+    }
+    
+    .wave-4 {
+      bottom: -30px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%231a2a4c' fill-opacity='0.5' d='M0,64L48,69.3C96,75,192,85,288,90.7C384,96,480,96,576,90.7C672,85,768,75,864,64C960,53,1056,43,1152,48C1248,53,1344,75,1392,85.3L1440,96L1440,120L0,120Z'/%3E%3C/svg%3E") bottom/1440px 120px repeat-x;
+      animation-duration: 16s;
+      animation-direction: reverse;
+      opacity: 0.5;
+    }
+    
+    @keyframes waveMove {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(50%); }
+    }
+    
+    /* Water reflection */
+    .water-reflection {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38%;
+      background: linear-gradient(180deg, transparent 0%, rgba(232,115,26,0.03) 50%, rgba(10,22,40,0.8) 100%);
+    }
+    
+    /* === LOGIN FORM === */
+    .login-container {
+      position: relative;
+      z-index: 100;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    
+    .logo-section {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #E8731A 0%, #C45E10 100%);
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(232,115,26,0.4);
+      animation: logoPulse 4s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(232,115,26,0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 12px 40px rgba(232,115,26,0.5); }
+    }
+    .app-name {
+      color: #fff;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .app-subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: rgba(10, 22, 40, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    .login-title {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    
+    .field {
+      margin-bottom: 20px;
+    }
+    .field-label {
+      color: rgba(255,255,255,0.8);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .field-input {
+      width: 100%;
+      height: 48px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #fff;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .field-input:focus {
+      border-color: #E8731A;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 0 3px rgba(232,115,26,0.15);
+    }
+    .field-input::placeholder { color: rgba(255,255,255,0.3); }
+    
+    .password-wrapper {
+      position: relative;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    
+    .login-btn {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(135deg, #E8731A 0%, #C45E10 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(232,115,26,0.3);
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(232,115,26,0.4);
+    }
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 20px;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+    }
+    .register-link a {
+      color: #E8731A;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .register-link a:hover { text-decoration: underline; }
+    
+    .footer-text {
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 24px;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Language selector */
+    .lang-bar {
+      position: absolute;
+      top: 12px;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      z-index: 200;
+    }
+    .lang-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(10,22,40,0.6);
+      backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .lang-btn:hover { border-color: #E8731A; color: #fff; }
+    .lang-btn.active { background: #E8731A; color: #fff; border-color: #E8731A; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Maritime Background -->
+    <div class="maritime-bg">
+      <!-- Stars -->
+      <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+      </div>
+      
+      <!-- Moon -->
+      <div class="moon"></div>
+      
+      <!-- Horizon -->
+      <div class="horizon"></div>
+      
+      <!-- Ship -->
+      <div class="ship-container">
+        <div class="ship">
+          <div class="ship-light"></div>
+          <div class="ship-bridge"></div>
+          <div class="ship-windows">
+            <div class="ship-window"></div>
+            <div class="ship-window"></div>
+            <div class="ship-window"></div>
+          </div>
+          <div class="ship-hull"></div>
+        </div>
+      </div>
+      
+      <!-- Waves -->
+      <div class="waves-container">
+        <div class="wave wave-1"></div>
+        <div class="wave wave-2"></div>
+        <div class="wave wave-3"></div>
+        <div class="wave wave-4"></div>
+      </div>
+      
+      <!-- Water Reflection -->
+      <div class="water-reflection"></div>
+    </div>
+    
+    <!-- Language Selector -->
+    <div class="lang-bar">
+      <button class="lang-btn active" onclick="setLang('tr')">🇹🇷</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧</button>
+      <button class="lang-btn" onclick="setLang('ru')">🇷🇺</button>
+      <button class="lang-btn" onclick="setLang('ar')">🇸🇦</button>
+    </div>
+    
+    <!-- Login Form -->
+    <div class="login-container">
+      <div class="logo-section">
+        <div class="logo-icon">⚓</div>
+        <div class="app-name">CREWINTEL</div>
+        <div class="app-subtitle" data-i18n="subtitle">Gemi Personeli Yönetim Sistemi</div>
+      </div>
+      
+      <div class="login-card">
+        <div class="login-title" data-i18n="loginTitle">Giriş Yap</div>
+        
+        <div class="field">
+          <label class="field-label" data-i18n="email">E-posta</label>
+          <input class="field-input" type="email" placeholder="ornek@email.com"/>
+        </div>
+        
+        <div class="field">
+          <label class="field-label" data-i18n="password">Şifre</label>
+          <div class="password-wrapper">
+            <input class="field-input" type="password" placeholder="••••••••" value="••••••••"/>
+            <button class="password-toggle">👁️</button>
+          </div>
+        </div>
+        
+        <button class="login-btn" data-i18n="loginBtn">Giriş Yap</button>
+        
+        <div class="register-link">
+          <span data-i18n="noAccount">Hesabınız yok mu?</span>
+          <a data-i18n="registerLink">Kayıt Ol</a>
+        </div>
+      </div>
+      
+      <div class="footer-text">CREWINTEL v1.0 • Manning & Crew Management</div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      tr: { subtitle: 'Gemi Personeli Yönetim Sistemi', loginTitle: 'Giriş Yap', email: 'E-posta', password: 'Şifre', loginBtn: 'Giriş Yap', noAccount: 'Hesabınız yok mu?', registerLink: 'Kayıt Ol' },
+      en: { subtitle: 'Crew Management System', loginTitle: 'Sign In', email: 'Email', password: 'Password', loginBtn: 'Sign In', noAccount: "Don't have an account?", registerLink: 'Sign Up' },
+      ru: { subtitle: 'Система управления экипажем', loginTitle: 'Вход', email: 'Электронная почта', password: 'Пароль', loginBtn: 'Войти', noAccount: 'Нет аккаунта?', registerLink: 'Зарегистрироваться' },
+      ar: { subtitle: 'نظام إدارة طاقم السفن', loginTitle: 'تسجيل الدخول', email: 'البريد الإلكتروني', password: 'كلمة المرور', loginBtn: 'تسجيل الدخول', noAccount: 'ليس لديك حساب؟', registerLink: 'سجل الآن' },
+    };
+    
+    function setLang(lang) {
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const flags = { tr: '🇹🇷', en: '🇬🇧', ru: '🇷🇺', ar: '🇸🇦' };
+        if (btn.textContent.trim() === flags[lang]) btn.classList.add('active');
+      });
+      const t = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+    }
+  </script>
+</body>
+</html>

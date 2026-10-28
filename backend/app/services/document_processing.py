@@ -13,8 +13,14 @@ from app.models.crew_member import CrewMember
 
 
 def normalize(value: str | None) -> str:
+    """İsim/alan normalizasyonu: Türkçe karakterleri ASCII'ye indirger.
+
+    NFKD ç/ğ/ö/ş/ü çözer ama dotless-ı (U+0131) ve dotted-İ (U+0130) çözülmez;
+    elle eşlenir ki "Yılmaz" ile "Yilmaz" aynı token üretsin.
+    """
     if not value:
         return ""
+    value = value.replace("ı", "i").replace("İ", "i").replace("I", "i")
     value = unicodedata.normalize("NFKD", value)
     value = "".join(char for char in value if not unicodedata.combining(char))
     value = value.lower()
@@ -40,13 +46,45 @@ def extract_text(filename: str, content: bytes) -> str:
     return ""
 
 
+TURKISH_MONTHS = {
+    "ocak": "january", "şubat": "february", "subat": "february",
+    "mart": "march", "nisan": "april", "mayıs": "may", "mayis": "may",
+    "haziran": "june", "temmuz": "july", "ağustos": "august", "agustos": "august",
+    "eylül": "september", "eylul": "september", "ekim": "october",
+    "kasım": "november", "kasim": "november", "aralık": "december", "aralik": "december",
+}
+
+
+_DATE_FORMATS = (
+    "%d.%m.%Y",
+    "%d/%m/%Y",
+    "%d-%m-%Y",
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%d %b %Y",
+    "%b %d %Y",
+    "%d %B %Y",
+    "%B %d %Y",
+)
+
+
+def _normalize_month_names(value: str) -> str:
+    """Translate Turkish month names to English so strptime can parse them."""
+    lowered = value.lower()
+    for turkish, english in TURKISH_MONTHS.items():
+        lowered = lowered.replace(turkish, english)
+    return lowered
+
+
 def parse_date(value: str | None) -> date | None:
     if not value:
         return None
 
-    for fmt in ("%d.%m.%Y", "%d/%m/%Y", "%d-%m-%Y"):
+    candidate = _normalize_month_names(re.sub(r"[,;]", "", value.strip()))
+
+    for fmt in _DATE_FORMATS:
         try:
-            return datetime.strptime(value.strip(), fmt).date()
+            return datetime.strptime(candidate, fmt).date()
         except ValueError:
             continue
 
@@ -57,11 +95,23 @@ def _extract_labeled_date(
     text: str,
     labels: list[str],
 ) -> date | None:
-    label_pattern = "|".join(re.escape(label) for label in labels)
+    # Longer labels first so e.g. "expiration date" wins over "expiry".
+    ordered_labels = sorted(labels, key=len, reverse=True)
+    label_pattern = "|".join(re.escape(label) for label in ordered_labels)
+
+    # Broad date token: numeric separators or English/Turkish month words.
+    date_token = (
+        r"\d{1,2}[./-]\d{1,2}[./-]\d{2,4}"
+        r"|\d{4}[./-]\d{1,2}[./-]\d{1,2}"
+        r"|\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|ocak|şubat|subat|mart|nisan|mayıs|mayis|haziran|temmuz|ağustos|agustos|eylül|eylul|ekim|kasım|kasim|aralık|aralik)\.?\s*\d{2,4}"
+        r"|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|ocak|şubat|subat|mart|nisan|mayıs|mayis|haziran|temmuz|ağustos|agustos|eylül|eylul|ekim|kasım|kasim|aralık|aralik)\.?\s+\d{1,2},?\s*\d{2,4}"
+        r"|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},?\s*\d{2,4}"
+        r"|\d{1,2}\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{2,4}"
+    )
 
     match = re.search(
         rf"(?:{label_pattern})\s*[:#-]?\s*"
-        rf"(\d{{1,2}}[./-]\d{{1,2}}[./-]\d{{4}})",
+        rf"({date_token})",
         text,
         re.IGNORECASE,
     )
@@ -69,32 +119,157 @@ def _extract_labeled_date(
     if not match:
         return None
 
-    return parse_date(match.group(1))
+    # Strip commas and stray punctuation before parsing.
+    raw = re.sub(r"[,;]", "", match.group(1))
+    return parse_date(raw)
+
+
+# Belge tipi anahtar kelimeleri. Sıra, eşit skorda öncelik anlamına gelir.
+DOCUMENT_TYPE_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "seaman_book": (
+        "seaman book",
+        "seaman s book",
+        "seamans book",
+        "gemiadami cuzdani",
+        "gemi adami cuzdani",
+    ),
+    "passport": ("passport", "pasaport"),
+    "stcw": ("stcw",),
+    "goc": ("goc",),
+    "medical": ("eng1", "medical certificate", "medical fitness", "health certificate", "medical"),
+    "contract": ("contract", "sozlesme"),
+    "cv": ("curriculum vitae", "resume", "cv"),
+}
+
+
+def _keyword_hits(haystack: str, keyword: str) -> bool:
+    """Kısa anahtar kelimelerde (cv, goc…) kelime sınırı arar."""
+    if len(keyword) <= 3:
+        return re.search(rf"\b{re.escape(keyword)}\b", haystack) is not None
+    return keyword in haystack
+
+
+def classify_document_type(filename: str, text: str) -> str:
+    """Belge tipini ağırlıklı skorla belirler.
+
+    Eski davranış ilk eşleşen anahtar kelimeyi seçiyordu; bu yüzden içinde
+    "Passport: ..." alanı bulunan bir SAĞLIK belgesi "passport" olarak
+    sınıflandırılıyordu. Artık başlık bölgesi (ilk 3 dolu satır), dosya adı ve
+    gövde ayrı ağırlıklarla puanlanır, uzun (daha spesifik) anahtar kelimeler
+    daha yüksek puan alır ve en yüksek skorlu tip kazanır.
+
+    Dosya adı en güçlü sinyaldir: bir CV gövdesinde "Medical Fitness
+    Certificate" gibi satırlar geçebilir, bu belgeyi sağlık raporu yapmaz.
+    """
+    lines = [line for line in text.splitlines() if line.strip()]
+    header = normalize("\n".join(lines[:3]))
+    stem = normalize(Path(filename).stem)
+    body = normalize(f"{filename}\n{text}")
+
+    best_type = "other"
+    best_score = 0.0
+    for kind, words in DOCUMENT_TYPE_KEYWORDS.items():
+        score = 0.0
+        for word in words:
+            keyword = normalize(word)
+            if not keyword:
+                continue
+            weight = 1 + len(keyword) / 20
+            in_header = _keyword_hits(header, keyword)
+            in_filename = _keyword_hits(stem, keyword)
+            in_body = _keyword_hits(body, keyword)
+            if in_header:
+                score += 3 * weight
+            if in_filename:
+                score += 4 * weight
+            elif in_body:
+                score += weight
+        if score > best_score:
+            best_type, best_score = kind, score
+
+    # Yalnızca gövdede geçen zayıf bir eşleşme (ör. CV içinde anılan
+    # "contract") yanlış sınıflandırma riski taşır; en az 2 puan (bir başlık
+    # veya dosya adı eşleşmesi) aranır.
+    return best_type if best_score >= 2 else "other"
 
 
 def extract_metadata(filename: str, text: str) -> dict:
     combined = f"{filename}\n{text}"
+
+    document_type = classify_document_type(filename, text)
 
     email = re.search(
         r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}",
         combined,
     )
 
-    passport = re.search(
-        r"(?:passport|pasaport)"
-        r"\s*(?:no|number|numarası|numarasi)?"
-        r"\s*[:#-]?\s*([A-Z0-9]{6,15})",
-        combined,
-        re.IGNORECASE,
+    # Identifier extraction: allow hyphens inside (AB-123456) or a single
+    # space between groups (AB12 3456), but never spill into following words
+    # (e.g. "AB123456 VALID UNTIL" must only capture the number) and never
+    # capture the keyword itself ("Passport Number: ..." must not yield
+    # "NUMBER"). Every captured value must contain at least one digit.
+    def _extract_identifier(label_pattern: str) -> str | None:
+        # Boşluklar satır içi ile sınırlıdır ([ \t]*): `\s*` yeni satırları da
+        # yuttuğundan "PASSPORT\nPassport Number: X" gibi metinlerde ikinci
+        # kelime identifier sanılabiliyordu.
+        anchored = (
+            rf"{label_pattern}"
+            rf"[ \t]*(?:no|number|numarası|numarasi)?"
+            rf"[ \t]*[:#-]?[ \t]*"
+        )
+        # First: a compact token of letters/digits/hyphens (no spaces), e.g.
+        # AB-123456 or AB123456. Iterate over candidates and keep the first
+        # plausible one (contains a digit, 5-15 chars after stripping).
+        for match in re.finditer(
+            rf"{anchored}([A-Z0-9-]+)",
+            combined,
+            re.IGNORECASE,
+        ):
+            value = re.sub(r"[^A-Z0-9]", "", match.group(1).upper())
+            if 5 <= len(value) <= 15 and any(char.isdigit() for char in value):
+                return value
+        # Second: two space-separated groups, e.g. "AB12 3456".
+        for match in re.finditer(
+            rf"{anchored}([A-Z0-9]{{2,6}}[ \t]\d{{2,6}})",
+            combined,
+            re.IGNORECASE,
+        ):
+            value = re.sub(r"[^A-Z0-9]", "", match.group(1).upper())
+            if 5 <= len(value) <= 15:
+                return value
+        return None
+
+    def _extract_mrz_number() -> str | None:
+        """TD3 MRZ ikinci satırının ilk 9 karakteri belge numarasıdır.
+
+        Bazı pasaport/kimlik belgelerinde numara yalnızca MRZ'de veya
+        "Document Number" gibi genel bir etiketle geçer; bu yüzden MRZ'den
+        okunan numara da kabul edilir.
+        """
+        for line in text.splitlines():
+            candidate = line.strip().replace(" ", "")
+            if len(candidate) < 30 or "<" not in candidate:
+                continue
+            if not re.fullmatch(r"[A-Z0-9<]{30,44}", candidate):
+                continue
+            value = candidate[:9].replace("<", "")
+            if 5 <= len(value) <= 15 and any(char.isdigit() for char in value):
+                return value
+        return None
+
+    passport = _extract_identifier(r"(?:passport|pasaport)")
+    seaman = _extract_identifier(
+        r"(?:seaman(?:'s)?\s*book|gemiadamı|gemiadami)"
     )
 
-    seaman = re.search(
-        r"(?:seaman(?:'s)?\s*book|gemiadamı|gemiadami)"
-        r"\s*(?:no|number|numarası|numarasi)?"
-        r"\s*[:#-]?\s*([A-Z0-9]{5,15})",
-        combined,
-        re.IGNORECASE,
-    )
+    # Pasaport/gemiadamı cüzdanı belgelerinde numara bazen yalnızca genel
+    # "Document Number" etiketiyle veya yalnızca MRZ satırında yer alır.
+    # Genel etiket yalnızca doğrulanmış belge tipinde kabul edilir; aksi
+    # halde bir sözleşmenin "Contract Number" alanı pasaport numarası sanılır.
+    if passport is None and document_type == "passport":
+        passport = _extract_identifier(r"(?:document|belge)") or _extract_mrz_number()
+    if seaman is None and document_type == "seaman_book":
+        seaman = _extract_identifier(r"(?:document|belge)") or _extract_mrz_number()
 
     date_of_birth = _extract_labeled_date(
         combined,
@@ -123,43 +298,26 @@ def extract_metadata(filename: str, text: str) -> dict:
             "expiry date",
             "expiration date",
             "date of expiry",
+            "valid until",
+            "valid to",
+            "validity date",
+            "validity",
+            "expiry",
             "son geçerlilik tarihi",
             "son gecerlilik tarihi",
+            "son geçerlilik",
+            "son gecerlilik",
+            "geçerlilik tarihi",
+            "gecerlilik tarihi",
+            "geçerlilik",
+            "gecerlilik",
         ],
-    )
-
-    upper = normalize(combined)
-
-    document_types = {
-        "cv": ["curriculum vitae", "resume", "cv"],
-        "passport": ["passport", "pasaport"],
-        "stcw": ["stcw"],
-        "goc": ["goc"],
-        "medical": ["eng1", "medical", "medical certificate"],
-        "contract": ["contract", "sozlesme", "sözleşme"],
-    }
-
-    document_type = next(
-        (
-            kind
-            for kind, words in document_types.items()
-            if any(normalize(word) in upper for word in words)
-        ),
-        "other",
     )
 
     return {
         "email": email.group(0).lower() if email else None,
-        "passport_number": (
-            passport.group(1).upper()
-            if passport
-            else None
-        ),
-        "seaman_book_number": (
-            seaman.group(1).upper()
-            if seaman
-            else None
-        ),
+        "passport_number": passport,
+        "seaman_book_number": seaman,
         "date_of_birth": date_of_birth,
         "issue_date": issue_date,
         "expiry_date": expiry_date,
@@ -212,6 +370,16 @@ def extract_name(
     return None, None
 
 
+def normalize_identifier(value: str | None) -> str:
+    """Compact identifier form: alphanumerics only, uppercased.
+
+    Makes "AB-123456", "AB12 3456" and "ab123456" compare equal.
+    """
+    if not value:
+        return ""
+    return re.sub(r"[^A-Z0-9]+", "", value.upper())
+
+
 def match_crew(
     session: Session,
     filename: str,
@@ -227,7 +395,7 @@ def match_crew(
         score = 0
 
         if metadata.get("passport_number") and crew.passport_number:
-            if normalize(metadata["passport_number"]) != normalize(
+            if normalize_identifier(metadata["passport_number"]) != normalize_identifier(
                 crew.passport_number
             ):
                 continue
@@ -237,7 +405,7 @@ def match_crew(
             metadata.get("seaman_book_number")
             and crew.seaman_book_number
         ):
-            if normalize(metadata["seaman_book_number"]) != normalize(
+            if normalize_identifier(metadata["seaman_book_number"]) != normalize_identifier(
                 crew.seaman_book_number
             ):
                 continue

@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from app.api.deps import require_roles
 from app.db.database import get_db
 from app.models.audit_log import AuditLog
-
+from app.models.user import User
 
 router = APIRouter(prefix="/api/audit-logs", tags=["Audit Logs"])
 
@@ -20,6 +21,7 @@ class AuditLogResponse(BaseModel):
     entity_id: int | None
     message: str
     status: str
+    user_email: str | None
     metadata_json: dict | None
     created_at: datetime
 
@@ -35,6 +37,7 @@ def list_audit_logs(
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin")),
 ) -> list[AuditLog]:
     query = db.query(AuditLog)
     if action:

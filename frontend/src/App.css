@@ -17,8 +17,138 @@ button {
 
 /* ── Layout ─────────────────────────────────────────────── */
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* LOGIN ANİMASYONLARI — Kinetik Deniz/Gökyüzü Teması          */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* Yıldız titreşimi — bazıları büyük ve parlak */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.6); }
+}
+@keyframes twinkleBright {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  30% { opacity: 1; transform: scale(2); }
+  60% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* Ay parlama */
+@keyframes moonGlow {
+  0%, 100% { box-shadow: 0 0 50px rgba(255,255,255,0.25), 0 0 100px rgba(255,255,255,0.1); }
+  50% { box-shadow: 0 0 80px rgba(255,255,255,0.4), 0 0 160px rgba(255,255,255,0.2); }
+}
+
+/* Güneş doğuş/batış */
+@keyframes sunCycle {
+  0%, 100% { opacity: 0.15; transform: translateY(20px) scale(0.8); }
+  50% { opacity: 0.9; transform: translateY(-10px) scale(1.1); }
+}
+@keyframes sunRays {
+  0%, 100% { opacity: 0.3; transform: rotate(0deg) scale(1); }
+  50% { opacity: 0.7; transform: rotate(180deg) scale(1.15); }
+}
+
+/* Gemi animasyonları — farklı hız ve yönler */
+@keyframes shipSailLarge {
+  0% { transform: translateX(-250px); }
+  100% { transform: translateX(calc(100vw + 250px)); }
+}
+@keyframes shipSailMed {
+  0% { transform: translateX(calc(100vw + 180px)); }
+  100% { transform: translateX(-180px); }
+}
+@keyframes shipSailSmall {
+  0% { transform: translateX(-120px); }
+  100% { transform: translateX(calc(100vw + 120px)); }
+}
+@keyframes shipSailSlow {
+  0% { transform: translateX(calc(100vw + 300px)); }
+  100% { transform: translateX(-300px); }
+}
+@keyframes shipBob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-4px) rotate(1.5deg); }
+}
+
+/* Deniz feneri ışığı */
+@keyframes lighthouseBeam {
+  0% { transform: rotate(0deg); opacity: 0.8; }
+  50% { transform: rotate(180deg); opacity: 0.3; }
+  100% { transform: rotate(360deg); opacity: 0.8; }
+}
+@keyframes lighthousePulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.6), 0 0 60px rgba(251,191,36,0.3); }
+  50% { box-shadow: 0 0 40px rgba(251,191,36,0.9), 0 0 100px rgba(251,191,36,0.5); }
+}
+
+/* Bulut kayması */
+@keyframes cloudDrift {
+  0% { transform: translateX(-120px); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.7; }
+  100% { transform: translateX(calc(100vw + 120px)); opacity: 0; }
+}
+@keyframes cloudDriftSlow {
+  0% { transform: translateX(-150px); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { transform: translateX(calc(100vw + 150px)); opacity: 0; }
+}
+
+/* Yağmur */
+@keyframes rainFall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  15% { opacity: 0.7; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Dalga hareketleri — doğal */
+@keyframes waveDrift1 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes waveDrift2 {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Gökkuşağı atmosfer */
+@keyframes skyShift {
+  0%, 100% { background: linear-gradient(180deg, #0a0f1e 0%, #162033 30%, #1a3050 55%, #1e3a5f 70%, #1a2d47 100%); }
+  25% { background: linear-gradient(180deg, #0d1526 0%, #1a2844 30%, #1f3d5e 55%, #234b6d 70%, #1a3350 100%); }
+  50% { background: linear-gradient(180deg, #0f1a2e 0%, #1e3350 30%, #254a6a 55%, #2a5575 70%, #1d3855 100%); }
+  75% { background: linear-gradient(180deg, #0c1422 0%, #172540 30%, #1c3555 55%, #204060 70%, #193050 100%); }
+}
+
+/* Kuş geçişi */
+@keyframes birdFly {
+  0% { transform: translateX(-60px) translateY(0); }
+  25% { transform: translateX(25vw) translateY(-15px); }
+  50% { transform: translateX(50vw) translateY(5px); }
+  75% { transform: translateX(75vw) translateY(-10px); }
+  100% { transform: translateX(calc(100vw + 60px)) translateY(0); }
+}
+@keyframes wingFlap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(-0.5); }
+}
+
+/* Gemi pencere ışıkları */
+@keyframes windowFlicker {
+  0%, 90%, 100% { opacity: 0.9; }
+  95% { opacity: 0.4; }
+}
+
+/* Kayık sallanma */
+@keyframes shipSway {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  33% { transform: rotate(1deg) translateY(-3px); }
+  66% { transform: rotate(-1deg) translateY(1px); }
 }
 
 .sidebar {
@@ -30,10 +160,17 @@ button {
   flex-direction: column;
   transition: width 0.2s;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .sidebar.closed {
-  width: 68px;
+  width: 88px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.sidebar.closed nav {
+  padding: 0 !important;
 }
 
 .logo {
@@ -69,6 +206,7 @@ nav {
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
   overflow: hidden;
+  position: relative;
 }
 
 .nav-item:hover,
@@ -101,11 +239,76 @@ nav {
   margin-top: 16px;
 }
 
+/* Dar sidebar: ikonlar ortalanır, hover'da tooltip görünür */
+.sidebar.closed .nav-item,
+.sidebar.closed .menu-button {
+  justify-content: center;
+  padding: 12px 0;
+  width: 100%;
+  min-width: 64px;
+  min-height: 46px;
+  overflow: visible;
+}
+
+/* İkonların dar menüde 0 genişliğe büzülmesini engelle (menü görünmez oluyordu) */
+.nav-item svg,
+.menu-button svg {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+}
+
+.sidebar.closed .nav-item:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 82px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0f172a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 200;
+  pointer-events: none;
+}
+
+.nav-item {
+  position: relative;
+}
+
+/* Sistem durumu noktası — radar/pulse animasyonu */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: status-pulse 1.8s ease-out infinite;
+}
+
+@keyframes status-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
 .main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* ── Topbar ─────────────────────────────────────────────── */
@@ -148,6 +351,8 @@ nav {
 .content {
   padding: 28px 32px;
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ── Buttons ─────────────────────────────────────────────── */
@@ -263,7 +468,7 @@ nav {
   font-size: 12px;
   font-weight: 600;
   color: #718096;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.05em;
   margin: 4px 0 10px;
 }
@@ -450,6 +655,132 @@ nav {
   border-color: #2563eb;
 }
 
+/* ── Crew Filter Panel ────────────────────────────────────────────────── */
+.crew-filter-panel {
+  margin-bottom: 12px;
+}
+
+.crew-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.crew-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 7px 13px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.crew-filter-toggle:hover {
+  border-color: #2563eb;
+  background: #f0f6ff;
+  color: #2563eb;
+}
+
+.crew-filter-toggle.has-filters {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.filter-badge {
+  background: #2563eb;
+  color: white;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.filter-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #fca5a5;
+  border-radius: 7px;
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.filter-reset-btn:hover {
+  background: #fee2e2;
+}
+
+.crew-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 14px 0 4px;
+  border-top: 1px solid #f0f4f8;
+  margin-top: 10px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.filter-field input,
+.filter-field select {
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  background: white;
+  color: #374151;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.08);
+}
+
+.crew-filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 18px;
+}
+
+.crew-loading {
+  padding: 16px 6px;
+  color: #64748b;
+  font-size: 13px;
+}
+
 /* ── Entity list & table ────────────────────────────────── */
 .entity-list {
   display: flex;
@@ -503,7 +834,7 @@ nav {
   color: #64748b;
   font-weight: 600;
   font-size: 12px;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
@@ -915,12 +1246,68 @@ nav {
     gap: 4px;
   }
 
-  .sidebar {
-    width: 68px;
+  /* Mobil: kapalıyken dar ikon rayı, hamburger ile açılabilir */
+  .sidebar:not(.open) {
+    width: 88px;
+  }
+
+  .sidebar.open {
+    width: 250px;
+  }
+
+  /* Çok dar ekranlarda kullanıcı adını gizle, avatar + rol kalsın */
+  @media (max-width: 600px) {
+    header .topbar .user-name {
+      display: none;
+    }
+    .topbar {
+      padding: 0 12px;
+      gap: 8px;
+    }
+    .content {
+      padding: 14px;
+    }
   }
 
   .data-table th,
   .data-table td {
     padding: 10px 8px;
   }
+}
+
+/* Personel detay: belge grupları (Öncelik 1) */
+.crew-document-group {
+  margin-bottom: 16px;
+}
+
+.crew-document-group h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px 0;
+}
+
+/* RTL Desteği */
+[dir="rtl"] .sidebar {
+  direction: rtl;
+  text-align: right;
+}
+[dir="rtl"] .nav-item {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+[dir="rtl"] .back-button {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .section-label {
+  text-align: right;
+}
+[dir="rtl"] .topbar {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .topbar h1 {
+  margin-left: 0;
+  margin-right: auto;
 }

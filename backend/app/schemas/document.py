@@ -1,4 +1,5 @@
 from datetime import date, datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -25,3 +26,5 @@ class DocumentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     expiry_status: str | None = None
+    duplicate: bool = False
+    archived: bool = False

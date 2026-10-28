@@ -1,9 +1,13 @@
 from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, JSON, String, Text, func
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.crew_member import CrewMember
 
 
 class Document(Base):
@@ -26,6 +30,7 @@ class Document(Base):
     extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     extracted_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     source: Mapped[str] = mapped_column(String(50), default="upload", server_default="upload")
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC).replace(tzinfo=None), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC).replace(tzinfo=None), server_default=func.now(), onupdate=lambda: datetime.now(UTC).replace(tzinfo=None))
 

@@ -1,5 +1,5 @@
-from datetime import date, datetime
 import re
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,7 +18,20 @@ class CrewMemberBase(BaseModel):
     address: str | None = None
     emergency_contact_name: str | None = Field(default=None, max_length=200)
     emergency_contact_phone: str | None = Field(default=None, max_length=50)
+    birth_place: str | None = Field(default=None, max_length=150)
+    hometown: str | None = Field(default=None, max_length=150)
+    marital_status: str | None = Field(default=None, max_length=50)
+    experience_years: int | None = Field(default=None, ge=0)
+    sea_service_months: int | None = Field(default=None, ge=0)
+    languages: str | None = None
+    education_summary: str | None = None
+    notes: str | None = None
+    profile_data: dict | None = None
     status: str = Field(default="active", min_length=1, max_length=50)
+    availability: str | None = Field(
+        default="available",
+        pattern="^(available|on_board|on_leave|not_available)$",
+    )
 
     @field_validator("first_name", "last_name", "position", "status")
     @classmethod
@@ -58,6 +71,15 @@ class CrewMemberUpdate(BaseModel):
     emergency_contact_name: str | None = Field(default=None, max_length=200)
     emergency_contact_phone: str | None = Field(default=None, max_length=50)
     status: str | None = Field(default=None, min_length=1, max_length=50)
+    birth_place: str | None = Field(default=None, max_length=150)
+    hometown: str | None = Field(default=None, max_length=150)
+    marital_status: str | None = Field(default=None, max_length=50)
+    experience_years: int | None = Field(default=None, ge=0)
+    sea_service_months: int | None = Field(default=None, ge=0)
+    languages: str | None = None
+    education_summary: str | None = None
+    notes: str | None = None
+    profile_data: dict | None = None
 
     @field_validator("first_name", "last_name", "position", "status")
     @classmethod
@@ -76,14 +98,5 @@ class CrewMemberResponse(CrewMemberBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    birth_place: str | None = None
-    hometown: str | None = None
-    marital_status: str | None = None
-    experience_years: int | None = None
-    sea_service_months: int | None = None
-    languages: str | None = None
-    education_summary: str | None = None
-    notes: str | None = None
-    profile_data: dict | None = None
     created_at: datetime
     updated_at: datetime

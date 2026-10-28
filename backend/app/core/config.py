@@ -23,6 +23,21 @@ class Settings(BaseSettings):
     max_upload_size_mb: int = 25
     expiry_approaching_days: int = 90
     expiry_urgent_days: int = 30
+    # ── Authentication ────────────────────────────────────────────────────────
+    jwt_secret_key: str = "dev-insecure-secret-change-me"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 480
+    admin_email: str | None = None
+    admin_password: str | None = None
+    # ── Notification channels (Phase 4B) ────────────────────────────────────
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+    smtp_tls: bool = True
+    whatsapp_api_token: str | None = None
+    whatsapp_phone_id: str | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:

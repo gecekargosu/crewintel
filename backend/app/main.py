@@ -5,10 +5,25 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes.assignments import router as assignment_router
 from app.api.routes.audit_logs import router as audit_log_router
+from app.api.routes.auth import router as auth_router
 from app.api.routes.contracts import router as contract_router
 from app.api.routes.crew import router as crew_router
+from app.api.routes.dashboard import router as dashboard_router
+from app.api.routes.devices import router as devices_router
 from app.api.routes.documents import router as document_router
 from app.api.routes.expiration import router as expiration_router
+from app.api.routes.jobs import (
+    router as jobs_router,
+)
+from app.api.routes.jobs import (
+    templates_router,
+    webhook_router,
+    whatsapp_router,
+)
+from app.api.routes.messages import router as messages_router
+from app.api.routes.notifications import router as notifications_router
+from app.api.routes.portal import router as portal_router
+from app.api.routes.settings import router as settings_router
 from app.api.routes.ships import router as ship_router
 from app.core.config import get_settings
 from app.db.database import engine
@@ -29,6 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(crew_router)
 app.include_router(ship_router)
 app.include_router(assignment_router)
@@ -36,6 +52,16 @@ app.include_router(contract_router)
 app.include_router(document_router)
 app.include_router(expiration_router)
 app.include_router(audit_log_router)
+app.include_router(notifications_router)
+app.include_router(dashboard_router)
+app.include_router(portal_router)
+app.include_router(messages_router)
+app.include_router(devices_router)
+app.include_router(settings_router)
+app.include_router(jobs_router)
+app.include_router(templates_router)
+app.include_router(whatsapp_router)
+app.include_router(webhook_router)
 
 
 @app.get("/")

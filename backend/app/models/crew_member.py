@@ -1,9 +1,15 @@
 from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, DateTime, Integer, JSON, String, Text, func
+from sqlalchemy import JSON, Boolean, Date, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.assignment import ShipCrewAssignment
+    from app.models.contract import Contract
+    from app.models.document import Document
 
 
 class CrewMember(Base):
@@ -33,6 +39,21 @@ class CrewMember(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     profile_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="active", server_default="active", index=True)
+    job_seeking: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    availability: Mapped[str | None] = mapped_column(
+        String(30),
+        nullable=True,
+        server_default="available",
+        comment="available | on_board | on_leave | not_available",
+    )
+    # ── M1 Mobile: iş tercihleri / müsaitlik (migration 0010) ──────────────
+    available_from: Mapped[date | None] = mapped_column(Date, nullable=True)
+    job_preferences: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    vessel_types_experience: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    expected_salary_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    expected_salary_max: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    expected_salary_currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    expected_salary_period: Mapped[str | None] = mapped_column(String(30), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(UTC).replace(tzinfo=None),

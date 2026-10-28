@@ -1,0 +1,23 @@
+TURKIYE CUMHURIYETI
+KIMLIK BELGESI / IDENTITY DOCUMENT
+
+PASSPORT
+
+Name: Mehmet Kaya
+Surname: Kaya
+Date of Birth: 12/04/1980
+Place of Birth: Istanbul, Turkey
+Nationality: Turkish
+Sex: Male
+Document Number: U12345678
+Date of Issue: 20/04/2023
+Date of Expiry: 19/04/2033
+Issuing Authority: Istanbul Population Directorate
+
+Personal Identification Number: 18804567890
+
+Machine Readable Zone:
+P<TURKAYA<<MEHMET<<<<<<<<<<<<<<<<<<<<<<<<<<<
+U123456788TUR8004127M3304194<<<<<<<<<<<<<<04
+
+This passport is the property of the Republic of Turkey.

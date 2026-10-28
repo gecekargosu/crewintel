@@ -1,9 +1,13 @@
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    pass
 
 
 class User(Base):
@@ -13,6 +17,8 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(200))
     role: Mapped[str] = mapped_column(String(50), default="viewer", server_default="viewer")
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    crew_member_id: Mapped[int | None] = mapped_column(ForeignKey("crew_members.id"), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     created_at: Mapped[datetime] = mapped_column(
         DateTime,

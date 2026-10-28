@@ -98,7 +98,7 @@ Tüm CRUD uçları JSON kullanır ve FastAPI doğrulama hatalarında `422`, bulu
 | Atamalar | `GET/POST /api/assignments/`, `GET/PUT/DELETE /api/assignments/{id}` |
 | Kontratlar | `GET/POST /api/contracts/`, `GET/PUT/DELETE /api/contracts/{id}` |
 
-Personel listeleme; `name`, `surname`, `position`, `nationality`, `status`, `ship_id`, `offset` ve `limit` sorgu parametrelerini destekler. `limit` en fazla 100'dür.
+Personel listeleme; `name`, `surname`, `position`, `nationality`, `status`, `ship_id`, `rank`, `languages`, `experience_years_min`, `sea_service_months_min`, `contract_status`, `contract_expiring_days`, `has_no_documents`, `show_problematic`, `offset` ve `limit` sorgu parametrelerini destekler. `limit` en fazla 200'dür.
 
 ## Docker ile çalıştırma
 
